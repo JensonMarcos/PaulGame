@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c367c948daacad74c993da00c04c69cb, type: 3}
+  m_Name: Footlong
+  m_EditorClassIdentifier: 
+  type: 0
+  sniper: 1
+  shotgun: 0
+  damage: 50.01
+  fireRate: 1
+  reloadSpeed: 2
+  pullOutSpeed: 0.8
+  ammoCap: 7
+  semiAuto: 1
+  range: 100
+  accuracy: 0.069
+  ADSaccuracy: 0
+  SprintAccuracy: 0.2
+  recoilX: -18
+  recoilY: 1
+  recoilZ: 1
+  adsRecoilMult: 1
+  snap: 10
+  returnSpeed: 3.5
+  adsSpeed: 1.2
+  adsZoom: 20
+  adsOff: {x: -0.008, y: -0.15, z: 0.145}
+  backKick: -0.2
+  upKick: -12
+  randomKick: 3
+  animationReturn: 3
+  adsAnimMult: 1
+  isShotGun: 0
+  numberOfShots: 1
+  AmmoPos: {x: -0.0804, y: 0.0422, z: 0.1358}
+  sightPos: {x: 0, y: 0, z: 0}
+  ADSAmmoPos: {x: -0.0804, y: 0.0422, z: 0.1358}
+  WidTopBot: {x: 0, y: 0, z: 0}
+  bulletForce: 0
+  backwardVelocity: 0

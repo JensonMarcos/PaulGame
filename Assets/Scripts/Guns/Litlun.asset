@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c367c948daacad74c993da00c04c69cb, type: 3}
+  m_Name: Litlun
+  m_EditorClassIdentifier: 
+  type: 1
+  sniper: 0
+  shotgun: 1
+  damage: 3.5
+  fireRate: 7
+  reloadSpeed: 1
+  pullOutSpeed: 0.35
+  ammoCap: 2
+  semiAuto: 1
+  range: 100
+  accuracy: 0.1
+  ADSaccuracy: 0.05
+  SprintAccuracy: 0.15
+  recoilX: -2
+  recoilY: 2
+  recoilZ: 0.1
+  adsRecoilMult: 1
+  snap: 6
+  returnSpeed: 3
+  adsSpeed: 1.8
+  adsZoom: 48
+  adsOff: {x: 0, y: -0.115, z: 0.15}
+  backKick: -0.2
+  upKick: -5
+  randomKick: 6
+  animationReturn: 6
+  adsAnimMult: 0.5
+  isShotGun: 1
+  numberOfShots: 16
+  AmmoPos: {x: -0.0846, y: 0.028, z: 0.08}
+  sightPos: {x: 0, y: 0.0885, z: 0.1017}
+  ADSAmmoPos: {x: -0.1149, y: 0.0435, z: 0.2085}
+  WidTopBot: {x: 0.6, y: 0.06, z: 0.1}
+  bulletForce: 0
+  backwardVelocity: 5

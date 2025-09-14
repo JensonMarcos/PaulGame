@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c367c948daacad74c993da00c04c69cb, type: 3}
+  m_Name: test
+  m_EditorClassIdentifier: 
+  type: 1
+  sniper: 0
+  shotgun: 1
+  damage: 5
+  fireRate: 8
+  reloadSpeed: 1
+  pullOutSpeed: 0.3
+  ammoCap: 17
+  semiAuto: 1
+  range: 100
+  accuracy: 0.02
+  ADSaccuracy: 0.015
+  SprintAccuracy: 0.045
+  recoilX: -3
+  recoilY: 0.3
+  recoilZ: 0.1
+  adsRecoilMult: 0.5
+  snap: 5
+  returnSpeed: 8
+  adsSpeed: 2
+  adsZoom: 48
+  adsOff: {x: 0, y: -0.09, z: 0.2}
+  backKick: -0.1
+  upKick: -20
+  randomKick: 2
+  animationReturn: 21
+  adsAnimMult: 0.55
+  isShotGun: 1
+  numberOfShots: 3
+  AmmoPos: {x: 0, y: 0, z: 0}
+  sightPos: {x: 0, y: 0, z: 0}
+  ADSAmmoPos: {x: 0, y: 0, z: 0}
+  WidTopBot: {x: 0, y: 0, z: 0}
+  bulletForce: 0
+  backwardVelocity: 0
