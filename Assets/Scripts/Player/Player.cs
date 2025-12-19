@@ -1,0 +1,179 @@
+using KinematicCharacterController;
+using Unity.Netcode;
+using UnityEngine;
+
+[System.Serializable]
+public struct PlayerState : INetworkSerializable
+{
+    [Header("Character")]
+    public bool Grounded;
+    public Stance Stance;
+    public Vector3 Velocity;
+
+    [Header("Combat")]
+    //inventory stuff
+    public int InventoryIndex;
+    public float Aiming;
+    public bool ReadyPull;
+    public bool Reloading;
+
+    [Header("Animation")]
+    public bool Melee;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref Grounded);
+        serializer.SerializeValue(ref Stance);
+        serializer.SerializeValue(ref Velocity);
+
+        serializer.SerializeValue(ref InventoryIndex);
+        serializer.SerializeValue(ref Aiming);
+        serializer.SerializeValue(ref ReadyPull);
+        serializer.SerializeValue(ref Reloading);
+
+        serializer.SerializeValue(ref Melee);
+    }
+}
+
+public struct PlayerInputs
+{
+    public float ForwardAxis;
+    public float RightAxis;
+    public Quaternion CameraRotation;
+    public bool Jump;
+    public bool Crouch;
+    public bool Sprint;
+
+    public bool Attack;
+    public bool Aim;
+    public bool Reload;
+
+    public float ScrollWheel;
+    public int NumKey;
+}
+
+public class Player : NetworkBehaviour
+{
+    public NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
+        writePerm: NetworkVariableWritePermission.Owner,
+        readPerm: NetworkVariableReadPermission.Everyone
+    );
+
+    [SerializeField] PlayerState playerState;
+
+    [SerializeField] PlayerInputs inputs;
+
+    [SerializeField] PlayerCharacter playerCharacter;
+    [SerializeField] PlayerCamera playerCamera;
+    [SerializeField] PlayerAnimations playerAnimations;
+    [SerializeField] PlayerCombat playerCombat;
+    [SerializeField] PlayerInventory playerInventory;
+  
+    void Start()
+    {
+        playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
+        playerAnimations.Initialize();
+
+        if(!IsOwner)
+        {
+            playerCharacter.gameObject.GetComponent<KinematicCharacterMotor>().enabled = false;
+        }
+    }
+
+    void Update()
+    {
+        if(!IsOwner) ReadPlayerState();
+
+        if(IsOwner)
+        {
+            playerCamera.UpdateRotation(playerInventory.ClientInventory[playerState.InventoryIndex].data);
+
+            UpdateState();
+            HandleInputs();
+            UpdateState();
+        }
+
+        playerAnimations.UpdateAnimatorValues(playerState);
+
+        playerAnimations.UpdateAnimator(Time.deltaTime);
+    }
+
+    void LateUpdate()
+    {
+        int i = playerState.InventoryIndex;
+
+        playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
+
+        playerCamera.UpdatePosition(playerCharacter.camTarget);
+
+        if(IsOwner) {
+            playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i].data);
+
+            UpdateState();
+            WritePlayerState();
+        }
+    }
+
+    void HandleInputs()
+    {
+        //PlayerCharacterInputs characterInputs = new PlayerCharacterInputs();
+
+        inputs.ForwardAxis = Input.GetAxisRaw("Vertical");
+        inputs.RightAxis = Input.GetAxisRaw("Horizontal");
+        inputs.CameraRotation = playerCamera.transform.rotation;
+        inputs.Jump = Input.GetKeyDown(KeyCode.Space);
+        inputs.Crouch = Input.GetKey(KeyCode.LeftControl);
+        inputs.Sprint = Input.GetKey(KeyCode.LeftShift);
+
+        inputs.Attack = Input.GetKeyDown(KeyCode.Mouse0);
+        inputs.Aim = Input.GetKey(KeyCode.Mouse1);
+        inputs.Reload = Input.GetKeyDown(KeyCode.R);
+
+        inputs.ScrollWheel = Input.GetAxis("Mouse ScrollWheel");
+
+        inputs.NumKey = -1;
+        for (int i = 0; i < 9; i++) //num keys
+        {
+            if (Input.GetKeyDown((i + 1).ToString()))
+            {
+                inputs.NumKey = i;
+            }
+        }
+
+        playerInventory.SetInputs(inputs);
+        playerCharacter.SetInputs(inputs);
+        playerCombat.SetInputs(inputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
+    }
+
+    void UpdateState()
+    {
+        CharacterState _characterState = playerCharacter.State;
+        playerState.Grounded = _characterState.Grounded;
+        playerState.Stance = _characterState.Stance;
+
+        playerState.Velocity = _characterState.Velocity;
+
+        playerState.InventoryIndex = playerInventory.InvIndex;
+        playerState.Aiming = playerCombat.Aiming;
+        if(playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee) playerState.Aiming = 0;
+
+        playerState.ReadyPull = playerInventory.ReadyPull;
+
+        playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
+    }
+
+    public void Teleport(Vector3 position)
+    {
+        playerCharacter.SetPosition(position);
+    }
+
+    void ReadPlayerState()
+    {
+        playerState = NetworkPlayerState.Value;
+    }
+
+    void WritePlayerState()
+    {
+        NetworkPlayerState.Value = playerState;
+    }
+}

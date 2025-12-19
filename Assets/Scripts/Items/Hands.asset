@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40174c96e64b8f44ea9689f296ddfee7, type: 3}
+  m_Name: Hands
+  m_EditorClassIdentifier: 
+  type: 3
+  slot: 2
+  damage: 5
+  position: {x: 0, y: 0, z: 0}
+  pullOutSpeed: 0.4
+  fireRate: 0
+  reloadSpeed: 0
+  ammoCap: 0
+  semiAuto: 0
+  range: 100
+  accuracy: 0
+  ADSaccuracy: 0
+  SprintAccuracy: 0
+  recoilX: 0
+  recoilY: 0
+  recoilZ: 0.05
+  adsRecoilMult: 0
+  snap: 0
+  returnSpeed: 0
+  adsSpeed: 0
+  adsZoom: 0
+  adsOff: {x: 0, y: 0, z: 0}
+  backKick: 0
+  upKick: 0
+  randomKick: 0
+  animationReturn: 0
+  adsAnimMult: 0
+  numberOfShots: 0
+  AmmoPos: {x: 0, y: 0, z: 0}
+  ADSAmmoPos: {x: 0, y: 0, z: 0}
+  sightPos: {x: 0, y: 0, z: 0}
+  WidTopBot: {x: 0, y: 0, z: 0}
+  bulletForce: 0
+  backwardVelocity: 0

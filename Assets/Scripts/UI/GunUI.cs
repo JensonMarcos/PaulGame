@@ -11,7 +11,7 @@ public class GunUI : NetworkBehaviour
     [SerializeField] TMP_Text ammoText;
     [SerializeField] RectTransform width, top, bottom;
     public GameObject Sight, Ammo;
-    Item activeItem;
+    OldItem activeItem;
     Vector3 targetAmmoPos;
 
     void Start() {
