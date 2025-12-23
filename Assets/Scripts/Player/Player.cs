@@ -107,7 +107,7 @@ public class Player : NetworkBehaviour
         playerCamera.UpdatePosition(playerCharacter.camTarget);
 
         if(IsOwner) {
-            playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i].data);
+            playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
 
             UpdateState();
             WritePlayerState();

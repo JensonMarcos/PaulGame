@@ -63,7 +63,7 @@ public class PlayerAnimations : NetworkBehaviour
         body.UpdateRigs(_state.Aiming);
 
         hands.UpdateTransform(camTarget);
-        hands.UpdateRigs(_item.RHand, _item.LHand, _state.Stance == Stance.Sprint);
+        hands.UpdateRigs(_item.RHand, _item.LHand, _state.Stance == Stance.Sprint && _state.Melee);
 
         Vector3 aimPos = _item.data.position; //if no sight, just keep same position
         if(_item.sight != null)
@@ -75,27 +75,27 @@ public class PlayerAnimations : NetworkBehaviour
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint);
+        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee);
     }
 
     #region Attack
-    [ServerRpc(RequireOwnership = true)]
-    public void AttackServerRpc()
-    {
-        AttackClientRpc();
-    }
+    // [ServerRpc(RequireOwnership = true)]
+    // public void AttackServerRpc()
+    // {
+    //     AttackClientRpc();
+    // }
 
-    [ClientRpc]
-    public void AttackClientRpc()
-    {
-        if(IsOwner) return;
-        Attack();
-    }
+    // [ClientRpc]
+    // public void AttackClientRpc()
+    // {
+    //     if(IsOwner) return;
+    //     Attack();
+    // }
     
-    public void Attack()
-    {
-        hands.Punch();
-    }
+    // public void Attack()
+    // {
+    //     hands.Punch();
+    // }
     #endregion
 
     #region Shoot

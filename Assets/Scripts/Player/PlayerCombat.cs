@@ -4,7 +4,7 @@ public class PlayerCombat : MonoBehaviour
 {
     public float Aiming;
 
-    [SerializeField] PlayerInventory inventory;
+    //[SerializeField] PlayerInventory inventory;
     [SerializeField] PlayerAnimations animations;
 
     [SerializeField] float aimSpeed;
@@ -25,20 +25,29 @@ public class PlayerCombat : MonoBehaviour
         Aiming = Mathf.Lerp(Aiming, wishAim ? 1 : 0, Time.deltaTime * aimSpeed);
     }
 
-    public void UpdateCombat(PlayerState _state, ItemData _data)
+    public void UpdateCombat(PlayerState _state, ItemClient _item)
     {
         if(wishAttack)
         {
-            Attack(_data);
+            Attack( _item);
+        }
+
+        if(wishAim)
+        {
+            _item.RightClick();
         }
     }
 
-    void Attack(ItemData _data)
+    void Attack(ItemClient _item)
     {
+        ItemData _data = _item.data;
+
+        _item.LeftClick();
+
         if (_data.type is ItemType.Melee)
         {
-            animations.Attack();
-            animations.AttackServerRpc();
+            // animations.Attack();
+            // animations.AttackServerRpc();
         }
         else if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
         {

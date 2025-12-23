@@ -7,8 +7,8 @@ public struct HandRig
 {
     public Transform hand;
     public FastIKFabric IK;
-    public Vector3 startPos;
-    public Quaternion startRot;
+    // public Vector3 startPos;
+    // public Quaternion startRot;
 }
 
 public class HandsAnimation : MonoBehaviour
@@ -18,7 +18,7 @@ public class HandsAnimation : MonoBehaviour
     [Range(0, 1)]
     public float HandIKWeight;
     [SerializeField] Transform HandParent;
-
+    [SerializeField] float weightChangeSpeed;
 
     [Header("Punch")]
     [SerializeField] Transform punchTarget;
@@ -26,9 +26,8 @@ public class HandsAnimation : MonoBehaviour
     [SerializeField] float punchHoldTime;
     [SerializeField] BodyAnimation body;
     [SerializeField] float tiltAmount;
-    [SerializeField] float weightChangeSpeed;
-    bool whichhand; 
-    bool readyPunch;
+    //bool whichhand; 
+    //bool readyPunch;
 
     [Header("Pullout Animation")]
     [SerializeField] Vector3 pulloutPosOffset;
@@ -39,20 +38,20 @@ public class HandsAnimation : MonoBehaviour
 
     public void Initialize()
     {
-        RHand.startPos = RHand.hand.localPosition;
-        RHand.startRot = RHand.hand.localRotation;
-        LHand.startPos = LHand.hand.localPosition;
-        LHand.startRot = LHand.hand.localRotation;
+        // RHand.startPos = RHand.hand.localPosition;
+        // RHand.startRot = RHand.hand.localRotation;
+        // LHand.startPos = LHand.hand.localPosition;
+        // LHand.startRot = LHand.hand.localRotation;
 
-        readyPunch = true;
+        //readyPunch = true;
     }
 
     public void UpdateRigs(Transform _rHand, Transform _lHand, bool _sprinting)
     {
-        float targetWeight = (_rHand == null && _lHand == null && _sprinting) ? 0f : 1f;
+        float targetWeight = _sprinting ? 0f : 1f;
         HandIKWeight = Mathf.Lerp(HandIKWeight, targetWeight, weightChangeSpeed * Time.deltaTime);
 
-        RHand.IK.Weight = LHand.IK.Weight = HandIKWeight;
+        RHand.IK.Weight = LHand.IK.Weight = HandIKWeight; //change this to individual weights later
 
         if (_rHand != null)
         {
@@ -82,85 +81,85 @@ public class HandsAnimation : MonoBehaviour
 
     public void ResetHands()
     {
-        StopCoroutine("PunchAnimation");
-        LHand.hand.localPosition = LHand.startPos;
-        LHand.hand.localRotation = LHand.startRot;
-        RHand.hand.localPosition = RHand.startPos;
-        RHand.hand.localRotation = RHand.startRot;
-        readyPunch = true;
+        //StopCoroutine("PunchAnimation");
+        // LHand.hand.localPosition = LHand.startPos;
+        // LHand.hand.localRotation = LHand.startRot;
+        // RHand.hand.localPosition = RHand.startPos;
+        // RHand.hand.localRotation = RHand.startRot;
+        // readyPunch = true;
     }
 
-    public void Punch()
-    {
-        if(!readyPunch) return;
+    // public void Punch()
+    // {
+    //     if(!readyPunch) return;
 
-        StopCoroutine("PunchAnimation");
+    //     StopCoroutine("PunchAnimation");
 
-        ResetHands();
+    //     ResetHands();
 
-        body.UpperBodyTilt = 0f;
+    //     body.UpperBodyTilt = 0f;
 
-        whichhand = !whichhand;
+    //     whichhand = !whichhand;
 
-        StartCoroutine(PunchAnimation(whichhand ? RHand : LHand, whichhand ? -2f : 1f));
-    }
+    //     StartCoroutine(PunchAnimation(whichhand ? RHand : LHand, whichhand ? -2f : 1f));
+    // }
 
-    IEnumerator PunchAnimation(HandRig rig, float tiltMult)
-    {
-        readyPunch = false;
+    // IEnumerator PunchAnimation(HandRig rig, float tiltMult)
+    // {
+    //     readyPunch = false;
 
-        Vector3 punchPos;
-        Quaternion punchRot;
+    //     Vector3 punchPos;
+    //     Quaternion punchRot;
 
-        var t = 0f;
-        var x = 0f;
-        while (x < 1)
-        {
-            x += punchSpeed * Time.deltaTime;
-            //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
-            t = 2.70158f * x * x * x - 1.70158f * x * x;
+    //     var t = 0f;
+    //     var x = 0f;
+    //     while (x < 1)
+    //     {
+    //         x += punchSpeed * Time.deltaTime;
+    //         //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
+    //         t = 2.70158f * x * x * x - 1.70158f * x * x;
 
-            punchPos = HandParent.InverseTransformPoint(punchTarget.position);
-            punchRot = Quaternion.Inverse(HandParent.rotation) * punchTarget.rotation;
+    //         punchPos = HandParent.InverseTransformPoint(punchTarget.position);
+    //         punchRot = Quaternion.Inverse(HandParent.rotation) * punchTarget.rotation;
 
-            rig.hand.localPosition = Vector3.LerpUnclamped(rig.startPos, punchPos, t);
-            rig.hand.localRotation = Quaternion.Lerp(rig.startRot, punchRot, x);
+    //         rig.hand.localPosition = Vector3.LerpUnclamped(rig.startPos, punchPos, t);
+    //         rig.hand.localRotation = Quaternion.Lerp(rig.startRot, punchRot, x);
 
-            body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
-            yield return null;
-        }
+    //         body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
+    //         yield return null;
+    //     }
 
-        yield return new WaitForSeconds(punchHoldTime);
+    //     yield return new WaitForSeconds(punchHoldTime);
 
-        // punchPos = HandParent.InverseTransformPoint(rig.IK.transform.position);
-        // punchRot = Quaternion.Inverse(HandParent.rotation) * rig.IK.transform.rotation;
+    //     // punchPos = HandParent.InverseTransformPoint(rig.IK.transform.position);
+    //     // punchRot = Quaternion.Inverse(HandParent.rotation) * rig.IK.transform.rotation;
 
-        readyPunch = true;
+    //     readyPunch = true;
 
-        t = 1f;
-        x = 1f;
-        while (x > 0)
-        {
-            x -= punchSpeed * Time.deltaTime;
-            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
+    //     t = 1f;
+    //     x = 1f;
+    //     while (x > 0)
+    //     {
+    //         x -= punchSpeed * Time.deltaTime;
+    //         t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
 
-            punchPos = HandParent.InverseTransformPoint(punchTarget.position);
-            punchRot = Quaternion.Inverse(HandParent.rotation) * punchTarget.rotation;
+    //         punchPos = HandParent.InverseTransformPoint(punchTarget.position);
+    //         punchRot = Quaternion.Inverse(HandParent.rotation) * punchTarget.rotation;
 
-            rig.hand.localPosition = Vector3.LerpUnclamped(rig.startPos, punchPos, t);
-            rig.hand.localRotation = Quaternion.Lerp(rig.startRot, punchRot, x);
+    //         rig.hand.localPosition = Vector3.LerpUnclamped(rig.startPos, punchPos, t);
+    //         rig.hand.localRotation = Quaternion.Lerp(rig.startRot, punchRot, x);
 
-            body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
-            yield return null;
-        }
+    //         body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
+    //         yield return null;
+    //     }
 
-        rig.hand.localPosition = rig.startPos;
-        rig.hand.localRotation = rig.startRot;
+    //     rig.hand.localPosition = rig.startPos;
+    //     rig.hand.localRotation = rig.startRot;
 
-        body.UpperBodyTilt = 0f;
+    //     body.UpperBodyTilt = 0f;
 
         
-    }
+    // }
 
     void HandlePull()
     {

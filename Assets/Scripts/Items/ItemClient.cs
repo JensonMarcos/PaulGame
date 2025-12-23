@@ -1,7 +1,35 @@
 using UnityEngine;
 
+public interface IItemAction
+{
+    void OnLeftClick();
+    void OnRightClick();
+}
+
 public class ItemClient : MonoBehaviour
 {
     public ItemData data;
     public Transform LHand, RHand, sight;
+
+    public IItemAction action;
+
+    void Start()
+    {
+        action = GetComponent<IItemAction>();
+    }
+
+    public void LeftClick()
+    {
+        if(action == null) return;
+        action.OnLeftClick();
+    }
+
+    public void RightClick()
+    {
+        if(action == null) return;
+        action.OnRightClick();
+    }
 }
+
+
+
