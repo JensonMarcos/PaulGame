@@ -6,15 +6,15 @@ public enum ItemType
     Gun, Sniper, Shotgun, Melee
 }
 
-public enum Slot { 
-    Primary, Secondary, Melee
-}
+// public enum Slot { 
+//     Primary, Secondary, Melee
+// }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Scriptable Objects/ItemData")]
 public class ItemData : ScriptableObject
 {
     public ItemType type;
-    public Slot slot;
+    public int slot;
 
     bool isGun => type is ItemType.Gun or ItemType.Sniper or ItemType.Shotgun;
     bool isSniper => type is ItemType.Sniper;

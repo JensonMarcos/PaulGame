@@ -14,7 +14,7 @@ public class PlayerAnimations : NetworkBehaviour
     public void Initialize()
     {
         body.Initialize();
-        hands.Initialize();
+        //hands.Initialize();
         body.BodyAnimator.enabled = false;
     }
 
@@ -135,7 +135,7 @@ public class PlayerAnimations : NetworkBehaviour
 
     public void SwitchItemAnimation(float _pullOutTime)
     {
-        hands.ResetHands();
+        //hands.ResetHands();
         hands.Pullout(_pullOutTime);
     }
 

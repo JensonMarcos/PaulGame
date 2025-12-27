@@ -47,9 +47,12 @@ public struct PlayerInputs
     public bool Attack;
     public bool Aim;
     public bool Reload;
+    public bool Interact;
+    public bool Drop;
 
     public float ScrollWheel;
     public int NumKey;
+
 }
 
 public class Player : NetworkBehaviour
@@ -67,7 +70,7 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerCamera playerCamera;
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
-    [SerializeField] PlayerInventory playerInventory;
+    public PlayerInventory playerInventory;
   
     void Start()
     {
@@ -107,6 +110,7 @@ public class Player : NetworkBehaviour
         playerCamera.UpdatePosition(playerCharacter.camTarget);
 
         if(IsOwner) {
+            playerInventory.TryPickUp();
             playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
 
             UpdateState();
@@ -128,6 +132,8 @@ public class Player : NetworkBehaviour
         inputs.Attack = Input.GetKeyDown(KeyCode.Mouse0);
         inputs.Aim = Input.GetKey(KeyCode.Mouse1);
         inputs.Reload = Input.GetKeyDown(KeyCode.R);
+        inputs.Interact = Input.GetKeyDown(KeyCode.E);
+        inputs.Drop = Input.GetKeyDown(KeyCode.G);
 
         inputs.ScrollWheel = Input.GetAxis("Mouse ScrollWheel");
 
@@ -140,7 +146,7 @@ public class Player : NetworkBehaviour
             }
         }
 
-        playerInventory.SetInputs(inputs);
+        playerInventory.SetInputs(inputs, playerState.Velocity);
         playerCharacter.SetInputs(inputs);
         playerCombat.SetInputs(inputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
     }

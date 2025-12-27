@@ -20,12 +20,12 @@ public class HandsAnimation : MonoBehaviour
     [SerializeField] Transform HandParent;
     [SerializeField] float weightChangeSpeed;
 
-    [Header("Punch")]
-    [SerializeField] Transform punchTarget;
-    [SerializeField] float punchSpeed;
-    [SerializeField] float punchHoldTime;
-    [SerializeField] BodyAnimation body;
-    [SerializeField] float tiltAmount;
+    // [Header("Punch")]
+    // [SerializeField] Transform punchTarget;
+    // [SerializeField] float punchSpeed;
+    // [SerializeField] float punchHoldTime;
+    // [SerializeField] BodyAnimation body;
+    // [SerializeField] float tiltAmount;
     //bool whichhand; 
     //bool readyPunch;
 
@@ -36,15 +36,15 @@ public class HandsAnimation : MonoBehaviour
     Vector3 pullPos;
     float pulloutTime, pullAnimTime;
 
-    public void Initialize()
-    {
-        // RHand.startPos = RHand.hand.localPosition;
-        // RHand.startRot = RHand.hand.localRotation;
-        // LHand.startPos = LHand.hand.localPosition;
-        // LHand.startRot = LHand.hand.localRotation;
+    // public void Initialize()
+    // {
+    //     // RHand.startPos = RHand.hand.localPosition;
+    //     // RHand.startRot = RHand.hand.localRotation;
+    //     // LHand.startPos = LHand.hand.localPosition;
+    //     // LHand.startRot = LHand.hand.localRotation;
 
-        //readyPunch = true;
-    }
+    //     //readyPunch = true;
+    // }
 
     public void UpdateRigs(Transform _rHand, Transform _lHand, bool _sprinting)
     {
@@ -79,15 +79,15 @@ public class HandsAnimation : MonoBehaviour
         transform.rotation = target.rotation * Quaternion.Euler(pullRot);
     }
 
-    public void ResetHands()
-    {
-        //StopCoroutine("PunchAnimation");
-        // LHand.hand.localPosition = LHand.startPos;
-        // LHand.hand.localRotation = LHand.startRot;
-        // RHand.hand.localPosition = RHand.startPos;
-        // RHand.hand.localRotation = RHand.startRot;
-        // readyPunch = true;
-    }
+    // public void ResetHands()
+    // {
+    //     //StopCoroutine("PunchAnimation");
+    //     // LHand.hand.localPosition = LHand.startPos;
+    //     // LHand.hand.localRotation = LHand.startRot;
+    //     // RHand.hand.localPosition = RHand.startPos;
+    //     // RHand.hand.localRotation = RHand.startRot;
+    //     // readyPunch = true;
+    // }
 
     // public void Punch()
     // {
