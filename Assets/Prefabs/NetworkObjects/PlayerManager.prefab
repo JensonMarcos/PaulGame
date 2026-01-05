@@ -45,14 +45,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 264571368
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 1893050706
+  InScenePlacedSourceGlobalObjectIdHash: 264571368
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -71,6 +71,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  playerPrefab: {fileID: 1669141654648350452, guid: 5135f4bdf8c1ecf4daa2970f4828c43d, type: 3}
+  playerPrefab: {fileID: 2069876906178530849, guid: 22aa77b996d82414ab8eb799d229df43, type: 3}
   ragdollPrefab: {fileID: 7374326987024873421, guid: 1af5ea15053dcca4aac9e90a6368f3ce, type: 3}
-  allplayers: []
+  Players: []
+  playersAlive: 0

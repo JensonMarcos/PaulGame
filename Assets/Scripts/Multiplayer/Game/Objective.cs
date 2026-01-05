@@ -13,7 +13,7 @@ public class Objective : NetworkBehaviour
         if (!IsServer) return;
         NetworkObject player = other.GetComponent<NetworkObject>();
         if (player == null) return;
-        int id = PlayerManager.instance.allplayers.FindIndex(x => x.ID == player.OwnerClientId);
-        PlayerManager.instance.allplayers[id].score++;
+        int id = PlayerManager.instance.Players.FindIndex(x => x.ClientId == player.OwnerClientId);
+        PlayerManager.instance.Players[id].score++;
     }
 }

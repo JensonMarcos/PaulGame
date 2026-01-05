@@ -140,6 +140,16 @@ public class PlayerInventory : NetworkBehaviour
         SyncClientInventory();
     }
 
+    public void DropAll()
+    {
+        for (int i = 0; i < Inventory.Length; i++)
+        {
+            if(Inventory[i] != handsItem)
+            {
+                Drop(i);
+            }
+        }
+    }
 
     [ServerRpc(RequireOwnership = true)]
     public void SelectServerRpc(int _index, float _pullOutTime)

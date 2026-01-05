@@ -141,5 +141,8 @@ public class PlayerAnimations : NetworkBehaviour
 
     #endregion Switch Item
 
-
+    public void SetAnimationActive(bool _active)
+    {
+        body.gameObject.SetActive(_active);
+    }
 }

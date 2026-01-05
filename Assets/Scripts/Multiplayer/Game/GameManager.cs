@@ -138,12 +138,12 @@ public class GameManager : NetworkBehaviour
 
                 if (!gameReady)
                 {
-                    for (int i = 0; i < PlayerManager.instance.allplayers.Count; i++)
+                    for (int i = 0; i < PlayerManager.instance.Players.Count; i++)
                     {
-                        PlayerManager.instance.allplayers[i].score = 0;
-                        if (!currentRoom.playersInRoom.Contains(PlayerManager.instance.allplayers[i].playerGameObject))
+                        PlayerManager.instance.Players[i].score = 0;
+                        if (!currentRoom.playersInRoom.Contains(PlayerManager.instance.Players[i].playerGameObject))
                         {
-                            PlayerManager.instance.DealDamageServerRpc(PlayerManager.instance.allplayers[i].ID, 1234f);
+                            PlayerManager.instance.DealDamageServerRpc(PlayerManager.instance.Players[i].ClientId, 1234f);
                             //PlayerManager.instance.allplayers[i].playerGameObject.transform.position = currentRoom.objectivePoint.position;
                         }
                     }
@@ -154,7 +154,7 @@ public class GameManager : NetworkBehaviour
                 if (gameTime <= 0 || PlayerManager.instance.playersAlive == 1)
                 {
                     PlayerData winner = null;
-                    foreach (PlayerData player in PlayerManager.instance.allplayers)
+                    foreach (PlayerData player in PlayerManager.instance.Players)
                     {
                         if (winner == null)
                         {
@@ -163,9 +163,9 @@ public class GameManager : NetworkBehaviour
                         }
                         if (player.score > winner.score) winner = player;
                     }
-                    PlayerManager.instance.allplayers[PlayerManager.instance.allplayers.FindIndex(x => x == winner)].wins++;
+                    PlayerManager.instance.Players[PlayerManager.instance.Players.FindIndex(x => x == winner)].wins++;
 
-                    title.title.Value = winner.ID.ToString() + " won";
+                    title.title.Value = winner.ClientId.ToString() + " won";
 
                     gameState = GameState.MoveRoom;
                     break;
@@ -257,7 +257,7 @@ public class GameManager : NetworkBehaviour
 
     public void RespawnEveryone()
     {
-        foreach (PlayerData player in PlayerManager.instance.allplayers)
+        foreach (PlayerData player in PlayerManager.instance.Players)
         {
             if (!player.isDead)
             {
@@ -266,7 +266,7 @@ public class GameManager : NetworkBehaviour
                 player.score = 0;
                 continue;
             }
-            PlayerManager.instance.RespawnServerRpc(player.ID);
+            PlayerManager.instance.RespawnServerRpc(player.ClientId);
         }
     }
 
@@ -288,7 +288,7 @@ public class GameManager : NetworkBehaviour
         {
             case GameMode.Deathmatch:
                 CreateGameModeMap(DMPrefabs[Random.Range(0, DMPrefabs.Length)]);
-                SpawnItems(currentRoom.objectivePoint.position, 10f, (int)(PlayerManager.instance.allplayers.Count * 1.5f) + 5); //spawn items in the room
+                SpawnItems(currentRoom.objectivePoint.position, 10f, (int)(PlayerManager.instance.Players.Count * 1.5f) + 5); //spawn items in the room
 
                 break;
             case GameMode.King_of_the_Paul_House:

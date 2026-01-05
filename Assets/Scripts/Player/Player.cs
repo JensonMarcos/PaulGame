@@ -71,6 +71,8 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
     public PlayerInventory playerInventory;
+
+    public bool isDead;
   
     void Start()
     {
@@ -85,7 +87,7 @@ public class Player : NetworkBehaviour
 
     void Update()
     {
-        if(!IsOwner) ReadPlayerState();
+        if(!IsOwner && !isDead) playerState = NetworkPlayerState.Value;
 
         if(IsOwner)
         {
@@ -96,25 +98,33 @@ public class Player : NetworkBehaviour
             UpdateState();
         }
 
-        playerAnimations.UpdateAnimatorValues(playerState);
+        if(!isDead)
+        {
+            playerAnimations.UpdateAnimatorValues(playerState);
 
-        playerAnimations.UpdateAnimator(Time.deltaTime);
+            playerAnimations.UpdateAnimator(Time.deltaTime);
+        }
+
+
+        if(IsOwner && isDead && Input.GetKeyDown(KeyCode.P)) {
+            PlayerManager.instance.RespawnServerRpc(OwnerClientId);      
+        }
     }
 
     void LateUpdate()
     {
         int i = playerState.InventoryIndex;
 
-        playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
+        if(!isDead) playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
 
         playerCamera.UpdatePosition(playerCharacter.camTarget);
 
-        if(IsOwner) {
+        if(IsOwner && !isDead) {
             playerInventory.TryPickUp();
             playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
 
             UpdateState();
-            WritePlayerState();
+            NetworkPlayerState.Value = playerState;
         }
     }
 
@@ -168,18 +178,30 @@ public class Player : NetworkBehaviour
         playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
     }
 
-    public void Teleport(Vector3 position)
-    {
-        playerCharacter.SetPosition(position);
+    [ClientRpc]
+    public void DieClientRpc() {
+        isDead = true;
+        if(!IsOwner) {
+            playerCharacter.gameObject.SetActive(false);
+            return;
+        }
+        playerAnimations.SetAnimationActive(false);
+        playerInventory.DropAll();
+
+        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
+        playerCharacter.SetSpectator(true);
+
     }
 
-    void ReadPlayerState()
-    {
-        playerState = NetworkPlayerState.Value;
-    }
-
-    void WritePlayerState()
-    {
-        NetworkPlayerState.Value = playerState;
+    [ClientRpc]
+    public void RespawnClientRpc() {
+        isDead = false;
+        if(!IsOwner) {
+            playerCharacter.gameObject.SetActive(true);
+            return;
+        } 
+        playerAnimations.SetAnimationActive(true);
+        playerCharacter.gameObject.layer = LayerMask.NameToLayer("PlayerHitbox");
+        playerCharacter.SetSpectator(false);
     }
 }

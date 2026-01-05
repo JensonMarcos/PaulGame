@@ -69,9 +69,9 @@ public class OldItem : NetworkBehaviour
     public void ItemPickupServerRpc(bool dropped, Vector3 throwForce, Vector3 velocity, ServerRpcParams serverRpcParams = default) {
         pmanager = PlayerManager.instance;
         ulong clientId = serverRpcParams.Receive.SenderClientId;
-        for(int i = 0; i < PlayerManager.instance.allplayers.Count; i++) {
-            if(PlayerManager.instance.allplayers[i].ID == clientId) {
-                ownerTrans = PlayerManager.instance.allplayers[i].playerGameObject.transform;
+        for(int i = 0; i < PlayerManager.instance.Players.Count; i++) {
+            if(PlayerManager.instance.Players[i].ClientId == clientId) {
+                ownerTrans = PlayerManager.instance.Players[i].playerGameObject.transform;
                 gunTrans = ownerTrans.GetComponent<Inventory>().gunHolderThirdPerson;
             }
         }

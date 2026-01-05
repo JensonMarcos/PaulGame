@@ -50,6 +50,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public CharacterState State;
     CharacterState lastState, tempState;
 
+    [SerializeField] LayerMask playerLayerMask, spectatorLayerMask;
+
     [Space]
     [Header("Walk")]
     public float walkSpeed;
@@ -396,6 +398,13 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         _newSpeed /= _speed;
 
         return _newSpeed;
+    }
+
+    public void SetSpectator(bool spectator)
+    {
+        Motor.CollidableLayers = spectator
+            ? spectatorLayerMask
+            : playerLayerMask;
     }
 
 
