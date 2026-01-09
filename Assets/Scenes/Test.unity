@@ -16896,6 +16896,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   HasOwner:
     m_InternalValue: 0
+  Ammo:
+    m_InternalValue: 0
   clientPrefab: {fileID: 8891281219331394330, guid: 82decf3a6d8ab9f4686c08be2a727f01, type: 3}
   data: {fileID: 11400000, guid: 21d4bc24014f1d849baa19dd9553ecf5, type: 2}
   hovered: 0
@@ -16948,10 +16950,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 2
+  PositionInterpolationType: 1
   RotationInterpolationType: 2
   ScaleInterpolationType: 0
-  PositionLerpSmoothing: 1
+  PositionLerpSmoothing: 0
   PositionMaxInterpolationTime: 0.1
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
@@ -22812,6 +22814,74 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1527415420}
   m_Mesh: {fileID: 1599063281637406185, guid: 7a3dabb64ae80cf48983c15e88282a6d, type: 3}
+--- !u!1 &1531007180
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1531007183}
+  - component: {fileID: 1531007182}
+  - component: {fileID: 1531007181}
+  m_Layer: 0
+  m_Name: EventSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1531007181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1531007180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
+  m_HorizontalAxis: Horizontal
+  m_VerticalAxis: Vertical
+  m_SubmitButton: Submit
+  m_CancelButton: Cancel
+  m_InputActionsPerSecond: 10
+  m_RepeatDelay: 0.5
+  m_ForceModuleActive: 0
+--- !u!114 &1531007182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1531007180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FirstSelected: {fileID: 0}
+  m_sendNavigationEvents: 1
+  m_DragThreshold: 10
+--- !u!4 &1531007183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1531007180}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1535600667
 GameObject:
   m_ObjectHideFlags: 0
@@ -24215,10 +24285,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 2
+  PositionInterpolationType: 1
   RotationInterpolationType: 2
   ScaleInterpolationType: 0
-  PositionLerpSmoothing: 1
+  PositionLerpSmoothing: 0
   PositionMaxInterpolationTime: 0.1
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
@@ -40975,6 +41045,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   HasOwner:
     m_InternalValue: 0
+  Ammo:
+    m_InternalValue: 0
   clientPrefab: {fileID: 8891281219331394330, guid: 82decf3a6d8ab9f4686c08be2a727f01, type: 3}
   data: {fileID: 11400000, guid: 21d4bc24014f1d849baa19dd9553ecf5, type: 2}
   hovered: 0
@@ -42676,3 +42748,4 @@ SceneRoots:
   - {fileID: 241333353}
   - {fileID: 36682686}
   - {fileID: 1804798380}
+  - {fileID: 1531007183}

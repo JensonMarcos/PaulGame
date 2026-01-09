@@ -16,29 +16,23 @@ MonoBehaviour:
   slot: 2
   damage: 5
   position: {x: 0, y: 0, z: 0}
-  pullOutSpeed: 0.4
+  pullOutTime: 0.5
   fireRate: 0
   reloadSpeed: 0
   ammoCap: 0
   semiAuto: 0
   range: 100
   accuracy: 0
-  ADSaccuracy: 0
+  ADSAccuracy: 0
   SprintAccuracy: 0
-  recoilX: 0
-  recoilY: 0
-  recoilZ: 0.05
-  adsRecoilMult: 0
+  Recoil: {x: 0, y: 0, z: 0}
+  ADSRecoilMult: 0
   snap: 0
   returnSpeed: 0
   adsSpeed: 0
   adsZoom: 0
-  adsOff: {x: 0, y: 0, z: 0}
   backKick: 0
-  upKick: 0
-  randomKick: 0
-  animationReturn: 0
-  adsAnimMult: 0
+  ADSAnimMult: 0
   numberOfShots: 0
   AmmoPos: {x: 0, y: 0, z: 0}
   ADSAmmoPos: {x: 0, y: 0, z: 0}

@@ -5,6 +5,7 @@ public class PlayerCamera : MonoBehaviour
     public float sensitivity = 1f;
     public Vector3 realRotation;
     [SerializeField] Camera cam;
+    [SerializeField] float defaultFov;
 
     [Header("Camera Animations")]
     public Vector3 targetRot;
@@ -52,5 +53,10 @@ public class PlayerCamera : MonoBehaviour
     public void AddRotation(float x, float y, float z, float mult)
     {
         targetRot += new Vector3(x, y, z) * mult;
+    }
+
+    public void UpdateCam(float _targetFov, float _weight)
+    {
+        cam.fieldOfView = Mathf.Lerp(defaultFov, _targetFov, _weight);
     }
 }

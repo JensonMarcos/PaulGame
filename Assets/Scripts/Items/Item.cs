@@ -4,7 +4,8 @@ using UnityEngine;
 public class Item : NetworkBehaviour
 {
     public NetworkVariable<bool> HasOwner = new(false);
-    public NetworkVariable<NetworkObjectReference> OwnerNetObj = new();
+    //public NetworkVariable<NetworkObjectReference> OwnerNetObj = new();
+    public NetworkVariable<int> Ammo = new();
 
     public GameObject clientPrefab;
     public ItemData data;
@@ -19,12 +20,16 @@ public class Item : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        HasOwner.OnValueChanged += OnOwnerChanged;
+        //HasOwner.OnValueChanged += OnOwnerChanged;
+
+        if(!IsOwner) rb.isKinematic = true;
+
+        if(IsServer) Ammo.Value = data.ammoCap;
     }
 
     public override void OnNetworkDespawn()
     {
-        HasOwner.OnValueChanged -= OnOwnerChanged;
+        //HasOwner.OnValueChanged -= OnOwnerChanged;
     }
 
     void Start()
@@ -34,30 +39,28 @@ public class Item : NetworkBehaviour
         outline = GetComponent<Outline>();
         outline.OutlineWidth = 5f;
         outline.enabled = false;
-
-        if(!IsOwner) rb.isKinematic = true;
     }
 
     void LateUpdate()
     {
-        if(HasOwner.Value)
-        {
-            if(ownerTransform == null)
-            {
-                if(OwnerNetObj.Value.TryGet(out var obj))
-                {
-                    ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
-                }
-            } else
-            { //called next frame, prob not an issue
-                transform.position = ownerTransform.position;
-                transform.rotation = ownerTransform.rotation;                
-            }
-        } else
-        {
+        // if(HasOwner.Value)
+        // {
+        //     if(ownerTransform == null)
+        //     {
+        //         if(OwnerNetObj.Value.TryGet(out var obj))
+        //         {
+        //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
+        //         }
+        //     } else
+        //     { //called next frame, prob not an issue
+        //         transform.position = ownerTransform.position;
+        //         transform.rotation = ownerTransform.rotation;                
+        //     }
+        // } else
+        // {
             outline.enabled = hovered;
             if(hovered) hovered = false;
-        }
+        //}
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -65,41 +68,52 @@ public class Item : NetworkBehaviour
     {
         if(HasOwner.Value) return;
         HasOwner.Value = true;
-        OwnerNetObj.Value = netObj;
+        //OwnerNetObj.Value = netObj;
         rb.isKinematic = true;
+        transform.position = Vector3.down;
+
+        model.SetActive(false);
+        itemCollider.enabled = false;
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void ItemDropServerRpc(Vector3 pos, Quaternion rot, Vector3 vel)
+    public void ItemDropServerRpc(Vector3 pos, Quaternion rot, Vector3 vel, int ammo)
     {
         if(!HasOwner.Value) return;
 
-        
+        transform.position = pos; //reduntant but idk it was bugging without
+        transform.rotation = rot;
+
         rb.isKinematic = false;
-        rb.position = pos;
+        rb.position = pos; 
         rb.rotation = rot;
         rb.linearVelocity = vel;
 
         HasOwner.Value = false;
+
+        Ammo.Value = ammo;
+
+        model.SetActive(true);
+        itemCollider.enabled = true;
     }
 
-    void OnOwnerChanged(bool previousValue, bool newValue)
-    {
-        if(newValue) //just assigned to owner
-        {
-            model.SetActive(false);
-            itemCollider.enabled = false;
+    // void OnOwnerChanged(bool previousValue, bool newValue)
+    // {
+    //     if(newValue) //just assigned to owner
+    //     {
+    //         model.SetActive(false);
+    //         itemCollider.enabled = false;
 
-            if(OwnerNetObj.Value.TryGet(out var obj))
-            {
-                ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
-            }
-        } else //unassigned
-        {
-            model.SetActive(true);
-            itemCollider.enabled = true;
+    //         if(OwnerNetObj.Value.TryGet(out var obj))
+    //         {
+    //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
+    //         }
+    //     } else //unassigned
+    //     {
+    //         model.SetActive(true);
+    //         itemCollider.enabled = true;
             
-            ownerTransform = null;
-        }
-    }
+    //         ownerTransform = null;
+    //     }
+    // }
 }

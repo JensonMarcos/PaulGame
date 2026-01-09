@@ -208,8 +208,9 @@ public class GameManager : NetworkBehaviour
     {
         GameObject newRoom = Instantiate(roomPrefabs[Random.Range(0, roomPrefabs.Length)], currentRoom.spawnPoint.position, currentRoom.spawnPoint.rotation);
         newRoom.GetComponent<NetworkObject>().Spawn(true);
-        GameMode _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
-        if (_roomGameMode == prevGamemode) _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
+        GameMode _roomGameMode = GameMode.Deathmatch;
+        //GameMode _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
+        //if (_roomGameMode == prevGamemode) _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
         newRoom.GetComponent<Room>().roomGameMode = _roomGameMode;
         roomList.Add(newRoom);
     }

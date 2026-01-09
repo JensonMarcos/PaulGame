@@ -33,7 +33,7 @@ public class ItemAnimation : MonoBehaviour
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetOffset, moveSpeed * Time.deltaTime);
     }
 
-    public void UpdateRotation(bool aim)
+    public void UpdateRotation(bool aim, float weight)
     {
         Quaternion targetRot;
         if (aim)
@@ -55,7 +55,7 @@ public class ItemAnimation : MonoBehaviour
         //     return;
         // }
 
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotateSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotateSpeed * Time.deltaTime * weight);
         transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, 0f);
     }
 

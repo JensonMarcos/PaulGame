@@ -1031,6 +1031,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1281046626585187932, guid: 21f96640630b26b469f0bc0a5006ba45, type: 3}
+      propertyPath: 'NetworkConfig.Prefabs.NetworkPrefabsLists.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: e9993e6032402394894e68b5b4e9172f, type: 2}
     - target: {fileID: 2653558536581187413, guid: 21f96640630b26b469f0bc0a5006ba45, type: 3}
       propertyPath: m_Name
       value: UTNetworkManager
@@ -1074,6 +1078,14 @@ PrefabInstance:
     - target: {fileID: 4095415877057477029, guid: 21f96640630b26b469f0bc0a5006ba45, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6446783557559271974, guid: 21f96640630b26b469f0bc0a5006ba45, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 6446783557559271974, guid: 21f96640630b26b469f0bc0a5006ba45, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -10.63
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1200,6 +1212,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerManager
       objectReference: {fileID: 0}
+    - target: {fileID: 1864236608495584481, guid: 920a7b0bf67050c4b95ab1f4ea2644e6, type: 3}
+      propertyPath: playerPrefab
+      value: 
+      objectReference: {fileID: 1669141654648350452, guid: 5135f4bdf8c1ecf4daa2970f4828c43d, type: 3}
     - target: {fileID: 3144214382952357096, guid: 920a7b0bf67050c4b95ab1f4ea2644e6, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1594517517

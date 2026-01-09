@@ -15,7 +15,7 @@ public struct PlayerState : INetworkSerializable
     public int InventoryIndex;
     public float Aiming;
     public bool ReadyPull;
-    public bool Reloading;
+    public float Reloading;
 
     [Header("Animation")]
     public bool Melee;
@@ -62,22 +62,24 @@ public class Player : NetworkBehaviour
         readPerm: NetworkVariableReadPermission.Everyone
     );
 
-    [SerializeField] PlayerState playerState;
-
-    [SerializeField] PlayerInputs inputs;
-
+    public PlayerInventory playerInventory;
     [SerializeField] PlayerCharacter playerCharacter;
     [SerializeField] PlayerCamera playerCamera;
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
-    public PlayerInventory playerInventory;
+    [SerializeField] PlayerUI playerUI;
 
-    public bool isDead;
+    [SerializeField] PlayerState playerState;
+    [SerializeField] PlayerInputs inputs;
+
+    bool isDead;
   
     void Start()
     {
         playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
         playerAnimations.Initialize();
+        playerUI.Initialize(IsOwner);
+        playerInventory.Initialize();
 
         if(!IsOwner)
         {
@@ -122,6 +124,8 @@ public class Player : NetworkBehaviour
         if(IsOwner && !isDead) {
             playerInventory.TryPickUp();
             playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
+            playerUI.UpdateUI(playerInventory.ClientInventory[i], playerState.Aiming > 0.5f);
+            playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
 
             UpdateState();
             NetworkPlayerState.Value = playerState;
@@ -139,7 +143,7 @@ public class Player : NetworkBehaviour
         inputs.Crouch = Input.GetKey(KeyCode.LeftControl);
         inputs.Sprint = Input.GetKey(KeyCode.LeftShift);
 
-        inputs.Attack = Input.GetKeyDown(KeyCode.Mouse0);
+        inputs.Attack = Input.GetKey(KeyCode.Mouse0);
         inputs.Aim = Input.GetKey(KeyCode.Mouse1);
         inputs.Reload = Input.GetKeyDown(KeyCode.R);
         inputs.Interact = Input.GetKeyDown(KeyCode.E);
@@ -158,7 +162,7 @@ public class Player : NetworkBehaviour
 
         playerInventory.SetInputs(inputs, playerState.Velocity);
         playerCharacter.SetInputs(inputs);
-        playerCombat.SetInputs(inputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
+        playerCombat.SetInputs(inputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull, playerInventory.ClientInventory[playerInventory.InvIndex].data.isAutomatic);   
     }
 
     void UpdateState()
@@ -166,14 +170,13 @@ public class Player : NetworkBehaviour
         CharacterState _characterState = playerCharacter.State;
         playerState.Grounded = _characterState.Grounded;
         playerState.Stance = _characterState.Stance;
-
         playerState.Velocity = _characterState.Velocity;
 
         playerState.InventoryIndex = playerInventory.InvIndex;
         playerState.Aiming = playerCombat.Aiming;
         if(playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee) playerState.Aiming = 0;
-
         playerState.ReadyPull = playerInventory.ReadyPull;
+        playerState.Reloading = playerCombat.Reloading;
 
         playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
     }

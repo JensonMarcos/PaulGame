@@ -1,9 +1,13 @@
+using System.Collections;
+using NUnit.Framework;
 using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour
 {
     public float Aiming;
+
+    public float Reloading;
 
     //[SerializeField] PlayerInventory inventory;
     [SerializeField] PlayerAnimations animations;
@@ -14,22 +18,61 @@ public class PlayerCombat : MonoBehaviour
 
     bool wishAttack;
     bool wishAim;
+    bool wishReload;
 
-    public void SetInputs(PlayerInputs _inputs, bool _sprinting, bool _readyPull)
+    float nextTimeToFire;
+    bool hasFiredSemi;
+
+    ItemClient prevItem;
+
+    public void SetInputs(PlayerInputs _inputs, bool _sprinting, bool _readyPull, bool _isAutomatic)
     {
-        wishAttack = _inputs.Attack;
-        wishAim = _inputs.Aim;
+        if(_inputs.Attack) { //semi auto and auto handling
+            if(_isAutomatic) {
+                wishAttack = true;
+            }
+            else {
+                if(!hasFiredSemi) {
+                    wishAttack = true;
+                    hasFiredSemi = true;
+                } else {
+                    wishAttack = false;
+                }
+            }
+        }
+        else {
+            wishAttack = false;
+            hasFiredSemi = false;
+        }
 
-        if (_sprinting || !_readyPull) {
+        wishAim = _inputs.Aim;
+        wishReload = _inputs.Reload;
+
+        if (_sprinting || !_readyPull || Reloading > 0) {
             wishAttack = false;
             wishAim = false;
+            wishReload = false;
         }
         
         Aiming = Mathf.Lerp(Aiming, wishAim ? 1 : 0, Time.deltaTime * aimSpeed);
+
     }
 
     public void UpdateCombat(PlayerState _state, ItemClient _item)
     {
+        if(prevItem != _item)
+        {
+            StopAllCoroutines();
+            Reloading = 0;
+        }
+        prevItem = _item;
+
+        if(wishReload && _item.Ammo < _item.data.ammoCap)
+        {
+            StartCoroutine(Reload(_item));
+            return;
+        }
+
         if(wishAttack)
         {
             Attack( _item);
@@ -52,12 +95,21 @@ public class PlayerCombat : MonoBehaviour
             // animations.Attack();
             // animations.AttackServerRpc();
         }
-        else if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
+        else if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper && nextTimeToFire <= Time.time)
         {
-            Vector3 _recoil = new Vector3(-_data.recoilX, _data.recoilY * (Random.value < 0.5f ? -1.0f : 1.0f), _data.recoilZ * (Random.value < 0.5f ? -1.0f : 1.0f));
-            float _backKick = -_data.backKick;
+            if(_item.Ammo <= 0) {
+                StartCoroutine(Reload(_item));
+                return;
+            }
+
+            _item.Ammo--;
+
+            Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
+            float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
             animations.Shoot(_recoil, _backKick);
             animations.ShootServerRpc(_recoil, _backKick);
+
+            nextTimeToFire = Time.time + 1f / _data.fireRate;
 
             if(_data.type is ItemType.Shotgun) {
                 for (int i = 0; i < _data.numberOfShots; i++)
@@ -74,7 +126,7 @@ public class PlayerCombat : MonoBehaviour
     {
         ItemData _data = _item.data;
 
-        float curretAccuracy = Mathf.Lerp(_data.accuracy, _data.ADSaccuracy, Aiming);
+        float curretAccuracy = Mathf.Lerp(_data.accuracy, _data.ADSAccuracy, Aiming);
         Vector3 accuracyOffset = new Vector3(Random.insideUnitSphere.x * curretAccuracy,  Random.insideUnitSphere.y * curretAccuracy, Random.insideUnitSphere.z * curretAccuracy);
 
 
@@ -102,5 +154,18 @@ public class PlayerCombat : MonoBehaviour
             targetPoint = hit.point;
         }
         GameFX.instance.LocalShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, 0);
+    }
+
+    IEnumerator Reload(ItemClient _item) {
+        float _reloadTime = _item.data.reloadSpeed;
+        Reloading = 0;
+        
+        while(Reloading < 1) {
+            Reloading += 1/_reloadTime * Time.deltaTime;
+            yield return null;
+        }
+
+        _item.Ammo = _item.data.ammoCap;
+        Reloading = 0;
     }
 }

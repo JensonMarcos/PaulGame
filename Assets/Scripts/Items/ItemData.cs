@@ -24,42 +24,42 @@ public class ItemData : ScriptableObject
     [Header("Basic Stats")]
     public float damage;
     public Vector3 position;
-    public float pullOutSpeed;
+    public float pullOutTime;
     [ShowIf("isGun")] public float fireRate, reloadSpeed;
     [ShowIf("isGun")] public int ammoCap;
-    [ShowIf("isGun")] public bool semiAuto;
+    [ShowIf("isGun")] public bool isAutomatic;
     [ShowIf("isGun")] public float range = 100f;
 
     [Header("Accuracy")]
     [ShowIf("isGun")] public float accuracy;
-    [ShowIf("isGun")] public float ADSaccuracy;
+    [ShowIf("isGun")] public float ADSAccuracy;
     [ShowIf("isGun")] public float SprintAccuracy;
 
     [Header("Recoil")]
-    [ShowIf("isGun")] public float recoilX;
-    [ShowIf("isGun")] public float recoilY;
-    [ShowIf("isGun")] public float recoilZ;
-    [ShowIf("isGun")] public float adsRecoilMult;
+    [ShowIf("isGun")] public Vector3 Recoil;
+    [ShowIf("isGun")] public float ADSRecoilMult;
     [ShowIf("isGun")] public float snap, returnSpeed;
 
     [Header("ADS")]
     [ShowIf("isGun")] public float adsSpeed;
     [ShowIf("isGun")] public float adsZoom;
-    [ShowIf("isGun")] public Vector3 adsOff;
+    //[ShowIf("isGun")] public Vector3 adsOff;
 
     [Header("Animation")] 
     [ShowIf("isGun")] public float backKick;
-    [ShowIf("isGun")] public float upKick;
-    [ShowIf("isGun")] public float randomKick;
-    [ShowIf("isGun")] public float animationReturn;
-    [ShowIf("isGun")] public float adsAnimMult;
+    // [ShowIf("isGun")] public float upKick;
+    // [ShowIf("isGun")] public float randomKick;
+    // [ShowIf("isGun")] public float animationReturn;
+    [ShowIf("isGun")] public float ADSAnimMult;
 
     [Header("ShotGun")] 
     [ShowIf("isShotgun")] public int numberOfShots;
 
     [Header("GunHUD")]
-    [ShowIf("isGun")] public Vector3 AmmoPos, ADSAmmoPos;
-    [ShowIf("isGun")] public Vector3 sightPos, WidTopBot;
+    [ShowIf("isGun")] public Vector3 AmmoPos;
+    [ShowIf("isGun")] public Vector3 sightPos;
+    [ShowIf("isGun")] public Vector3 ADSAmmoPos;
+    [ShowIf("isGun")] public Vector3 WidTopBot;
 
     [Header("Physics")]
     [ShowIf("isGun")] public float bulletForce;

@@ -36,6 +36,11 @@ public class HandsAnimation : MonoBehaviour
     Vector3 pullPos;
     float pulloutTime, pullAnimTime;
 
+    [Header("Reload Animation")]
+    [SerializeField] float displacementAmount;
+    [SerializeField] float rotationAmount;
+    [SerializeField] float cosPow;
+
     // public void Initialize()
     // {
     //     // RHand.startPos = RHand.hand.localPosition;
@@ -71,12 +76,13 @@ public class HandsAnimation : MonoBehaviour
 
     }
 
-    public void UpdateTransform(Transform target)//, float noZRot)
+    public void UpdateTransform(Transform target, float reloading)//, float noZRot)
     {
         HandlePull();
 
-        transform.position = target.position + pullPos;
-        transform.rotation = target.rotation * Quaternion.Euler(pullRot);
+        float _curve = Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), cosPow)-1;
+        transform.position = target.position + pullPos + Vector3.up * displacementAmount * _curve;
+        transform.rotation = target.rotation * Quaternion.Euler(pullRot.x + rotationAmount * _curve, pullRot.y, pullRot.z);
     }
 
     // public void ResetHands()

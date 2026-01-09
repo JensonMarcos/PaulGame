@@ -6,6 +6,7 @@ public interface IItemAction
     void OnRightClick();
 }
 
+[System.Serializable]
 public class ItemClient : MonoBehaviour
 {
     public ItemData data;
@@ -13,6 +14,8 @@ public class ItemClient : MonoBehaviour
     public Transform sight, muzzleTrans;
 
     public IItemAction action;
+
+    public int Ammo;
 
     void Start()
     {

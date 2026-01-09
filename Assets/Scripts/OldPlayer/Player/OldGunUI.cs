@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using Unity.Netcode;
 
-public class GunUI : NetworkBehaviour
+public class OldGunUI : NetworkBehaviour
 {
     [SerializeField] Shooting player;
     [SerializeField] float speed;

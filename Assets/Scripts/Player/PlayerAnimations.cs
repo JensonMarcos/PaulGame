@@ -62,7 +62,7 @@ public class PlayerAnimations : NetworkBehaviour
     {
         body.UpdateRigs(_state.Aiming);
 
-        hands.UpdateTransform(camTarget);
+        hands.UpdateTransform(camTarget, _state.Reloading);
         hands.UpdateRigs(_item.RHand, _item.LHand, _state.Stance == Stance.Sprint && _state.Melee);
 
         Vector3 aimPos = _item.data.position; //if no sight, just keep same position
@@ -75,28 +75,8 @@ public class PlayerAnimations : NetworkBehaviour
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee);
+        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
     }
-
-    #region Attack
-    // [ServerRpc(RequireOwnership = true)]
-    // public void AttackServerRpc()
-    // {
-    //     AttackClientRpc();
-    // }
-
-    // [ClientRpc]
-    // public void AttackClientRpc()
-    // {
-    //     if(IsOwner) return;
-    //     Attack();
-    // }
-    
-    // public void Attack()
-    // {
-    //     hands.Punch();
-    // }
-    #endregion
 
     #region Shoot
     [ServerRpc(RequireOwnership = true)]
@@ -119,27 +99,11 @@ public class PlayerAnimations : NetworkBehaviour
     }
     #endregion
 
-    #region Switch Item
-    // [ServerRpc(RequireOwnership = true)]
-    // public void SwitchItemServerRpc(float _pullOutTime)
-    // {
-    //     SwitchItemClientRpc(_pullOutTime);
-    // }
-
-    // [ClientRpc]
-    // public void SwitchItemClientRpc(float _pullOutTime)
-    // {
-    //     if(IsOwner) return;
-    //     SwitchItemAnimation(_pullOutTime);
-    // }
-
     public void SwitchItemAnimation(float _pullOutTime)
     {
         //hands.ResetHands();
         hands.Pullout(_pullOutTime);
     }
-
-    #endregion Switch Item
 
     public void SetAnimationActive(bool _active)
     {

@@ -35,7 +35,15 @@ public class PlayerInventory : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         NetworkIDInventory.OnListChanged += OnIDListChanged;
+    }
 
+    public override void OnNetworkDespawn()
+    {
+        NetworkIDInventory.OnListChanged -= OnIDListChanged;
+    }
+
+    public void Initialize()
+    {
         if (IsOwner) {
             for (int i = 0; i < Inventory.Length; i++)
             {
@@ -44,11 +52,6 @@ public class PlayerInventory : NetworkBehaviour
         }
 
         SyncClientInventory();
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        NetworkIDInventory.OnListChanged -= OnIDListChanged;
     }
 
 
@@ -79,7 +82,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             ReadyPull = false;
 
-            float _pullOutTime = ClientInventory[InvIndex].data.pullOutSpeed;
+            float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
 
             StopCoroutine("WaitToReadyPull");
             StartCoroutine(WaitToReadyPull(_pullOutTime));
@@ -119,7 +122,7 @@ public class PlayerInventory : NetworkBehaviour
             if(Inventory[InvIndex] == handsItem || slot == InvIndex) { //equip item if hands out or if pickup in selected index
                 InvIndex = slot;
 
-                float _pullOutTime = ClientInventory[InvIndex].data.pullOutSpeed;
+                float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
 
                 StopCoroutine("WaitToReadyPull");
                 StartCoroutine(WaitToReadyPull(_pullOutTime));
@@ -134,7 +137,7 @@ public class PlayerInventory : NetworkBehaviour
 
     void Drop(int i)
     {
-        Inventory[i].GetComponent<Item>().ItemDropServerRpc(transform.position, transform.rotation, velocity + cam.forward * throwForce);
+        Inventory[i].GetComponent<Item>().ItemDropServerRpc(transform.position, transform.rotation, velocity + cam.forward * throwForce, ClientInventory[i].Ammo);
         Inventory[i] = handsItem;
         NetworkIDInventory[i] = 0UL;
         SyncClientInventory();
@@ -220,6 +223,8 @@ public class PlayerInventory : NetworkBehaviour
                 clientItem.transform.localPosition = Vector3.zero;
                 clientItem.transform.localEulerAngles = Vector3.zero;
                 ClientInventory[i] = clientItem.GetComponent<ItemClient>();
+
+                ClientInventory[i].Ammo = Inventory[i].GetComponent<Item>().Ammo.Value;
             } else
             {
                 if(ClientInventory[i].gameObject == handsItem) continue;
