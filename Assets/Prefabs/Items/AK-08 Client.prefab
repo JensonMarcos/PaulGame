@@ -2815,6 +2815,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 21d4bc24014f1d849baa19dd9553ecf5, type: 2}
+  model: {fileID: 3198172302405372038}
   LHand: {fileID: 5996288392134526744}
   RHand: {fileID: 4736790039183502511}
   sight: {fileID: 1905612258000441041}

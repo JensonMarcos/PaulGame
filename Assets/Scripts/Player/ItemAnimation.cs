@@ -14,7 +14,7 @@ public class ItemAnimation : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] Transform cam;
     [SerializeField] LayerMask groundMask;
-    [SerializeField] float rotateSpeed;
+    [SerializeField] float rotateSpeed, aimSpeedMult;
 
 
     public void UpdatePosition(Vector3 target)
@@ -33,7 +33,7 @@ public class ItemAnimation : MonoBehaviour
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetOffset, moveSpeed * Time.deltaTime);
     }
 
-    public void UpdateRotation(bool aim, float weight)
+    public void UpdateRotation(bool aim, float aimingValue, float weight)
     {
         Quaternion targetRot;
         if (aim)
@@ -54,8 +54,7 @@ public class ItemAnimation : MonoBehaviour
         //     transform.rotation = targetRot;
         //     return;
         // }
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotateSpeed * Time.deltaTime * weight);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotateSpeed * weight * (aimingValue * aimSpeedMult + 1) * Time.deltaTime);
         transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, 0f);
     }
 

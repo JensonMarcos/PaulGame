@@ -75,8 +75,23 @@ public class PlayerAnimations : NetworkBehaviour
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
     }
+
+    // public void UpdateItem(PlayerState _state, ItemClient _item, Transform camTarget)
+    // {
+    //     Vector3 aimPos = _item.data.position; //if no sight, just keep same position
+    //     if(_item.sight != null)
+    //     {
+    //         aimPos = camTarget.transform.position - _item.sight.position; ;
+
+    //         aimPos = item.transform.parent.InverseTransformVector(aimPos);
+    //         aimPos = item.transform.localPosition + aimPos;
+    //     }
+
+    //     item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
+    //     item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+    // }
 
     #region Shoot
     [ServerRpc(RequireOwnership = true)]

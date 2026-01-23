@@ -58,9 +58,18 @@ public class Item : NetworkBehaviour
         //     }
         // } else
         // {
-            outline.enabled = hovered;
-            if(hovered) hovered = false;
+            // outline.enabled = hovered;
+            // if(hovered) hovered = false;
         //}
+    }
+
+    public void SetHovered(bool value)
+    {
+        if (hovered == value) return;
+
+        hovered = value;
+
+        outline.enabled = hovered;
     }
 
     [ServerRpc(RequireOwnership = false)]

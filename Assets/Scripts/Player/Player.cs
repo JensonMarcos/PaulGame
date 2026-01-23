@@ -124,12 +124,14 @@ public class Player : NetworkBehaviour
         if(IsOwner && !isDead) {
             playerInventory.TryPickUp();
             playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-            playerUI.UpdateUI(playerInventory.ClientInventory[i], playerState.Aiming > 0.5f);
+            playerUI.UpdateUI(playerInventory.ClientInventory[i], playerState.Aiming);
             playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
 
             UpdateState();
             NetworkPlayerState.Value = playerState;
         }
+
+        //if(!isDead) playerAnimations.UpdateItem(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
     }
 
     void HandleInputs()

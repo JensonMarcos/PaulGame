@@ -848,8 +848,8 @@ MonoBehaviour:
   HandIKWeight: 1
   HandParent: {fileID: 2084209997749870633}
   weightChangeSpeed: 10
-  pulloutPosOffset: {x: 0, y: -0.5, z: 0}
-  pulloutRotOffset: {x: 80, y: 0, z: 0}
+  pulloutPosOffset: {x: 0, y: -0.6, z: 0}
+  pulloutRotOffset: {x: 50, y: 0, z: 0}
   displacementAmount: 0.2
   rotationAmount: -30
   cosPow: 10
@@ -1703,6 +1703,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 7502773514693170611}
   gunUI: {fileID: 765920435274353078}
+  crosshair: {fileID: 3983993665659106132}
+  scope: {fileID: 6918950720797383909}
+  scopeThreshold: 0.99
 --- !u!1 &2080416065396797856
 GameObject:
   m_ObjectHideFlags: 0
@@ -1974,6 +1977,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   rotateSpeed: 15
+  aimSpeedMult: 5
 --- !u!114 &8977595956255095959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2000,12 +2004,20 @@ MonoBehaviour:
   Reloading: 0
   handsItem: {fileID: 3667026374664616224}
   animations: {fileID: 8215228522949132519}
-  grabDistance: 5
-  grabWidth: 1
-  itemMask:
+  cam: {fileID: 8418498531701191655}
+  pickupDistance: 5
+  pickupMask:
+    serializedVersion: 2
+    m_Bits: 3201
+  itemLayer:
     serializedVersion: 2
     m_Bits: 128
-  cam: {fileID: 8418498531701191655}
+  pickupColliderLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  worldMask:
+    serializedVersion: 2
+    m_Bits: 1025
   throwForce: 10
 --- !u!1 &2272965483068478813
 GameObject:
@@ -3047,6 +3059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 87165a82d362c5a4a85c2a34de3e95b1, type: 2}
+  model: {fileID: 0}
   LHand: {fileID: 8960439865454848169}
   RHand: {fileID: 2087391735233662819}
   sight: {fileID: 0}
@@ -5186,6 +5199,81 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &6918950720797383909
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6884195972731438496}
+  - component: {fileID: 1616869619960613061}
+  - component: {fileID: 4781449197294844760}
+  m_Layer: 5
+  m_Name: Scope
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &6884195972731438496
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6918950720797383909}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.6700001, y: 1.6700001, z: 1.6700001}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 8457253577982318362}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1616869619960613061
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6918950720797383909}
+  m_CullTransparentMesh: 1
+--- !u!114 &4781449197294844760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6918950720797383909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: c2453b436e460cd41ba6e1d3084f45e7, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &6986955361861433852
 GameObject:
   m_ObjectHideFlags: 0
@@ -5408,6 +5496,7 @@ MonoBehaviour:
   realRotation: {x: 0, y: 0, z: 0}
   cam: {fileID: 9069016301961120874}
   defaultFov: 77.5
+  FovChangeSpeed: 20
   targetRot: {x: 0, y: 0, z: 0}
   offsetRot: {x: 0, y: 0, z: 0}
 --- !u!114 &5462980471730414848
@@ -5594,6 +5683,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5298775788735229150}
+  - {fileID: 6884195972731438496}
   m_Father: {fileID: 626301126728090735}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -5807,7 +5897,7 @@ GameObject:
   - component: {fileID: 3742584041876833735}
   m_Layer: 6
   m_Name: mixamorig:Head
-  m_TagString: Untagged
+  m_TagString: Head
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -5,7 +5,8 @@ public class PlayerCamera : MonoBehaviour
     public float sensitivity = 1f;
     public Vector3 realRotation;
     [SerializeField] Camera cam;
-    [SerializeField] float defaultFov;
+    [SerializeField] float defaultFov, FovChangeSpeed;
+    float targetFov, FovSensitivity;
 
     [Header("Camera Animations")]
     public Vector3 targetRot;
@@ -29,8 +30,10 @@ public class PlayerCamera : MonoBehaviour
 
     public void UpdateRotation(ItemData _data)
     {
-        float xMovement = Input.GetAxisRaw("Mouse X") * sensitivity;// * ADSsensitivity;
-        float yMovement = -Input.GetAxisRaw("Mouse Y") * sensitivity;// * ADSsensitivity;
+        FovSensitivity = cam.fieldOfView / defaultFov;
+
+        float xMovement = Input.GetAxisRaw("Mouse X") * sensitivity * FovSensitivity;
+        float yMovement = -Input.GetAxisRaw("Mouse Y") * sensitivity * FovSensitivity;
 
         // Calculate rotation from input
         realRotation = new Vector3(Mathf.Clamp(realRotation.x + yMovement, -89.9f, 89.9f), realRotation.y + xMovement, 0);
@@ -57,6 +60,7 @@ public class PlayerCamera : MonoBehaviour
 
     public void UpdateCam(float _targetFov, float _weight)
     {
-        cam.fieldOfView = Mathf.Lerp(defaultFov, _targetFov, _weight);
+        targetFov = Mathf.Lerp(defaultFov, _targetFov, _weight);
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFov, FovChangeSpeed * Time.deltaTime);
     }
 }

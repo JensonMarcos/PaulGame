@@ -10,6 +10,7 @@ public interface IItemAction
 public class ItemClient : MonoBehaviour
 {
     public ItemData data;
+    public GameObject model;
     public Transform LHand, RHand;
     public Transform sight, muzzleTrans;
 

@@ -10,33 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40174c96e64b8f44ea9689f296ddfee7, type: 3}
-  m_Name: Hands
+  m_Name: Intervention
   m_EditorClassIdentifier: 
-  type: 3
-  slot: 2
-  damage: 5
-  position: {x: 0, y: 0, z: 0}
-  pullOutTime: 0.3
-  fireRate: 0
-  reloadSpeed: 0
-  ammoCap: 0
-  isAutomatic: 0
+  type: 1
+  slot: 0
+  damage: 50
+  position: {x: 0.1, y: -0.25, z: 0.2}
+  pullOutTime: 0.8
+  fireRate: 1
+  reloadSpeed: 3
+  ammoCap: 7
+  isAutomatic: 1
   range: 100
-  accuracy: 0
+  accuracy: 0.069
   ADSAccuracy: 0
-  SprintAccuracy: 0
-  Recoil: {x: 0, y: 0, z: 0}
-  ADSRecoilMult: 0
-  snap: 0
-  returnSpeed: 0
-  adsSpeed: 0
-  adsZoom: 0
-  backKick: 0
-  ADSAnimMult: 0
+  SprintAccuracy: 0.2
+  Recoil: {x: 18, y: 1, z: 1}
+  ADSRecoilMult: 1
+  snap: 10
+  returnSpeed: 3.5
+  adsSpeed: 1
+  adsZoom: 40
+  backKick: 0.2
+  ADSAnimMult: 1
   numberOfShots: 0
-  AmmoPos: {x: 0, y: 0, z: 0}
+  AmmoPos: {x: -0.082, y: 0.04, z: 0.2}
   sightPos: {x: 0, y: 0, z: 0}
-  ADSAmmoPos: {x: 0, y: 0, z: 0}
+  ADSAmmoPos: {x: -0.082, y: 0.04, z: 0.2}
   WidTopBot: {x: 0, y: 0, z: 0}
   bulletForce: 0
   backwardVelocity: 0

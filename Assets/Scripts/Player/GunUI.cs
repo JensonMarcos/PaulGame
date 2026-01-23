@@ -18,7 +18,7 @@ public class GunUI : MonoBehaviour
         }
     }
 
-    public void UpdateUI(ItemClient _item, bool aiming) {
+    public void UpdateUI(ItemClient _item, bool aiming, bool scoped) {
         ItemData _data = _item.data;
 
         if(_data.type is ItemType.Melee) {
@@ -37,8 +37,7 @@ public class GunUI : MonoBehaviour
         if(sight.transform.localPosition != _data.sightPos) sight.transform.localPosition = _data.sightPos; //set sight pos
 
         sight.SetActive(aiming);
-        // if(!activeItem.data.sniper) Sight.SetActive(player.isScoping); //sniper logic change later <---------------------------------------
-        // else if(activeItem.data.sniper) Sight.SetActive(false);  //show sight when ADS
+        ammo.SetActive(!scoped);
         
         width.sizeDelta = new Vector2(_data.WidTopBot.x , width.sizeDelta.y);
         top.sizeDelta = new Vector2(top.sizeDelta.x, _data.WidTopBot.y);

@@ -21,11 +21,15 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] PlayerAnimations animations;
 
     [Header("Item Pickup")]
-    [SerializeField] float grabDistance;
-    [SerializeField] float grabWidth;
-    [SerializeField] LayerMask itemMask;
     [SerializeField] Transform cam;
+    [SerializeField] float pickupDistance;
+    //[SerializeField] float grabWidth;
+    [SerializeField] LayerMask pickupMask;
+    [SerializeField] LayerMask itemLayer;
+    [SerializeField] LayerMask pickupColliderLayer;
+    [SerializeField] LayerMask worldMask;
     [SerializeField] float throwForce;
+    Item currentHovered;
 
     bool wishPickUp;
     bool wishDrop;
@@ -87,8 +91,8 @@ public class PlayerInventory : NetworkBehaviour
             StopCoroutine("WaitToReadyPull");
             StartCoroutine(WaitToReadyPull(_pullOutTime));
 
-            Select(InvIndex, _pullOutTime);
-            SelectServerRpc(InvIndex, _pullOutTime);
+            Select(InvIndex, _pullOutTime, true);
+            SelectServerRpc(InvIndex, _pullOutTime, true);
         } 
 
 
@@ -99,40 +103,92 @@ public class PlayerInventory : NetworkBehaviour
     }
 
     public void TryPickUp() {
-        if(Physics.SphereCast(cam.position, grabWidth, cam.forward, out RaycastHit hit, grabDistance, itemMask.value)) {
-            if(Physics.Raycast(cam.position, cam.forward, out RaycastHit hit2, grabDistance, itemMask.value)) {
-                hit = hit2; //when 2 items, chose one at crosshair rather than closest, change later
-            }
+        Item selectedItem = GetTarget();
 
-            if(!wishPickUp) { //hovering code, kinda inefficient
-                hit.transform.GetComponent<Item>().hovered = true;
-                return;
-            } 
+        if(selectedItem != currentHovered)
+        {
+            if(currentHovered != null) currentHovered.SetHovered(false);
 
-            GameObject selectedItem = hit.transform.gameObject;
-            int slot = selectedItem.GetComponent<Item>().data.slot;
+            currentHovered = selectedItem;
 
-            if(Inventory[slot] != handsItem) Drop(slot);
-
-            selectedItem.GetComponent<Item>().ItemPickupServerRpc(transform.root.GetComponent<NetworkObject>());
-
-            Inventory[slot] = selectedItem;
-            NetworkIDInventory[slot] = selectedItem.GetComponent<NetworkObject>().NetworkObjectId;
-
-            if(Inventory[InvIndex] == handsItem || slot == InvIndex) { //equip item if hands out or if pickup in selected index
-                InvIndex = slot;
-
-                float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
-
-                StopCoroutine("WaitToReadyPull");
-                StartCoroutine(WaitToReadyPull(_pullOutTime));
-
-                Select(InvIndex, _pullOutTime);
-                SelectServerRpc(InvIndex, _pullOutTime);
-            }
-
-            SyncClientInventory();
+            if(currentHovered != null) currentHovered.SetHovered(true);
         }
+
+        if(selectedItem == null) return;
+
+        if(!wishPickUp) return;
+
+        int slot = selectedItem.data.slot;
+
+        if(Inventory[slot] != handsItem) Drop(slot);
+
+        selectedItem.GetComponent<Item>().ItemPickupServerRpc(transform.root.GetComponent<NetworkObject>());
+
+        Inventory[slot] = selectedItem.gameObject;
+        NetworkIDInventory[slot] = selectedItem.GetComponent<NetworkObject>().NetworkObjectId;
+
+        float _pullOutTime;
+        bool _animate = false;
+        if(Inventory[InvIndex] == handsItem || slot == InvIndex) { //equip item if hands out or if pickup in selected index
+            InvIndex = slot;
+
+            ReadyPull = false;
+            
+            _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            StopCoroutine("WaitToReadyPull");
+            StartCoroutine(WaitToReadyPull(_pullOutTime));
+
+            _animate = true;
+        }
+
+        SyncClientInventory();
+
+        _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+        Select(InvIndex, _pullOutTime, _animate);
+        SelectServerRpc(InvIndex, _pullOutTime, _animate);
+
+    }
+
+    Item GetTarget()
+    {
+        RaycastHit[] hits = Physics.RaycastAll(cam.position, cam.forward, pickupDistance, pickupMask, QueryTriggerInteraction.Collide);
+
+        Item closestInner = null;
+        float innerDistance = Mathf.Infinity;
+
+        Item closestOuter = null;
+        float outerDistance = Mathf.Infinity;
+
+        foreach(RaycastHit hit in hits)
+        {
+            Item _item = hit.transform.root.GetComponent<Item>();
+            
+            if(_item == null) continue;
+
+            int layer = hit.collider.gameObject.layer;
+
+            if((1 << layer & itemLayer) != 0) //item layer
+            {
+                if(hit.distance < innerDistance)
+                {
+                    innerDistance = hit.distance;
+                    closestInner = _item;
+                }
+            } else if((1 << layer & pickupColliderLayer) != 0) //pickup collider layer
+            {
+                //LOS check
+                Vector3 dir = _item.transform.position - cam.transform.position;
+                if(Physics.Raycast(cam.position, dir.normalized, dir.magnitude, worldMask)) continue;
+
+                if(hit.distance < outerDistance)
+                {
+                    outerDistance = hit.distance;
+                    closestOuter = _item;
+                }
+            }
+        }
+
+        return closestInner != null ? closestInner : closestOuter;
     }
 
     void Drop(int i)
@@ -155,19 +211,19 @@ public class PlayerInventory : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = true)]
-    public void SelectServerRpc(int _index, float _pullOutTime)
+    public void SelectServerRpc(int _index, float _pullOutTime, bool animate)
     {
-        SelectClientRpc(_index, _pullOutTime);
+        SelectClientRpc(_index, _pullOutTime, animate);
     }
 
     [ClientRpc]
-    public void SelectClientRpc(int _index, float _pullOutTime)
+    public void SelectClientRpc(int _index, float _pullOutTime, bool animate)
     {
         if(IsOwner) return;
-        Select(_index, _pullOutTime);
+        Select(_index, _pullOutTime, animate);
     }    
     
-    public void Select(int _index, float _pullOutTime)
+    public void Select(int _index, float _pullOutTime, bool animate)
     {
         for (int i = 0; i < Inventory.Length; i++)
         {
@@ -177,7 +233,7 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
         
-        animations.SwitchItemAnimation(_pullOutTime*1.5f);
+        if(animate) animations.SwitchItemAnimation(_pullOutTime*2f);
     }
 
     IEnumerator WaitToReadyPull(float _pullOutTime) {
@@ -212,7 +268,6 @@ public class PlayerInventory : NetworkBehaviour
         {
             if(ClientInventory[i] == null) ClientInventory[i] = handsItem.GetComponent<ItemClient>();
 
-
             if(Inventory[i] != handsItem)
             {
                 if(ClientInventory[i].data == Inventory[i].GetComponent<Item>().data) continue;
@@ -220,6 +275,7 @@ public class PlayerInventory : NetworkBehaviour
                 if(ClientInventory[i].gameObject != handsItem) Destroy(ClientInventory[i].gameObject);
 
                 GameObject clientItem = Instantiate(Inventory[i].GetComponent<Item>().clientPrefab, transform);
+
                 clientItem.transform.localPosition = Vector3.zero;
                 clientItem.transform.localEulerAngles = Vector3.zero;
                 ClientInventory[i] = clientItem.GetComponent<ItemClient>();

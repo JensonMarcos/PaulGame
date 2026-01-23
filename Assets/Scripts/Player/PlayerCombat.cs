@@ -46,22 +46,24 @@ public class PlayerCombat : MonoBehaviour
         }
 
         wishAim = _inputs.Aim;
-        wishReload = _inputs.Reload;
-
         if (_sprinting || !_readyPull || Reloading > 0) {
             wishAttack = false;
             wishAim = false;
-            wishReload = false;
         }
-        
-        Aiming = Mathf.Lerp(Aiming, wishAim ? 1 : 0, Time.deltaTime * aimSpeed);
 
+        wishReload = _inputs.Reload;         
+        if(!_readyPull || Reloading > 0) wishReload = false;
     }
 
     public void UpdateCombat(PlayerState _state, ItemClient _item)
     {
+        if(_item.data.type is ItemType.Sniper && nextTimeToFire > Time.time) wishAim = false; 
+
+        Aiming = Mathf.Lerp(Aiming, wishAim ? 1 : 0, Time.deltaTime * aimSpeed);
+
         if(prevItem != _item)
         {
+            Aiming = 0;
             StopAllCoroutines();
             Reloading = 0;
         }
@@ -104,11 +106,6 @@ public class PlayerCombat : MonoBehaviour
 
             _item.Ammo--;
 
-            Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
-            float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
-            animations.Shoot(_recoil, _backKick);
-            animations.ShootServerRpc(_recoil, _backKick);
-
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
             if(_data.type is ItemType.Shotgun) {
@@ -119,6 +116,11 @@ public class PlayerCombat : MonoBehaviour
             } else {
                 Shoot(_item);
             }
+
+            Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
+            float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
+            animations.Shoot(_recoil, _backKick);
+            animations.ShootServerRpc(_recoil, _backKick);
         }
     }
     
