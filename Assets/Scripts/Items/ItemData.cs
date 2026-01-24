@@ -25,11 +25,14 @@ public class ItemData : ScriptableObject
     public float damage;
     public Vector3 position;
     public float pullOutTime;
-    [ShowIf("isGun")] public float fireRate, reloadSpeed;
+    public float fireRate;
+    [ShowIf("isMelee")] public float attackDelay;
+    [ShowIf("isGun")] public float reloadSpeed;
     [ShowIf("isGun")] public int ammoCap;
-    [ShowIf("isGun")] public bool isAutomatic;
-    [ShowIf("isGun")] public float range = 100f;
-
+    public bool isAutomatic;
+    public float range;
+    public float shootRadius;
+    
     [Header("Accuracy")]
     [ShowIf("isGun")] public float accuracy;
     [ShowIf("isGun")] public float ADSAccuracy;
@@ -62,7 +65,8 @@ public class ItemData : ScriptableObject
     [ShowIf("isGun")] public Vector3 WidTopBot;
 
     [Header("Physics")]
-    [ShowIf("isGun")] public float bulletForce;
+    public float impactForceObject;
+    public float impactForcePlayer;
     [ShowIf("isGun")] public float backwardVelocity;
 
     public ItemData Clone()

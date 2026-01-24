@@ -119,7 +119,7 @@ public class Shooting : NetworkBehaviour
             {
                 float _damage = hit.transform.tag == "Head" ? item.data.damage * 2 : item.data.damage;
 
-                playerManager.DealDamageServerRpc(hit.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage);
+                playerManager.DealDamageServerRpc(hit.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, Vector3.zero);
                 
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);

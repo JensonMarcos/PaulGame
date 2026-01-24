@@ -143,7 +143,7 @@ public class GameManager : NetworkBehaviour
                         PlayerManager.instance.Players[i].score = 0;
                         if (!currentRoom.playersInRoom.Contains(PlayerManager.instance.Players[i].playerGameObject))
                         {
-                            PlayerManager.instance.DealDamageServerRpc(PlayerManager.instance.Players[i].ClientId, 1234f);
+                            PlayerManager.instance.DealDamageServerRpc(PlayerManager.instance.Players[i].ClientId, 1234f, Vector3.zero);
                             //PlayerManager.instance.allplayers[i].playerGameObject.transform.position = currentRoom.objectivePoint.position;
                         }
                     }

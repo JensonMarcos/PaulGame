@@ -407,5 +407,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
             : playerLayerMask;
     }
 
-
+    public void AddForce(Vector3 force)
+    {
+        Motor.BaseVelocity += force;
+    }
 }

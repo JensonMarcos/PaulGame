@@ -209,4 +209,9 @@ public class Player : NetworkBehaviour
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("PlayerHitbox");
         playerCharacter.SetSpectator(false);
     }
+
+    [ClientRpc]
+    public void RecieveForceClientRpc(Vector3 force) {
+        playerCharacter.AddForce(force);
+    }
 }

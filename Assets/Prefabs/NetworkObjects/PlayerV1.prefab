@@ -1671,6 +1671,7 @@ MonoBehaviour:
   shootLayer:
     serializedVersion: 2
     m_Bits: 2039
+  upForceMult: 0.5
 --- !u!114 &8215228522949132519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3089,10 +3090,11 @@ MonoBehaviour:
   handParent: {fileID: 1707472341572310751}
   punchTarget: {fileID: 2710600104649862563}
   body: {fileID: 2292759806596770658}
-  punchSpeed: 4
+  punchSpeed: 6
+  retractSpeed: 4
   punchHoldTime: 0
   tiltAmount: 20
-  readyPunch: 0
+  rotWeight: 0.85
   handedness: 0
 --- !u!1 &3749683256609901313
 GameObject:
@@ -3233,7 +3235,7 @@ MonoBehaviour:
   MaxStableDenivelationAngle: 180
   InteractiveRigidbodyHandling: 1
   RigidbodyInteractionType: 0
-  SimulatedCharacterMass: 1
+  SimulatedCharacterMass: 60
   PreserveAttachedRigidbodyMomentum: 1
   HasPlanarConstraint: 0
   PlanarConstraintAxis: {x: 0, y: 0, z: 1}
@@ -3250,7 +3252,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3749683256609901313}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 60
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

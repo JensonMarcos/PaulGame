@@ -19,11 +19,11 @@ public class HandsPunch : NetworkBehaviour, IItemAction
 
     [SerializeField] BodyAnimation body;
 
-    [SerializeField] float punchSpeed;
+    [SerializeField] float punchSpeed, retractSpeed;
     [SerializeField] float punchHoldTime;
     [SerializeField] float tiltAmount;
+    [SerializeField] float rotWeight;
 
-    [SerializeField] bool readyPunch;
     [SerializeField] bool handedness;
 
     void Start()
@@ -32,15 +32,11 @@ public class HandsPunch : NetworkBehaviour, IItemAction
         RHand.startRot = RHand.transform.localRotation;
         LHand.startPos = LHand.transform.localPosition;
         LHand.startRot = LHand.transform.localRotation;
-
-        readyPunch = true;
     }
 
     public void OnLeftClick()
     {
-        if(!readyPunch) return;
-
-        StopCoroutine("PunchAnimation");
+        //StopCoroutine("PunchAnimation");
 
         //ResetHands();
 
@@ -72,8 +68,6 @@ public class HandsPunch : NetworkBehaviour, IItemAction
 
     IEnumerator PunchAnimation(HandData hand, float tiltMult)
     {
-        readyPunch = false;
-
         Vector3 punchPos;
         Quaternion punchRot;
 
@@ -81,6 +75,7 @@ public class HandsPunch : NetworkBehaviour, IItemAction
         var x = 0f;
         while (x < 1)
         {
+            yield return new WaitForEndOfFrame();
             x += punchSpeed * Time.deltaTime;
             //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
             t = 2.70158f * x * x * x - 1.70158f * x * x;
@@ -89,34 +84,29 @@ public class HandsPunch : NetworkBehaviour, IItemAction
             punchRot = Quaternion.Inverse(handParent.rotation) * punchTarget.rotation;
 
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, punchPos, t);
-            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x);
+            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x * rotWeight);
 
             body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
-            yield return null;
         }
 
+
         yield return new WaitForSeconds(punchHoldTime);
-
-        // punchPos = HandParent.InverseTransformPoint(rig.IK.transform.position);
-        // punchRot = Quaternion.Inverse(HandParent.rotation) * rig.IK.transform.rotation;
-
-        readyPunch = true;
 
         t = 1f;
         x = 1f;
         while (x > 0)
         {
-            x -= punchSpeed * Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+            x -= retractSpeed * Time.deltaTime;
             t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
 
             punchPos = handParent.InverseTransformPoint(punchTarget.position);
             punchRot = Quaternion.Inverse(handParent.rotation) * punchTarget.rotation;
 
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, punchPos, t);
-            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x);
+            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x * rotWeight);
 
             body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
-            yield return null;
         }
 
         hand.transform.localPosition = hand.startPos;

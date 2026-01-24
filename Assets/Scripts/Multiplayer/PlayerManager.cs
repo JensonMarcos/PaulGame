@@ -59,11 +59,14 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void DealDamageServerRpc(ulong targetid, float damage, ServerRpcParams serverRpcParams = default) {
+    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, ServerRpcParams serverRpcParams = default) {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
         int itarget = Players.FindIndex(x => x.ClientId == targetid);
         int isender = Players.FindIndex(x => x.ClientId == senderId);
         Players[itarget].health -= damage;
+        if(force != Vector3.zero) {
+            Players[itarget].playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
+        }
 
         if(Players[itarget].health <= 0 && !Players[itarget].isDead) {
             Players[itarget].isDead = true;
