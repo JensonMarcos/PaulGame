@@ -1578,7 +1578,7 @@ Transform:
   m_GameObject: {fileID: 2069876906178530849}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5.090876}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1665,6 +1665,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Aiming: 0
   Reloading: 0
+  character: {fileID: 3154624319263331040}
   animations: {fileID: 8215228522949132519}
   cam: {fileID: 8418498531701191655}
   aimSpeed: 20
@@ -1976,7 +1977,7 @@ MonoBehaviour:
   cam: {fileID: 8418498531701191655}
   groundMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 1025
   rotateSpeed: 15
   aimSpeedMult: 5
 --- !u!114 &8977595956255095959

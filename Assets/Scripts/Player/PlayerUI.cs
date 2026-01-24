@@ -18,8 +18,9 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
-    public void UpdateUI(ItemClient _item, float aiming)
+    public void UpdateUI(PlayerState _state, ItemClient _item)
     {
+        float aiming = _state.Aiming;
         bool scoped = false;
 
         if(_item.data.type is ItemType.Sniper)
@@ -36,6 +37,6 @@ public class PlayerUI : MonoBehaviour
             if(_item.model != null) _item.model.SetActive(true);
         } 
 
-        gunUI.UpdateUI(_item, aiming > 0.5f, scoped);
+        gunUI.UpdateUI(_item, aiming > 0.5f, scoped, _state.Reloading);
     }
 }

@@ -49,6 +49,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public CharacterState State;
     CharacterState lastState, tempState;
+    bool spectator;
 
     [SerializeField] LayerMask playerLayerMask, spectatorLayerMask;
 
@@ -89,10 +90,11 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float slideFriction;
     [SerializeField] float slideAcceleration;
 
-    private void Awake()
+    public void Initialize()
     {
         // Assign the characterController to the motor
         Motor.CharacterController = this;
+        Motor.SetCapsuleDimensions(Motor.Capsule.radius, standHeight, standHeight * 0.5f);
         State.Stance = Stance.Stand;
         lastState = State;
 
@@ -122,6 +124,12 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
         wishSprint = inputs.Sprint;
         if (wishCrouch || !State.Grounded || State.Velocity.sqrMagnitude < 0.01) wishSprint = false;
+
+        if(spectator)
+        {
+            wishCrouch = false;
+            wishSprint = false;
+        }
     }
 
     /// <summary>
@@ -329,16 +337,6 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public void PostGroundingUpdate(float deltaTime)
     {
         if (!Motor.GroundingStatus.IsStableOnGround && State.Stance is Stance.Slide) State.Stance = Stance.Crouch;
-
-        // // Handle landing and leaving ground
-        // if (Motor.GroundingStatus.IsStableOnGround && !Motor.LastGroundingStatus.IsStableOnGround)
-        // {
-        //     OnLanded();
-        // }
-        // else if (!Motor.GroundingStatus.IsStableOnGround && Motor.LastGroundingStatus.IsStableOnGround)
-        // {
-        //     OnLeaveStableGround();
-        // }
     }
 
     public bool IsColliderValidForCollisions(Collider coll)
@@ -368,43 +366,10 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         if (killVelocity) Motor.BaseVelocity = Vector3.zero;
     }
 
-
-    Vector3 Accelerate(Vector3 wishDir, float wishSpeed, float acceleration, Vector3 velocity)
+    public void SetSpectator(bool _spectator)
     {
-
-        float _addSpeed;
-        float _currentSpeed;
-        Vector3 _newVel;
-
-        // the sauce
-        _currentSpeed = Vector3.Dot(velocity, wishDir);
-        _addSpeed = Mathf.Clamp(wishSpeed - _currentSpeed, 0, acceleration * wishSpeed * Time.fixedDeltaTime);
-
-        _newVel = wishDir * _addSpeed;
-
-        return _newVel;
-    }
-
-    float Friction(Vector3 velocity, float friction, float acceleration)
-    {
-        float _speed = velocity.magnitude;
-        float _control;
-        float _newSpeed;
-
-        _control = _speed < acceleration ? acceleration : _speed;
-        _newSpeed = _speed - _control * friction * Time.fixedDeltaTime;
-
-        if (_newSpeed < 0) _newSpeed = 0;
-        _newSpeed /= _speed;
-
-        return _newSpeed;
-    }
-
-    public void SetSpectator(bool spectator)
-    {
-        Motor.CollidableLayers = spectator
-            ? spectatorLayerMask
-            : playerLayerMask;
+        spectator = _spectator;
+        Motor.CollidableLayers = _spectator ? spectatorLayerMask : playerLayerMask;
     }
 
     public void AddForce(Vector3 force)

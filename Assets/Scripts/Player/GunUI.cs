@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class GunUI : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class GunUI : MonoBehaviour
     [SerializeField] TMP_Text ammoText;
     [SerializeField] RectTransform width, top, bottom;
     [SerializeField] GameObject sight, ammo;
+
+    // [SerializeField] string reloadWord = "RELOADING";
+    // [SerializeField] int reloadWindowSize = 3;
+
     Vector3 targetAmmoPos;
 
     public void Initialize(bool isOwner) {
@@ -18,7 +23,7 @@ public class GunUI : MonoBehaviour
         }
     }
 
-    public void UpdateUI(ItemClient _item, bool aiming, bool scoped) {
+    public void UpdateUI(ItemClient _item, bool aiming, bool scoped, float reloading) {
         ItemData _data = _item.data;
 
         if(_data.type is ItemType.Melee) {
@@ -48,7 +53,26 @@ public class GunUI : MonoBehaviour
         ammo.transform.localPosition = Vector3.Lerp(ammo.transform.localPosition, targetAmmoPos, speed * Time.deltaTime);
         ammo.transform.localEulerAngles = new Vector3(Mathf.Lerp(ammo.transform.localEulerAngles.x, aiming ? 0f : 15f, speed * Time.deltaTime), 0f, 0f);
 
-        ammoText.text = _item.Ammo.ToString();
-        ammoText.color = (_item.Ammo < _item.data.ammoCap * 0.25) ? Color.red : Color.white;
+        //update ammo text
+        if(reloading > 0) {
+            // string text = reloadWord + _data.ammoCap.ToString();
+            // int maxIndex = text.Length - reloadWindowSize;
+
+            // // Map reloading (0–1) to a character index
+            // int index = Mathf.FloorToInt(reloading * (maxIndex + 1));
+            // index = Mathf.Clamp(index, 0, maxIndex);
+            
+            //ammoText.text = text.Substring(index, reloadWindowSize);
+
+            int incrementAmmo = (int)(_data.ammoCap * (reloading/0.90f));
+
+            ammoText.text = incrementAmmo.ToString();
+            ammoText.color = Color.red;
+
+            if(reloading > 0.925f) ammoText.text = " ";
+        } else {
+            ammoText.text = _item.Ammo.ToString();
+            ammoText.color = (_item.Ammo < _item.data.ammoCap * 0.25) ? Color.red : Color.white;
+        }
     }
 }

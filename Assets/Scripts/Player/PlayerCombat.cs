@@ -11,6 +11,7 @@ public class PlayerCombat : MonoBehaviour
     public float Reloading;
 
     //[SerializeField] PlayerInventory inventory;
+    [SerializeField] PlayerCharacter character;
     [SerializeField] PlayerAnimations animations;
     [SerializeField] Transform cam;
 
@@ -78,12 +79,12 @@ public class PlayerCombat : MonoBehaviour
             return;
         }
 
-        if(wishAttack) Attack( _item);
+        if(wishAttack) Attack( _item, _state.Grounded);
 
         if(wishAim) _item.RightClick();
     }
 
-    void Attack(ItemClient _item)
+    void Attack(ItemClient _item, bool grounded)
     {
         ItemData _data = _item.data;
 
@@ -122,6 +123,10 @@ public class PlayerCombat : MonoBehaviour
             float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
             animations.Shoot(_recoil, _backKick);
             animations.ShootServerRpc(_recoil, _backKick);
+
+            if(_data.backwardVelocity != 0 && !grounded) {
+                character.AddForce(-cam.forward * _data.backwardVelocity);
+            }
         }
     }
     

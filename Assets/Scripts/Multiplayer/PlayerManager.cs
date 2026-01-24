@@ -97,7 +97,7 @@ public class PlayerManager : NetworkBehaviour
 
         playersAlive = Players.Count(x => x.isDead == false);
 
-        print($"Player {targetid} took {damage} damage from {senderId}. Health now: {Players[itarget].health}");
+        print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {Players[itarget].health}");
     }
 
     [ServerRpc(RequireOwnership = false)]

@@ -76,6 +76,7 @@ public class Player : NetworkBehaviour
   
     void Start()
     {
+        playerCharacter.Initialize();
         playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
         playerAnimations.Initialize();
         playerUI.Initialize(IsOwner);
@@ -83,6 +84,7 @@ public class Player : NetworkBehaviour
 
         if(!IsOwner)
         {
+            playerCharacter.Motor.enabled = false;
             playerCharacter.gameObject.GetComponent<KinematicCharacterMotor>().enabled = false;
         }
     }
@@ -124,20 +126,17 @@ public class Player : NetworkBehaviour
         if(IsOwner && !isDead) {
             playerInventory.TryPickUp();
             playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-            playerUI.UpdateUI(playerInventory.ClientInventory[i], playerState.Aiming);
             playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
 
             UpdateState();
             NetworkPlayerState.Value = playerState;
         }
 
-        //if(!isDead) playerAnimations.UpdateItem(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
+        if(IsOwner) playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
     }
 
     void HandleInputs()
     {
-        //PlayerCharacterInputs characterInputs = new PlayerCharacterInputs();
-
         inputs.ForwardAxis = Input.GetAxisRaw("Vertical");
         inputs.RightAxis = Input.GetAxisRaw("Horizontal");
         inputs.CameraRotation = playerCamera.transform.rotation;
