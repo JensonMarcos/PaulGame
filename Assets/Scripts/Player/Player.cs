@@ -52,7 +52,6 @@ public struct PlayerInputs
 
     public float ScrollWheel;
     public int NumKey;
-
 }
 
 public class Player : NetworkBehaviour
