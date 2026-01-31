@@ -31,7 +31,7 @@ public class Room : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void DoorClientRpc(float open, float speed) {
         // if(doorNum == 0) {
         //     enterDoor.SetActive(open);
@@ -50,18 +50,20 @@ public class Room : NetworkBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Player") && other.GetComponent<NetworkObject>()) {
-            if(!playersInRoom.Contains(other.gameObject)) {
-                playersInRoom.Add(other.gameObject);
+        GameObject player = other.transform.root.gameObject;
+        if(player.CompareTag("Player") && player.GetComponent<NetworkObject>()) {
+            if(!playersInRoom.Contains(player)) {
+                playersInRoom.Add(player);
             }
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        if(other.CompareTag("Player") && other.GetComponent<NetworkObject>()) {
-            if(playersInRoom.Contains(other.gameObject)) {
-                playersInRoom.Remove(other.gameObject);
+        GameObject player = other.transform.root.gameObject;
+        if(player.CompareTag("Player") && player.GetComponent<NetworkObject>()) {
+            if(playersInRoom.Contains(player)) {
+                playersInRoom.Remove(player);
             }
         }
     }

@@ -718,8 +718,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7426739346523815336}
-  - component: {fileID: 5322866370554470175}
   - component: {fileID: 8553867063729894686}
+  - component: {fileID: 1558233315716475038}
   m_Layer: 3
   m_Name: GunUI
   m_TagString: Untagged
@@ -744,7 +744,28 @@ Transform:
   - {fileID: 6744336268440632275}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5322866370554470175
+--- !u!114 &8553867063729894686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5194908699268061934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12f72631f08d1df498363c0cfd8b00b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  player: {fileID: 0}
+  speed: 10
+  ammoText: {fileID: 3985562614971244236}
+  width: {fileID: 1840790290981511691}
+  top: {fileID: 8292108772929855548}
+  bottom: {fileID: 8661286890267050830}
+  Sight: {fileID: 2362169093960012843}
+  Ammo: {fileID: 9000055175369999834}
+--- !u!114 &1558233315716475038
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -769,27 +790,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &8553867063729894686
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5194908699268061934}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 12f72631f08d1df498363c0cfd8b00b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  player: {fileID: 0}
-  speed: 10
-  ammoText: {fileID: 3985562614971244236}
-  width: {fileID: 1840790290981511691}
-  top: {fileID: 8292108772929855548}
-  bottom: {fileID: 8661286890267050830}
-  Sight: {fileID: 2362169093960012843}
-  Ammo: {fileID: 9000055175369999834}
 --- !u!1 &5255754225094134907
 GameObject:
   m_ObjectHideFlags: 0

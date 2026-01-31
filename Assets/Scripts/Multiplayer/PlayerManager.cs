@@ -58,9 +58,9 @@ public class PlayerManager : NetworkBehaviour
         playersAlive = Players.Count(x => x.isDead == false);
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, ServerRpcParams serverRpcParams = default) {
-        ulong senderId = serverRpcParams.Receive.SenderClientId;
+    [Rpc(SendTo.Server)]
+    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, RpcParams rpcParams = default) {
+        ulong senderId = rpcParams.Receive.SenderClientId;
         int itarget = Players.FindIndex(x => x.ClientId == targetid);
         int isender = Players.FindIndex(x => x.ClientId == senderId);
         Players[itarget].health -= damage;
@@ -76,21 +76,25 @@ public class PlayerManager : NetworkBehaviour
 
             Players[isender].score += 100;
 
-            //Vector3 pos = Players[itarget].playerGameObject.transform.position;
-            //Quaternion rot = Players[itarget].playerGameObject.GetComponent<MovementController>().bodyTransform.rotation;
-            //Vector3 vel = Players[itarget].playerGameObject.GetComponent<Rigidbody>().linearVelocity;
+            Vector3 pos = Players[itarget].playerGameObject.GetComponent<Player>().playerCharacter.transform.position;
+            Quaternion rot = Players[itarget].playerGameObject.GetComponent<Player>().playerCharacter.transform.rotation;
+            Vector3 vel = Players[itarget].playerGameObject.GetComponent<Player>().playerState.Velocity;
 
-            //GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
-            //ragdoll.GetComponent<NetworkObject>().Spawn();
-            //GameManager.instance.worldObjects.Add(ragdoll);
-
-            //Players[itarget].health = 100f;
-            //Vector3 teleport = damage == 1234 ? GameManager.instance.currentRoom.objectivePoint.position : Vector3.zero;
             Players[itarget].playerGameObject.GetComponent<Player>().DieClientRpc();
 
-            //ragdoll.transform.position = pos;
-            //ragdoll.transform.rotation = rot;
-            //ragdoll.GetComponent<Rigidbody>().linearVelocity = vel; 
+            GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
+            ragdoll.GetComponent<NetworkObject>().Spawn();
+            ragdoll.GetComponent<NetworkProp>().ApplyForceServerRpc(vel, ragdollPrefab.transform.position);
+
+            if(GameManager.instance != null) {
+                GameManager.instance.worldObjects.Add(ragdoll);
+
+                //Players[itarget].health = 100f;
+                if(damage == 1234f)
+                {
+                    Players[itarget].playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.currentRoom.objectivePoint.position);
+                }
+            }
         }
 
         //Players[itarget].playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(Players[itarget].health);
@@ -100,8 +104,8 @@ public class PlayerManager : NetworkBehaviour
         print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {Players[itarget].health}");
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void RespawnServerRpc(ulong playerid, ServerRpcParams serverRpcParams = default){
+    [Rpc(SendTo.Server)]
+    public void RespawnServerRpc(ulong playerid, RpcParams rpcParams = default){
         int id = Players.FindIndex(x => x.ClientId == playerid);
         if(Players[id].isDead) {
             Players[id].isDead = false;

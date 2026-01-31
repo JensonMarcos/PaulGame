@@ -34,7 +34,6 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public Transform root;
 
     PlayerInputs inputs;
-    Quaternion wishRotation;
     Vector3 wishMovement;
     bool wishJump;
     bool wishCrouch;
@@ -49,9 +48,9 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public CharacterState State;
     CharacterState lastState, tempState;
-    bool spectator;
-
+    
     [SerializeField] LayerMask playerLayerMask, spectatorLayerMask;
+    bool spectator;
 
     [Space]
     [Header("Walk")]
@@ -73,7 +72,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public float crouchSpeed;
     [SerializeField] float crouchAcceleration;
     
-    [SerializeField] float standHeight, crouchHeight;
+    public float standHeight, crouchHeight;
     [SerializeField] float camStandHeight, camCrouchHeight;
 
     [Space]
@@ -92,7 +91,6 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void Initialize()
     {
-        // Assign the characterController to the motor
         Motor.CharacterController = this;
         Motor.SetCapsuleDimensions(Motor.Capsule.radius, standHeight, standHeight * 0.5f);
         State.Stance = Stance.Stand;
@@ -106,10 +104,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     {
         inputs = _inputs;
 
-        wishRotation = inputs.CameraRotation;
-
         wishMovement = Vector3.ClampMagnitude(new Vector3(inputs.RightAxis, 0f, inputs.ForwardAxis), 1f);
-        wishMovement = inputs.CameraRotation * wishMovement;
+        wishMovement = transform.rotation * wishMovement;
 
         var wasRequestingJump = wishJump;
         wishJump = wishJump || inputs.Jump;
@@ -350,6 +346,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
     {
+
     }
 
     public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition, Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)

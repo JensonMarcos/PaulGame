@@ -53,13 +53,13 @@ public class HandsPunch : NetworkBehaviour, IItemAction
         
     }
 
-    [ServerRpc(RequireOwnership = true)]
+    [Rpc(SendTo.Server)]
     public void PunchServerRpc(bool _handedness)
     {
         PunchClientRpc(_handedness);
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void PunchClientRpc(bool _handedness)
     {
         if(IsOwner) return;

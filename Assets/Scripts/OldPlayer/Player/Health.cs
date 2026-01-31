@@ -61,8 +61,8 @@ public class Health : NetworkBehaviour
         //if(transform.position.y < -50) PlayerManager.instance.PV.RPC("RPC_Damage", RpcTarget.MasterClient, PV.Owner, 100000f);
     }
 
-    [ClientRpc]
-    public void UpdateHealthClientRpc(float _health, ClientRpcParams clientRpcParams = default) {
+    [Rpc(SendTo.ClientsAndHost)]
+    public void UpdateHealthClientRpc(float _health, RpcParams rpcParams = default) {
         if(!IsOwner) return;
         health = _health;
         healthText.text = health.ToString();
@@ -73,8 +73,8 @@ public class Health : NetworkBehaviour
         // }
     }
 
-    [ClientRpc]
-    public void DieClientRpc(Vector3 teleport, ClientRpcParams clientRpcParams = default) {
+    [Rpc(SendTo.ClientsAndHost)]
+    public void DieClientRpc(Vector3 teleport, RpcParams rpcParams = default) {
         dead = true;
         if(!IsOwner) {
             thirdPerson.SetActive(false);
@@ -112,7 +112,7 @@ public class Health : NetworkBehaviour
     //     } 
     // }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void RespawnClientRpc() {
         
         if(!IsOwner) {

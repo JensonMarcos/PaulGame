@@ -54,7 +54,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 0686c171f1a2e4343b6a5fe438baa95c, type: 2}
+      - {fileID: 11400000, guid: 5fd1b1f9e2f96b241a7bac9e4c9ed558, type: 2}
     TickRate: 64
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -148,7 +148,7 @@ Transform:
   m_GameObject: {fileID: 5575062122605804804}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.4460053, y: -3.641934, z: 10.496699}
+  m_LocalPosition: {x: 0, y: 9.27, z: -41.27}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -190,7 +190,7 @@ Camera:
   field of view: 60
   orthographic: 0
   orthographic size: 5
-  m_Depth: -100
+  m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295

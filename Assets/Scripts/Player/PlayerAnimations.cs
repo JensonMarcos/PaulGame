@@ -94,13 +94,13 @@ public class PlayerAnimations : NetworkBehaviour
     // }
 
     #region Shoot
-    [ServerRpc(RequireOwnership = true)]
+    [Rpc(SendTo.Server)]
     public void ShootServerRpc(Vector3 _recoil, float _backKick)
     {
         ShootClientRpc(_recoil, _backKick);
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void ShootClientRpc(Vector3 _recoil, float _backKick)
     {
         if(IsOwner) return;

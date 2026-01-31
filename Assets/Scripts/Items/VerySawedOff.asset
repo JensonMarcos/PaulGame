@@ -18,10 +18,12 @@ MonoBehaviour:
   position: {x: 0.14, y: -0.27, z: 0.22}
   pullOutTime: 0.3
   fireRate: 7
+  attackDelay: 0
   reloadSpeed: 1.5
   ammoCap: 2
   isAutomatic: 1
   range: 100
+  shootRadius: 0
   accuracy: 0.1
   ADSAccuracy: 0.05
   SprintAccuracy: 0.15
@@ -38,5 +40,6 @@ MonoBehaviour:
   sightPos: {x: 0, y: 0.135, z: 0.145}
   ADSAmmoPos: {x: -0.1149, y: 0.1, z: 0.2085}
   WidTopBot: {x: 0.6, y: 0.1, z: 0.1}
-  bulletForce: 0
+  impactForceObject: 20
+  impactForcePlayer: 0
   backwardVelocity: 5

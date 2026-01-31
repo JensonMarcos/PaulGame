@@ -21,6 +21,11 @@ public class Item : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         //HasOwner.OnValueChanged += OnOwnerChanged;
+        itemCollider = GetComponent<Collider>();
+        rb = GetComponent<Rigidbody>();
+        outline = GetComponent<Outline>();
+        outline.OutlineWidth = 5f;
+        outline.enabled = false;
 
         if(!IsOwner) rb.isKinematic = true;
 
@@ -30,15 +35,6 @@ public class Item : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         //HasOwner.OnValueChanged -= OnOwnerChanged;
-    }
-
-    void Start()
-    {
-        itemCollider = GetComponent<Collider>();
-        rb = GetComponent<Rigidbody>();
-        outline = GetComponent<Outline>();
-        outline.OutlineWidth = 5f;
-        outline.enabled = false;
     }
 
     void LateUpdate()
@@ -72,7 +68,7 @@ public class Item : NetworkBehaviour
         outline.enabled = hovered;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server)]
     public void ItemPickupServerRpc(NetworkObjectReference netObj)
     {
         if(HasOwner.Value) return;
@@ -85,7 +81,7 @@ public class Item : NetworkBehaviour
         itemCollider.enabled = false;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server)]
     public void ItemDropServerRpc(Vector3 pos, Quaternion rot, Vector3 vel, int ammo)
     {
         if(!HasOwner.Value) return;

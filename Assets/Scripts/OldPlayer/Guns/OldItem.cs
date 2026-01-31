@@ -65,10 +65,10 @@ public class OldItem : NetworkBehaviour
         } 
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void ItemPickupServerRpc(bool dropped, Vector3 throwForce, Vector3 velocity, ServerRpcParams serverRpcParams = default) {
+    [Rpc(SendTo.Server)]
+    public void ItemPickupServerRpc(bool dropped, Vector3 throwForce, Vector3 velocity, RpcParams rpcParams = default) {
         pmanager = PlayerManager.instance;
-        ulong clientId = serverRpcParams.Receive.SenderClientId;
+        ulong clientId = rpcParams.Receive.SenderClientId;
         for(int i = 0; i < PlayerManager.instance.Players.Count; i++) {
             if(PlayerManager.instance.Players[i].ClientId == clientId) {
                 ownerTrans = PlayerManager.instance.Players[i].playerGameObject.transform;
@@ -159,7 +159,7 @@ public class OldItem : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server)]
     public void SelectServerRpc(bool selected) {
         //if(GetComponent<MeshRenderer>().enabled != selected) GetComponent<MeshRenderer>().enabled = selected;
         SelectClientRpc(selected);
@@ -179,8 +179,8 @@ public class OldItem : NetworkBehaviour
         rb.excludeLayers = LayerMask.NameToLayer("Ghost");
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void UpdateAmmoServerRpc(int newAmmo, ServerRpcParams serverRpcParams = default) {
+    [Rpc(SendTo.Server)]
+    public void UpdateAmmoServerRpc(int newAmmo, RpcParams rpcParams = default) {
         serverAmmo.Value = newAmmo;
     }
 }

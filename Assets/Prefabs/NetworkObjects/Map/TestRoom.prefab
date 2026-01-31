@@ -1702,8 +1702,9 @@ MonoBehaviour:
   objectsToSpawn: []
   objectSpawnPoints: []
   anim: {fileID: 0}
-  openSpeed: 1
+  openSpeed: 2
   playersInRoom: []
+  roomGameMode: 0
 --- !u!95 &1079795033743612338
 Animator:
   serializedVersion: 7

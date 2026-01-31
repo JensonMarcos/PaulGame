@@ -72,6 +72,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   playerPrefab: {fileID: 2069876906178530849, guid: 22aa77b996d82414ab8eb799d229df43, type: 3}
-  ragdollPrefab: {fileID: 7374326987024873421, guid: 1af5ea15053dcca4aac9e90a6368f3ce, type: 3}
+  ragdollPrefab: {fileID: 6201912026124443639, guid: dbde576714f4e7445a68e2fe06d99475, type: 3}
   Players: []
   playersAlive: 0

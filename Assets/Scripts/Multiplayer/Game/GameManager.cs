@@ -4,9 +4,11 @@ using UnityEngine;
 
 public enum GameState
 {
-    Warmup,
+    Lobby,
     MoveRoom,
+    GameStart,
     InGame,
+    GameEnd,
     GameOver
 }
 
@@ -33,8 +35,9 @@ public class GameManager : NetworkBehaviour
     public List<GameObject> roomList;
     public int roomIndex;
     public Room currentRoom;
-    public float moveTime, moveTimer;
-    public float gameTime, gameTimer;
+    [SerializeField] float moveTime, moveTimer;
+    [SerializeField] float gameTime, gameTimer;
+    [SerializeField] float endGameTime, endGameTimer;
 
     public List<GameObject> worldObjects;
 
@@ -49,13 +52,13 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] GameObject[] DMPrefabs, KingPrefabs, GPUPrefabs, C4Prefabs, SumoPrefabs, SoccerPrefabs;
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
         instance = this;
 
         if (!IsServer) return;
 
-        gameState = GameState.Warmup;
+        gameState = GameState.Lobby;
         previousGameState = gameState;
     }
 
@@ -70,21 +73,21 @@ public class GameManager : NetworkBehaviour
         }
 
         if (gameState != previousGameState)
-        { //On state change, next frame
+        {
             cleanObjects();
         }
         previousGameState = gameState;
 
         switch (gameState)
         {
-            case GameState.Warmup:
+            case GameState.Lobby:
                 if (roomList.Count == 0)
                 {
                     roomList.Add(startingRoom);
                     currentRoom = startingRoom.GetComponent<Room>();
 
                     createRoom();
-                    title.title.Value = "Warmup";
+                    title.title.Value = "Lobby";
                 }
                 break;
             case GameState.MoveRoom:
@@ -93,11 +96,10 @@ public class GameManager : NetworkBehaviour
                 { //just changed
                     RespawnEveryone();
 
-                    currentRoom.DoorClientRpc(1f, 1.5f); //exit
-                    currentRoom = roomList[1].GetComponent<Room>();
-                    currentRoom.DoorClientRpc(0f, 0.75f); //enter
+                    currentRoom.DoorClientRpc(1f, 1.5f); //prev room exit
 
-                    createRoom();
+                    currentRoom = roomList[1].GetComponent<Room>();
+                    currentRoom.DoorClientRpc(0f, 0.75f); //new room enter
 
                     moveTimer = Time.time + moveTime;
 
@@ -106,16 +108,18 @@ public class GameManager : NetworkBehaviour
 
                     InitializeRoom();
 
-                    //title.title.Value = "Move";
+                    title.title.Value = "Move";
+                    
+                    createRoom(); //create next room
                 }
 
                 if (Time.time >= moveTimer)
                 {
-                    gameState = GameState.InGame;
+                    gameState = GameState.GameStart;
                 }
 
                 break;
-            case GameState.InGame:
+            case GameState.GameStart:
                 if (roomList.Count == 3) //just entered
                 {
                     if (prevRoom != null)
@@ -131,12 +135,7 @@ public class GameManager : NetworkBehaviour
                     title.title.Value = gameMode.ToString().Replace("_", " ");
                 }
 
-                if (Mathf.Abs(currentRoom.anim.GetFloat("OpenState") - 0.5f) > 0.01f)
-                {
-                    break; //wait for animation to finish
-                }
-
-                if (!gameReady)
+                if (Mathf.Abs(currentRoom.anim.GetFloat("OpenState") - 0.5f) < 0.01f)
                 {
                     for (int i = 0; i < PlayerManager.instance.Players.Count; i++)
                     {
@@ -147,11 +146,14 @@ public class GameManager : NetworkBehaviour
                             //PlayerManager.instance.allplayers[i].playerGameObject.transform.position = currentRoom.objectivePoint.position;
                         }
                     }
-                    gameReady = true;
-                    gameTime = gameTimer;
+
+                    gameTimer = gameTime;
+                    gameState = GameState.InGame;
                 }
 
-                if (gameTime <= 0 || PlayerManager.instance.playersAlive == 1)
+                break;
+            case GameState.InGame:
+                if (gameTimer <= 0 || PlayerManager.instance.playersAlive == 1)
                 {
                     PlayerData winner = null;
                     foreach (PlayerData player in PlayerManager.instance.Players)
@@ -167,13 +169,13 @@ public class GameManager : NetworkBehaviour
 
                     title.title.Value = winner.ClientId.ToString() + " won";
 
-                    gameState = GameState.MoveRoom;
+                    gameState = GameState.GameEnd;
                     break;
                 }
 
-                gameTime -= Time.fixedDeltaTime;
-                int _time = (int)gameTime;
-                if(title.title.Value != _time.ToString()) title.title.Value = ((int)gameTime).ToString();
+                gameTimer -= Time.fixedDeltaTime;
+                int _time = (int)gameTimer;
+                if(title.title.Value != _time.ToString()) title.title.Value = ((int)gameTimer).ToString();
                 
                 switch (gameMode)
                 {
@@ -198,6 +200,15 @@ public class GameManager : NetworkBehaviour
                 }
 
                 break;
+            case GameState.GameEnd:
+                endGameTimer += Time.fixedDeltaTime;
+                if (endGameTimer >= endGameTime)
+                {
+                    endGameTimer = 0f;
+                    gameState = GameState.MoveRoom;
+                }
+
+                break;
             case GameState.GameOver:
                 // Handle game over state
                 break;
@@ -219,7 +230,7 @@ public class GameManager : NetworkBehaviour
     {
         for (int i = 0; i < worldObjects.Count; i++)
         {
-            if (worldObjects[i].transform.position.y < -10)
+            if (worldObjects[i].GetComponent<NetworkProp>().rb.transform.position.y < -10)
             { //destroy objects that fall off the map
                 worldObjects[i].GetComponent<NetworkObject>().Despawn(true);
                 worldObjects.RemoveAt(i);
@@ -263,7 +274,7 @@ public class GameManager : NetworkBehaviour
             if (!player.isDead)
             {
                 player.health = 100f;
-                player.playerGameObject.GetComponent<Health>().UpdateHealthClientRpc(player.health);
+                // player.playerGameObject.GetComponent<Health>().UpdateHealthClientRpc(player.health);
                 player.score = 0;
                 continue;
             }

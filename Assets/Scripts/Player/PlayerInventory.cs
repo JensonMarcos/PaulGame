@@ -210,7 +210,7 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = true)]
+    [Rpc(SendTo.Server)]
     public void SelectServerRpc(int _index, float _pullOutTime, bool animate)
     {
         SelectClientRpc(_index, _pullOutTime, animate);

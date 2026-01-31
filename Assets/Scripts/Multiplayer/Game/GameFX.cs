@@ -20,21 +20,15 @@ public class GameFX : NetworkBehaviour
         ShootFXServerRpc(startPos, endPos, hitNormal, didHit, doTrail, decal);
     }
     
-    [ServerRpc(RequireOwnership = false)] 
-    public void ShootFXServerRpc(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, int decal, ServerRpcParams serverRpcParams = default) {
-        ulong senderClientId = serverRpcParams.Receive.SenderClientId;
+    [Rpc(SendTo.Server)] 
+    public void ShootFXServerRpc(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, int decal, RpcParams rpcParams = default) {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-        ClientRpcParams clientRpcParams = new ClientRpcParams {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds.Where(id => id != senderClientId).ToList() // Exclude sender
-            }
-        };
-        ShootFXClientRpc(startPos, endPos, hitNormal, didHit, doTrail, decal, clientRpcParams);
+        ShootFXClientRpc(startPos, endPos, hitNormal, didHit, doTrail, decal, RpcTarget.Not(senderClientId, RpcTargetUse.Temp));
     }
 
-    [ClientRpc] 
-    public void ShootFXClientRpc(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, int decal, ClientRpcParams clientRpcParams = default) {
+    [Rpc(SendTo.SpecifiedInParams)] 
+    public void ShootFXClientRpc(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, int decal, RpcParams rpcParams = default) {
         ShootFX(startPos, endPos, hitNormal, didHit, doTrail, decal);
     }
 

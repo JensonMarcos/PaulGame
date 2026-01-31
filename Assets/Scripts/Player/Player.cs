@@ -57,20 +57,22 @@ public struct PlayerInputs
 
 public class Player : NetworkBehaviour
 {
-    public NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
+    NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
         writePerm: NetworkVariableWritePermission.Owner,
         readPerm: NetworkVariableReadPermission.Everyone
     );
+    
+    public PlayerState playerState;
+    [SerializeField] PlayerInputs inputs;
 
     public PlayerInventory playerInventory;
-    [SerializeField] PlayerCharacter playerCharacter;
+    public PlayerCharacter playerCharacter;
     [SerializeField] PlayerCamera playerCamera;
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
 
-    [SerializeField] PlayerState playerState;
-    [SerializeField] PlayerInputs inputs;
+    //[SerializeField] ServerCollider serverCollider;
 
     bool isDead;
   
@@ -82,10 +84,13 @@ public class Player : NetworkBehaviour
         playerUI.Initialize(IsOwner);
         playerInventory.Initialize();
 
+        //serverCollider.Initialize(IsServer && !IsOwner);
+
         if(!IsOwner)
         {
             playerCharacter.Motor.enabled = false;
             playerCharacter.gameObject.GetComponent<KinematicCharacterMotor>().enabled = false;
+            //playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
         }
     }
 
@@ -123,17 +128,25 @@ public class Player : NetworkBehaviour
 
         playerCamera.UpdatePosition(playerCharacter.camTarget);
 
-        if(IsOwner && !isDead) {
-            playerInventory.TryPickUp();
-            playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-            playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
+        if(IsOwner) {
+            if(!isDead)
+            {
+                playerInventory.TryPickUp();
+                playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
+                playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
+            }
+
+            playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
 
             UpdateState();
             NetworkPlayerState.Value = playerState;
         }
-
-        if(IsOwner) playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
     }
+
+    // void FixedUpdate()
+    // {
+    //     if(IsServer && !IsOwner) serverCollider.UpdateCollider(playerState.Stance, playerState.Velocity);
+    // }
 
     void HandleInputs()
     {
@@ -185,10 +198,13 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     public void DieClientRpc() {
         isDead = true;
+        //if(IsServer) serverCollider.gameObject.layer = LayerMask.NameToLayer("Ghost");
+
         if(!IsOwner) {
             playerCharacter.gameObject.SetActive(false);
             return;
         }
+
         playerAnimations.SetAnimationActive(false);
         playerInventory.DropAll();
 
@@ -197,20 +213,28 @@ public class Player : NetworkBehaviour
 
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void RespawnClientRpc() {
         isDead = false;
+        //if(IsServer) serverCollider.gameObject.layer = LayerMask.NameToLayer("Player");
+
         if(!IsOwner) {
             playerCharacter.gameObject.SetActive(true);
             return;
         } 
+
         playerAnimations.SetAnimationActive(true);
-        playerCharacter.gameObject.layer = LayerMask.NameToLayer("PlayerHitbox");
+        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
         playerCharacter.SetSpectator(false);
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
     public void RecieveForceClientRpc(Vector3 force) {
         playerCharacter.AddForce(force);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void TeleportClientRpc(Vector3 position) {
+        if(IsOwner) playerCharacter.SetPosition(position);
     }
 }

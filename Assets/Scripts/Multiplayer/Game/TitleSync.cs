@@ -15,7 +15,7 @@ public class TitleSync : NetworkBehaviour
         text = GetComponent<TextMeshProUGUI>();
     }
 
-    public override void OnDestroy()
+    public override void OnNetworkDespawn()
     {
         title.OnValueChanged -= OnTitleChanged;
     }
