@@ -1,17 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using KinematicCharacterController;
 using UnityEngine;
 
-// public struct PlayerCharacterInputs
-// {
-//     public float ForwardAxis;
-//     public float RightAxis;
-//     public Quaternion CameraRotation;
-//     public bool Jump;
-//     public bool Crouch;
-//     public bool Sprint;
-// }
+public struct CharacterInputs
+{
+    public float ForwardAxis;
+    public float RightAxis;
+    public Quaternion CameraRotation;
+    public bool Jump;
+    public bool Crouch;
+    public bool Sprint;
+}
 
 public enum Stance : byte
 {
@@ -33,7 +34,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public Transform camTarget;
     public Transform root;
 
-    PlayerInputs inputs;
+    CharacterInputs characterInputs;
     Vector3 wishMovement;
     bool wishJump;
     bool wishCrouch;
@@ -100,25 +101,25 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     }
 
 
-    public void SetInputs(PlayerInputs _inputs)
+    public void SetInputs(CharacterInputs inputs)
     {
-        inputs = _inputs;
+        characterInputs = inputs;
 
-        wishMovement = Vector3.ClampMagnitude(new Vector3(inputs.RightAxis, 0f, inputs.ForwardAxis), 1f);
+        wishMovement = Vector3.ClampMagnitude(new Vector3(characterInputs.RightAxis, 0f, characterInputs.ForwardAxis), 1f);
         wishMovement = transform.rotation * wishMovement;
 
         var wasRequestingJump = wishJump;
-        wishJump = wishJump || inputs.Jump;
+        wishJump = wishJump || characterInputs.Jump;
         if (wishJump && !wasRequestingJump) timeJumpRequested = 0f;
 
         var wasRequestingCrouch = wishCrouch;
-        wishCrouch = inputs.Crouch;
+        wishCrouch = characterInputs.Crouch;
         if (wishCrouch && !wasRequestingCrouch)
             wishCrouchInAir = !State.Grounded;
         else if (!wishCrouch && wasRequestingCrouch)
             wishCrouchInAir = false;
 
-        wishSprint = inputs.Sprint;
+        wishSprint = characterInputs.Sprint;
         if (wishCrouch || !State.Grounded || State.Velocity.sqrMagnitude < 0.01) wishSprint = false;
 
         if(spectator)
@@ -135,7 +136,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     /// </summary>
     public void UpdateRotation(ref Quaternion currentRotation, float deltaTime)
     {
-        var forward = Vector3.ProjectOnPlane(inputs.CameraRotation * Vector3.forward, Motor.CharacterUp);
+        var forward = Vector3.ProjectOnPlane(characterInputs.CameraRotation * Vector3.forward, Motor.CharacterUp);
 
         if (forward != Vector3.zero) currentRotation = Quaternion.LookRotation(forward, Motor.CharacterUp);
     }

@@ -4,6 +4,13 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public struct CombatInputs
+{
+    public bool Attack;
+    public bool Aim;
+    public bool Reload;
+}
+
 public class PlayerCombat : MonoBehaviour
 {
     public float Aiming;
@@ -25,37 +32,20 @@ public class PlayerCombat : MonoBehaviour
     bool wishReload;
 
     float nextTimeToFire;
-    bool hasFiredSemi;
 
     ItemClient prevItem;
 
-    public void SetInputs(PlayerInputs _inputs, bool _sprinting, bool _readyPull, bool _isAutomatic)
+    public void SetInputs(CombatInputs inputs, bool _sprinting, bool _readyPull)
     {
-        if(_inputs.Attack) { //semi auto and auto handling
-            if(_isAutomatic) {
-                wishAttack = true;
-            }
-            else {
-                if(!hasFiredSemi) {
-                    wishAttack = true;
-                    hasFiredSemi = true;
-                } else {
-                    wishAttack = false;
-                }
-            }
-        }
-        else {
-            wishAttack = false;
-            hasFiredSemi = false;
-        }
+        wishAttack = inputs.Attack;
 
-        wishAim = _inputs.Aim;
+        wishAim = inputs.Aim;
         if (_sprinting || !_readyPull || Reloading > 0) {
             wishAttack = false;
             wishAim = false;
         }
 
-        wishReload = _inputs.Reload;         
+        wishReload = inputs.Reload;         
         if(!_readyPull || Reloading > 0) wishReload = false;
     }
 

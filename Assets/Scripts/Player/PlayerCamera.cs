@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
@@ -28,12 +30,12 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
-    public void UpdateRotation(ItemData _data)
+    public void UpdateRotation(Vector2 inputs, ItemData _data)
     {
         FovSensitivity = cam.fieldOfView / defaultFov;
 
-        float xMovement = Input.GetAxisRaw("Mouse X") * sensitivity * FovSensitivity;
-        float yMovement = -Input.GetAxisRaw("Mouse Y") * sensitivity * FovSensitivity;
+        float xMovement = inputs.x * sensitivity * FovSensitivity * 0.1f;
+        float yMovement = -inputs.y * sensitivity * FovSensitivity * 0.1f;
 
         // Calculate rotation from input
         realRotation = new Vector3(Mathf.Clamp(realRotation.x + yMovement, -89.9f, 89.9f), realRotation.y + xMovement, 0);

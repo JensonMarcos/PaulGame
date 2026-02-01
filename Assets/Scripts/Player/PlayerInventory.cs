@@ -2,6 +2,17 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
+public struct InventoryInputs
+{
+    public bool Interact;
+    public bool Drop;
+
+    public Vector3 Velocity;
+
+    public float Scroll;
+    public int NumKeys;
+}
+
 public class PlayerInventory : NetworkBehaviour
 {
     public NetworkList<ulong> NetworkIDInventory = new NetworkList<ulong>(
@@ -59,27 +70,27 @@ public class PlayerInventory : NetworkBehaviour
     }
 
 
-    public void SetInputs(PlayerInputs _inputs, Vector3 _velocity)
+    public void SetInputs(InventoryInputs inputs)
     {
-        wishPickUp = _inputs.Interact;
-        wishDrop = _inputs.Drop;
+        wishPickUp = inputs.Interact;
+        wishDrop = inputs.Drop;
 
-        velocity = _velocity;
+        velocity = inputs.Velocity;
 
         int prevIndex = InvIndex;
-        if (_inputs.ScrollWheel < 0f)
+        if (inputs.Scroll < 0f)
         { //scrollwheel
             if (InvIndex >= Inventory.Length - 1) InvIndex = 0;
             else InvIndex++;
         }
-        if (_inputs.ScrollWheel > 0f)
+        if (inputs.Scroll > 0f)
         {
             if (InvIndex <= 0) InvIndex = Inventory.Length - 1;
             else InvIndex--;
         }
-        if (_inputs.NumKey >= 0 && _inputs.NumKey < Inventory.Length)
+        if (inputs.NumKeys >= 0 && inputs.NumKeys < Inventory.Length)
         {
-            InvIndex = _inputs.NumKey;
+            InvIndex = inputs.NumKeys;
         }
 
         if(prevIndex != InvIndex && Inventory[prevIndex] != Inventory[InvIndex])

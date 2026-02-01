@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum GameState
 {
@@ -66,11 +67,13 @@ public class GameManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        if (Input.GetKeyDown(KeyCode.L))
+        #if UNITY_EDITOR
+        if (Keyboard.current.lKey.wasPressedThisFrame)
         { //for testing
             gameState = GameState.MoveRoom;
             cleanObjects();
         }
+        #endif
 
         if (gameState != previousGameState)
         {

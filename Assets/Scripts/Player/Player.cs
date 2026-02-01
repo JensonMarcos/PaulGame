@@ -1,6 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
 using KinematicCharacterController;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [System.Serializable]
 public struct PlayerState : INetworkSerializable
@@ -35,25 +38,6 @@ public struct PlayerState : INetworkSerializable
     }
 }
 
-public struct PlayerInputs
-{
-    public float ForwardAxis;
-    public float RightAxis;
-    public Quaternion CameraRotation;
-    public bool Jump;
-    public bool Crouch;
-    public bool Sprint;
-
-    public bool Attack;
-    public bool Aim;
-    public bool Reload;
-    public bool Interact;
-    public bool Drop;
-
-    public float ScrollWheel;
-    public int NumKey;
-}
-
 public class Player : NetworkBehaviour
 {
     NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
@@ -62,7 +46,8 @@ public class Player : NetworkBehaviour
     );
     
     public PlayerState playerState;
-    [SerializeField] PlayerInputs inputs;
+
+    PlayerInputs playerInputs;
 
     public PlayerInventory playerInventory;
     public PlayerCharacter playerCharacter;
@@ -75,8 +60,11 @@ public class Player : NetworkBehaviour
 
     bool isDead;
   
-    void Start()
+    public override void OnNetworkSpawn()
     {
+        playerInputs = new PlayerInputs();
+        playerInputs.Enable();
+
         playerCharacter.Initialize();
         playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
         playerAnimations.Initialize();
@@ -93,15 +81,17 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public override void OnNetworkDespawn()
+    {
+        playerInputs.Dispose();
+    }
+
     void Update()
     {
         if(!IsOwner && !isDead) playerState = NetworkPlayerState.Value;
 
         if(IsOwner)
         {
-            playerCamera.UpdateRotation(playerInventory.ClientInventory[playerState.InventoryIndex].data);
-
-            UpdateState();
             HandleInputs();
             UpdateState();
         }
@@ -113,10 +103,11 @@ public class Player : NetworkBehaviour
             playerAnimations.UpdateAnimator(Time.deltaTime);
         }
 
-
-        if(IsOwner && isDead && Input.GetKeyDown(KeyCode.P)) {
+        #if UNITY_EDITOR
+        if(IsOwner && isDead && Keyboard.current.pKey.wasPressedThisFrame) {
             PlayerManager.instance.RespawnServerRpc(OwnerClientId);      
         }
+        #endif
     }
 
     void LateUpdate()
@@ -149,33 +140,39 @@ public class Player : NetworkBehaviour
 
     void HandleInputs()
     {
-        inputs.ForwardAxis = Input.GetAxisRaw("Vertical");
-        inputs.RightAxis = Input.GetAxisRaw("Horizontal");
-        inputs.CameraRotation = playerCamera.transform.rotation;
-        inputs.Jump = Input.GetKeyDown(KeyCode.Space);
-        inputs.Crouch = Input.GetKey(KeyCode.LeftControl);
-        inputs.Sprint = Input.GetKey(KeyCode.LeftShift);
+        var inputs = playerInputs.Gameplay;
 
-        inputs.Attack = Input.GetKey(KeyCode.Mouse0);
-        inputs.Aim = Input.GetKey(KeyCode.Mouse1);
-        inputs.Reload = Input.GetKeyDown(KeyCode.R);
-        inputs.Interact = Input.GetKeyDown(KeyCode.E);
-        inputs.Drop = Input.GetKeyDown(KeyCode.G);
+        Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();
+        playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex].data);
+        
 
-        inputs.ScrollWheel = Input.GetAxis("Mouse ScrollWheel");
+        CharacterInputs characterInputs = new CharacterInputs {
+            ForwardAxis = inputs.Move.ReadValue<Vector2>().y,
+            RightAxis = inputs.Move.ReadValue<Vector2>().x,
+            CameraRotation = playerCamera.transform.rotation,
+            Jump = inputs.Jump.WasPressedThisFrame(),
+            Crouch = inputs.Crouch.IsPressed(),
+            Sprint = inputs.Sprint.IsPressed()
+        };
+        playerCharacter.SetInputs(characterInputs);
 
-        inputs.NumKey = -1;
-        for (int i = 0; i < 9; i++) //num keys
-        {
-            if (Input.GetKeyDown((i + 1).ToString()))
-            {
-                inputs.NumKey = i;
-            }
-        }
+        InventoryInputs inventoryInputs = new InventoryInputs {
+            Interact = inputs.Interact.WasPressedThisFrame(),
+            Drop = inputs.Drop.WasPressedThisFrame(),
+            Velocity = playerCharacter.State.Velocity,
+            Scroll = inputs.Scroll.ReadValue<float>(),
+            NumKeys = (int)inputs.NumKeys.ReadValue<float>()-1
+        };
+        playerInventory.SetInputs(inventoryInputs);
 
-        playerInventory.SetInputs(inputs, playerState.Velocity);
-        playerCharacter.SetInputs(inputs);
-        playerCombat.SetInputs(inputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull, playerInventory.ClientInventory[playerInventory.InvIndex].data.isAutomatic);   
+
+        bool _auto = playerInventory.ClientInventory[playerInventory.InvIndex].data.isAutomatic;
+        CombatInputs combatInputs = new CombatInputs {
+            Attack = inputs.Attack.IsPressed(),
+            Aim = inputs.Aim.IsPressed(),
+            Reload = _auto ? inputs.Reload.IsPressed() : inputs.Reload.WasPressedThisFrame()
+        };
+        playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
     }
 
     void UpdateState()
