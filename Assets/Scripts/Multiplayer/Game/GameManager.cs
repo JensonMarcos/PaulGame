@@ -13,45 +13,77 @@ public enum GameState
     GameOver
 }
 
-public enum GameMode
+[System.Serializable]
+public enum GameModeName
 {
     Deathmatch,
     King_of_the_Paul_House,
     Capture_the_GPU,
     Dont_Hold_the_C4,
-    Sumo,
-    Soccer_Pall
+    Sumo
+}
+
+[System.Serializable]
+public struct GameMode
+{
+    public GameModeName name;
+    public GameObject[] roomPrefabs;
+    public float gameModeWeight;
+
+    [Space]
+    [Header("GameMode Settings")]
+    public bool lastPlayerAliveWins;
+    public bool spawnItems;
+    public bool doDamage;
+
+    [Space]
+    [Header("Timer")]
+    public bool useTimer;
+    public float gameTime;
+    public bool highestScoreWins;
+
+    [Space]
+    [Header("Teams")]
+    public bool useTeams;
+    public int numberOfTeams;
 }
 
 public class GameManager : NetworkBehaviour
 {
     public static GameManager instance;
+    PlayerManager playerManager;
+    [SerializeField] TitleSync title;
 
-    public TitleSync title;
-
+    [Space]
     public GameState gameState;
     GameState previousGameState;
-    [SerializeField] GameObject[] roomPrefabs;
+    bool onGameStateChange = false;
+
+    [Space]
+    public List<GameObject> worldObjects;
+    [SerializeField] GameObject[] itemPrefabs;
+
+    [Space]
+    [Header("Rooms")]
     [SerializeField] GameObject startingRoom;
     public List<GameObject> roomList;
     public int roomIndex;
     public Room currentRoom;
-    [SerializeField] float moveTime, moveTimer;
-    [SerializeField] float gameTime, gameTimer;
-    [SerializeField] float endGameTime, endGameTimer;
 
-    public List<GameObject> worldObjects;
-
-    [SerializeField] GameObject[] itemPrefabs;
-
+    [Space]
     [Header("GameMode")]
-
-    public GameMode gameMode;
-    GameMode prevGamemode;
+    public GameMode[] gameModes;
+    public GameMode currentGameMode;
+    GameMode prevGameMode;
     GameObject prevRoom;
-    public bool gameReady;
 
-    [SerializeField] GameObject[] DMPrefabs, KingPrefabs, GPUPrefabs, C4Prefabs, SumoPrefabs, SoccerPrefabs;
+    [Space]
+    [Header("Timers")]
+    [SerializeField] float moveTime; 
+    [SerializeField] float startGameTime;
+    [SerializeField] float endGameTime;
+    float moveTimer, startGameTimer, gameTimer, endGameTimer;
+
 
     public override void OnNetworkSpawn()
     {
@@ -61,6 +93,7 @@ public class GameManager : NetworkBehaviour
 
         gameState = GameState.Lobby;
         previousGameState = gameState;
+        playerManager = PlayerManager.instance;
     }
 
     void FixedUpdate()
@@ -70,14 +103,15 @@ public class GameManager : NetworkBehaviour
         #if UNITY_EDITOR
         if (Keyboard.current.lKey.wasPressedThisFrame)
         { //for testing
-            gameState = GameState.MoveRoom;
-            cleanObjects();
+            gameState = GameState.GameEnd;
+            CleanObjects();
         }
         #endif
 
         if (gameState != previousGameState)
         {
-            cleanObjects();
+            onGameStateChange = true;
+            CleanObjects();
         }
         previousGameState = gameState;
 
@@ -89,31 +123,32 @@ public class GameManager : NetworkBehaviour
                     roomList.Add(startingRoom);
                     currentRoom = startingRoom.GetComponent<Room>();
 
-                    createRoom();
+                    CreateRoom();
                     title.title.Value = "Lobby";
+                    playerManager.damageEnabled.Value = false;
                 }
                 break;
             case GameState.MoveRoom:
-                gameReady = false;
-                if (roomList.Count == 2)
-                { //just changed
+                if (onGameStateChange) {
+                    playerManager.damageEnabled.Value = false;
+
                     RespawnEveryone();
 
-                    currentRoom.DoorClientRpc(1f, 1.5f); //prev room exit
+                    currentRoom.DoorClientRpc(1f, 1f); //prev room exit
 
                     currentRoom = roomList[1].GetComponent<Room>();
-                    currentRoom.DoorClientRpc(0f, 0.75f); //new room enter
+                    currentRoom.DoorClientRpc(0f, 1f); //new room enter
 
                     moveTimer = Time.time + moveTime;
 
-                    gameMode = currentRoom.GetComponent<Room>().roomGameMode;
-                    prevGamemode = gameMode;
+                    currentGameMode = currentRoom.GetComponent<Room>().GameMode;
+                    prevGameMode = currentGameMode;
 
-                    InitializeRoom();
+                    //InitializeRoom();
 
                     title.title.Value = "Move";
                     
-                    createRoom(); //create next room
+                    CreateRoom(); //create next room
                 }
 
                 if (Time.time >= moveTimer)
@@ -123,88 +158,121 @@ public class GameManager : NetworkBehaviour
 
                 break;
             case GameState.GameStart:
-                if (roomList.Count == 3) //just entered
+                if(onGameStateChange)
                 {
-                    if (prevRoom != null)
-                    { //destroy previous room on the next cycle (for animation stuff)
-                        prevRoom.GetComponent<NetworkObject>().Despawn(true);
-                    }
+                    playerManager.damageEnabled.Value = false;
 
-                    currentRoom.DoorClientRpc(0.5f, 0.75f); //close current
+                    if (prevRoom != null) prevRoom.GetComponent<NetworkObject>().Despawn(true);
+
                     prevRoom = roomList[0];
                     roomList.RemoveAt(0);
-                    prevRoom.GetComponent<Room>().DoorClientRpc(0.5f, 1.5f); //close previous
+                    prevRoom.GetComponent<Room>().DoorClientRpc(0.5f, 1f); //close previous
 
-                    title.title.Value = gameMode.ToString().Replace("_", " ");
+                    currentRoom.DoorClientRpc(0.5f, 2f); //close current
+
+                    title.title.Value = currentGameMode.name.ToString().Replace("_", " ");
+
+                    startGameTimer = Time.time + startGameTime;
                 }
 
-                if (Mathf.Abs(currentRoom.anim.GetFloat("OpenState") - 0.5f) < 0.01f)
+                if (Time.time >= startGameTimer)
                 {
-                    for (int i = 0; i < PlayerManager.instance.Players.Count; i++)
+                    for (int i = 0; i < playerManager.Players.Count; i++)
                     {
-                        PlayerManager.instance.Players[i].score = 0;
-                        if (!currentRoom.playersInRoom.Contains(PlayerManager.instance.Players[i].playerGameObject))
+                        playerManager.Players[i].score = 0;
+                        if (!currentRoom.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                         {
-                            PlayerManager.instance.DealDamageServerRpc(PlayerManager.instance.Players[i].ClientId, 1234f, Vector3.zero);
-                            //PlayerManager.instance.allplayers[i].playerGameObject.transform.position = currentRoom.objectivePoint.position;
+                            playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
                         }
                     }
 
-                    gameTimer = gameTime;
+                    gameTimer = currentGameMode.gameTime;
                     gameState = GameState.InGame;
                 }
 
                 break;
             case GameState.InGame:
-                if (gameTimer <= 0 || PlayerManager.instance.playersAlive == 1)
+                if(onGameStateChange)
                 {
-                    PlayerData winner = null;
-                    foreach (PlayerData player in PlayerManager.instance.Players)
-                    {
-                        if (winner == null)
-                        {
-                            winner = player;
-                            continue;
-                        }
-                        if (player.score > winner.score) winner = player;
-                    }
-                    PlayerManager.instance.Players[PlayerManager.instance.Players.FindIndex(x => x == winner)].wins++;
-
-                    title.title.Value = winner.ClientId.ToString() + " won";
-
-                    gameState = GameState.GameEnd;
-                    break;
+                    StartRoom();
                 }
 
                 gameTimer -= Time.fixedDeltaTime;
                 int _time = (int)gameTimer;
-                if(title.title.Value != _time.ToString()) title.title.Value = ((int)gameTimer).ToString();
                 
-                switch (gameMode)
+                if(currentGameMode.useTimer) {
+                    if(title.title.Value != _time.ToString()) title.title.Value = ((int)gameTimer).ToString();
+                } else title.title.Value = "";
+                
+                // switch (currentGameMode.name)
+                // {
+                //     case GameModeName.Deathmatch:
+                //         Deathmatch();
+                //         break;
+                //     case GameModeName.King_of_the_Paul_House:
+                //         King_of_the_Paul_House();
+                //         break;
+                //     case GameModeName.Capture_the_GPU:
+                //         Capture_the_GPU();
+                //         break;
+                //     case GameModeName.Dont_Hold_the_C4:
+                //         Dont_Hold_the_C4();
+                //         break;
+                //     case GameModeName.Sumo:
+                //         Sumo();
+                //         break;
+                // }
+
+                if(gameTimer <= 0)
                 {
-                    case GameMode.Deathmatch:
-                        Deathmatch();
-                        break;
-                    case GameMode.King_of_the_Paul_House:
-                        King_of_the_Paul_House();
-                        break;
-                    case GameMode.Capture_the_GPU:
-                        Capture_the_GPU();
-                        break;
-                    case GameMode.Dont_Hold_the_C4:
-                        Dont_Hold_the_C4();
-                        break;
-                    case GameMode.Sumo:
-                        Sumo();
-                        break;
-                    case GameMode.Soccer_Pall:
-                        Soccer_Pall();
-                        break;
+                    if(currentGameMode.highestScoreWins)
+                    {
+                        PlayerData winner = null;
+                        foreach (PlayerData player in playerManager.Players)
+                        {
+                            if (winner == null)
+                            {
+                                winner = player;
+                                continue;
+                            }
+                            if (player.score > winner.score) winner = player;
+                        }
+                        playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
+
+                        title.title.Value = winner.ClientId.ToString() + " won";
+
+                    } else
+                    {
+                        title.title.Value = "Nobody won";
+                    }
+                    
+                    gameState = GameState.GameEnd;
+                }
+
+                if(currentGameMode.lastPlayerAliveWins && playerManager.playersAlive == 1)
+                {
+                    PlayerData winner = null;
+                    foreach (PlayerData player in playerManager.Players)
+                    {
+                        if (!player.isDead) winner = player;
+                    }
+                    playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
+
+                    title.title.Value = winner.ClientId.ToString() + " won";
+
+                    gameState = GameState.GameEnd;
                 }
 
                 break;
             case GameState.GameEnd:
+                if(onGameStateChange)
+                {
+                    playerManager.damageEnabled.Value = false;
+                    currentRoom.DoorClientRpc(1f, 1f); //open current
+                } 
+
                 endGameTimer += Time.fixedDeltaTime;
+
                 if (endGameTimer >= endGameTime)
                 {
                     endGameTimer = 0f;
@@ -216,21 +284,40 @@ public class GameManager : NetworkBehaviour
                 // Handle game over state
                 break;
         }
+    
+        onGameStateChange = false;
     }
 
-    void createRoom()
+    void CreateRoom()
     {
-        GameObject newRoom = Instantiate(roomPrefabs[Random.Range(0, roomPrefabs.Length)], currentRoom.spawnPoint.position, currentRoom.spawnPoint.rotation);
+        GameMode roomGameMode = prevGameMode;
+
+        float totalweight = 0;
+        foreach(var mode in gameModes)
+        {
+            totalweight += mode.gameModeWeight;
+        }
+        
+        float rand = Random.Range(0f, totalweight);
+        float currentWeight = 0f;
+        foreach(var mode in gameModes)
+        {
+            currentWeight += mode.gameModeWeight;
+            if(rand <= currentWeight)
+            {
+                roomGameMode = mode;
+                break;
+            }
+        }
+
+        GameObject newRoom = Instantiate(roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)], currentRoom.spawnPoint.position, currentRoom.spawnPoint.rotation);
         newRoom.GetComponent<NetworkObject>().Spawn(true);
-        GameMode _roomGameMode = GameMode.Deathmatch;
-        //GameMode _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
-        //if (_roomGameMode == prevGamemode) _roomGameMode = (GameMode)Random.Range(0, System.Enum.GetValues(typeof(GameMode)).Length);
-        newRoom.GetComponent<Room>().roomGameMode = _roomGameMode;
+        newRoom.GetComponent<Room>().GameMode = roomGameMode;
         roomList.Add(newRoom);
     }
 
-    void cleanObjects()
-    {
+    void CleanObjects()
+    {   
         for (int i = 0; i < worldObjects.Count; i++)
         {
             if (worldObjects[i].GetComponent<NetworkProp>().rb.transform.position.y < -10)
@@ -243,7 +330,26 @@ public class GameManager : NetworkBehaviour
 
     void Deathmatch()
     {
+        if(playerManager.damageEnabled.Value == false) playerManager.damageEnabled.Value = true;
 
+        if (playerManager.playersAlive == 1)
+        {
+            PlayerData winner = null;
+            foreach (PlayerData player in playerManager.Players)
+            {
+                if (winner == null)
+                {
+                    winner = player;
+                    continue;
+                }
+                if (player.score > winner.score) winner = player;
+            }
+            playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
+
+            title.title.Value = winner.ClientId.ToString() + " won";
+
+            gameState = GameState.GameEnd;
+        }
     }
 
     void King_of_the_Paul_House()
@@ -263,16 +369,11 @@ public class GameManager : NetworkBehaviour
     void Sumo()
     {
         // Handle Sumo game mode
-
-    }
-    void Soccer_Pall()
-    {
-        // Handle Soccer Pall game mode
     }
 
     public void RespawnEveryone()
     {
-        foreach (PlayerData player in PlayerManager.instance.Players)
+        foreach (PlayerData player in playerManager.Players)
         {
             if (!player.isDead)
             {
@@ -281,7 +382,7 @@ public class GameManager : NetworkBehaviour
                 player.score = 0;
                 continue;
             }
-            PlayerManager.instance.RespawnServerRpc(player.ClientId);
+            playerManager.RespawnServerRpc(player.ClientId);
         }
     }
 
@@ -289,7 +390,8 @@ public class GameManager : NetworkBehaviour
     {
         for (int i = 0; i < amount; i++)
         {
-            Vector3 pos = center + Random.insideUnitSphere * radius;
+            Vector2 ranCircle = Random.insideUnitCircle * radius;
+            Vector3 pos = center + new Vector3(ranCircle.x, 0f, ranCircle.y);
             pos.y = 10f;
             GameObject item = Instantiate(itemPrefabs[Random.Range(0, itemPrefabs.Length)], pos, Quaternion.identity);
             item.GetComponent<NetworkObject>().Spawn(true);
@@ -297,37 +399,39 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    void InitializeRoom()
+    void StartRoom()
     {
-        switch (gameMode)
-        {
-            case GameMode.Deathmatch:
-                CreateGameModeMap(DMPrefabs[Random.Range(0, DMPrefabs.Length)]);
-                SpawnItems(currentRoom.objectivePoint.position, 10f, (int)(PlayerManager.instance.Players.Count * 1.5f) + 5); //spawn items in the room
+        // GameObject gameModePrefab = null;
+        // switch (gameMode.name)
+        // {
+        //     case GameModeName.Deathmatch:
+        //         gameModePrefab = DMPrefabs[Random.Range(0, DMPrefabs.Length)];
+        //         SpawnItems(currentRoom.objectivePoint.position, 10f, (int)(playerManager.Players.Count * 1.5f) + 5); //spawn items in the room
 
-                break;
-            case GameMode.King_of_the_Paul_House:
-                CreateGameModeMap(KingPrefabs[Random.Range(0, KingPrefabs.Length)]);
-                break;
-            case GameMode.Capture_the_GPU:
-                CreateGameModeMap(GPUPrefabs[Random.Range(0, GPUPrefabs.Length)]);
-                break;
-            case GameMode.Dont_Hold_the_C4:
-                CreateGameModeMap(C4Prefabs[Random.Range(0, C4Prefabs.Length)]);
-                break;
-            case GameMode.Sumo:
-                CreateGameModeMap(SumoPrefabs[Random.Range(0, SumoPrefabs.Length)]);
-                break;
-            case GameMode.Soccer_Pall:
-                CreateGameModeMap(SoccerPrefabs[Random.Range(0, SoccerPrefabs.Length)]);
-                break;
-        }
+        //         break;
+        //     case GameModeName.King_of_the_Paul_House:
+        //         gameModePrefab = KingPrefabs[Random.Range(0, KingPrefabs.Length)];
+        //         break;
+        //     case GameModeName.Capture_the_GPU:
+        //         gameModePrefab = GPUPrefabs[Random.Range(0, GPUPrefabs.Length)];
+        //         break;
+        //     case GameModeName.Dont_Hold_the_C4:
+        //         gameModePrefab = C4Prefabs[Random.Range(0, C4Prefabs.Length)];
+        //         break;
+        //     case GameModeName.Sumo:
+        //         gameModePrefab = SumoPrefabs[Random.Range(0, SumoPrefabs.Length)];
+        //         break;
+        // }
+        //CreateGameModeMap(gameModePrefab);
+        if(currentGameMode.spawnItems) SpawnItems(currentRoom.objectivePoint.position, 10f, (int)(playerManager.Players.Count * 1.5f) + 4); //spawn items in the room
+
+        if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
     }
 
-    void CreateGameModeMap(GameObject GMPrefab) {
-        if (GMPrefab == null) return;
-        GameObject gameModeObject = Instantiate(GMPrefab, currentRoom.GetComponent<Room>().objectivePoint.position, Quaternion.identity);
-        gameModeObject.GetComponent<NetworkObject>().Spawn(true);
-        worldObjects.Add(gameModeObject);
-    }
+    // void CreateGameModeMap(GameObject GMPrefab) {
+    //     if (GMPrefab == null) return;
+    //     GameObject gameModeObject = Instantiate(GMPrefab, currentRoom.GetComponent<Room>().objectivePoint.position, Quaternion.identity);
+    //     gameModeObject.GetComponent<NetworkObject>().Spawn(true);
+    //     worldObjects.Add(gameModeObject);
+    // }
 }

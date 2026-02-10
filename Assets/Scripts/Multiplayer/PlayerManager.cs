@@ -12,6 +12,8 @@ public class PlayerManager : NetworkBehaviour
     public List<PlayerData> Players = new List<PlayerData>();
     public int playersAlive = 0;
 
+    public NetworkVariable<bool> damageEnabled = new();
+
     public override void OnNetworkSpawn() {
         instance = this;
         
@@ -63,7 +65,9 @@ public class PlayerManager : NetworkBehaviour
         ulong senderId = rpcParams.Receive.SenderClientId;
         int itarget = Players.FindIndex(x => x.ClientId == targetid);
         int isender = Players.FindIndex(x => x.ClientId == senderId);
-        Players[itarget].health -= damage;
+
+        if(damageEnabled.Value || damage == 1234f) Players[itarget].health -= damage;
+
         if(force != Vector3.zero) {
             Players[itarget].playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
         }

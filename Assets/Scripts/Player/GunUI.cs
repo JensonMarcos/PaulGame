@@ -54,16 +54,14 @@ public class GunUI : MonoBehaviour
         ammo.transform.localEulerAngles = new Vector3(Mathf.Lerp(ammo.transform.localEulerAngles.x, aiming ? 0f : 15f, speed * Time.deltaTime), 0f, 0f);
 
         //update ammo text
+        if(!PlayerManager.instance.damageEnabled.Value)
+        {
+            ammoText.text = "X";
+            ammoText.color = Color.red;
+            return;
+        }
+
         if(reloading > 0) {
-            // string text = reloadWord + _data.ammoCap.ToString();
-            // int maxIndex = text.Length - reloadWindowSize;
-
-            // // Map reloading (0–1) to a character index
-            // int index = Mathf.FloorToInt(reloading * (maxIndex + 1));
-            // index = Mathf.Clamp(index, 0, maxIndex);
-            
-            //ammoText.text = text.Substring(index, reloadWindowSize);
-
             int incrementAmmo = (int)(_data.ammoCap * (reloading/0.90f));
 
             ammoText.text = incrementAmmo.ToString();

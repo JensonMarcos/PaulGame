@@ -168,9 +168,9 @@ public class Player : NetworkBehaviour
 
         bool _auto = playerInventory.ClientInventory[playerInventory.InvIndex].data.isAutomatic;
         CombatInputs combatInputs = new CombatInputs {
-            Attack = inputs.Attack.IsPressed(),
+            Attack = _auto ? inputs.Attack.IsPressed() : inputs.Attack.WasPressedThisFrame(),
             Aim = inputs.Aim.IsPressed(),
-            Reload = _auto ? inputs.Reload.IsPressed() : inputs.Reload.WasPressedThisFrame()
+            Reload = inputs.Reload.WasPressedThisFrame()
         };
         playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
     }

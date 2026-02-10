@@ -91,6 +91,8 @@ public class PlayerCombat : MonoBehaviour
 
         if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
         {
+            if(!PlayerManager.instance.damageEnabled.Value) return;
+
             if(_item.Ammo <= 0) {
                 StartCoroutine(Reload(_item));
                 return;

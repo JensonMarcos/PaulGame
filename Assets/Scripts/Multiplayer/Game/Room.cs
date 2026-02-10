@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,7 +17,7 @@ public class Room : NetworkBehaviour
 
     public List<GameObject> playersInRoom;
 
-    public GameMode roomGameMode;
+    public GameMode GameMode;
     
     void Start() {
         anim = GetComponent<Animator>();
@@ -32,20 +33,19 @@ public class Room : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void DoorClientRpc(float open, float speed) {
-        // if(doorNum == 0) {
-        //     enterDoor.SetActive(open);
-        // } else {
-        //     exitDoor.SetActive(open);
-        // }
-
-        openState = open;
-        openSpeed = speed;
+    public void DoorClientRpc(float state, float time) {
+        StartCoroutine(ChangeDoorState(state, time));
     }
-
-    void Update()
-    {
-        anim.SetFloat("OpenState", Mathf.Lerp(anim.GetFloat("OpenState"), openState, Time.deltaTime * openSpeed));
+    
+    IEnumerator ChangeDoorState(float target, float time) {
+        float t = 0f;
+        float start = anim.GetFloat("OpenState");
+        while(t < 1f) {
+            t += Time.deltaTime / time;
+            anim.SetFloat("OpenState", Mathf.Lerp(start, target, easeInOutQuad(t)));
+            yield return null;
+        }
+        anim.SetFloat("OpenState", target);
     }
 
     void OnTriggerEnter(Collider other)
@@ -66,5 +66,9 @@ public class Room : NetworkBehaviour
                 playersInRoom.Remove(player);
             }
         }
+    }
+
+    float easeInOutQuad(float x) {
+        return x < 0.5 ? 2 * x * x : 1 - Mathf.Pow(-2 * x + 2, 2) / 2;
     }
 }
