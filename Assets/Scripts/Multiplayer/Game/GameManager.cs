@@ -38,9 +38,10 @@ public struct GameMode
 
     [Space]
     [Header("Timer")]
-    public bool useTimer;
+    public bool showTimer;
     public float gameTime;
     public bool highestScoreWins;
+    public float animTimeMult;
 
     [Space]
     [Header("Teams")]
@@ -200,7 +201,7 @@ public class GameManager : NetworkBehaviour
                 gameTimer -= Time.fixedDeltaTime;
                 int _time = (int)gameTimer;
                 
-                if(currentGameMode.useTimer) {
+                if(currentGameMode.showTimer) {
                     if(title.title.Value != _time.ToString()) title.title.Value = ((int)gameTimer).ToString();
                 } else title.title.Value = "";
                 

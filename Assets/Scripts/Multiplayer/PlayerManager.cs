@@ -26,6 +26,8 @@ public class PlayerManager : NetworkBehaviour
         foreach(ulong id in clients) {
             SpawnPlayer(id);
         }
+
+        damageEnabled.Value = true;
     }
 
     public override void OnNetworkDespawn() {
@@ -55,49 +57,66 @@ public class PlayerManager : NetworkBehaviour
         }
         GameObject player = Instantiate(playerPrefab);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
-        Players.Add(new PlayerData(player, id, 100f));
+        Players.Add(new PlayerData(player, id, 100f, "Player"+id));
 
         playersAlive = Players.Count(x => x.isDead == false);
+
+        //add existing players to scoreboard of new player, retarded ass code
+        foreach(PlayerData _player in Players) {
+            if(_player.ClientId == id) continue;
+            Players[Players.FindIndex(x => x.ClientId == id)].playerGameObject.GetComponent<Player>().AddOrRemoveScoreboardItemClientRpc(true, _player.ClientId, _player.name, _player.wins, _player.kills, _player.deaths);
+        }
+
+        //add new player to scoreboards of all players (including self)
+        foreach(PlayerData _player in Players) {
+            _player.playerGameObject.GetComponent<Player>().AddOrRemoveScoreboardItemClientRpc(true, id, Players[Players.FindIndex(x => x.ClientId == id)].name, 0, 0, 0);
+        }
     }
 
     [Rpc(SendTo.Server)]
     public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, RpcParams rpcParams = default) {
         ulong senderId = rpcParams.Receive.SenderClientId;
-        int itarget = Players.FindIndex(x => x.ClientId == targetid);
-        int isender = Players.FindIndex(x => x.ClientId == senderId);
+        PlayerData target = Players[Players.FindIndex(x => x.ClientId == targetid)];
+        PlayerData sender = Players[Players.FindIndex(x => x.ClientId == senderId)];
 
-        if(damageEnabled.Value || damage == 1234f) Players[itarget].health -= damage;
+        if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 
         if(force != Vector3.zero) {
-            Players[itarget].playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
+            target.playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
         }
 
-        if(Players[itarget].health <= 0 && !Players[itarget].isDead) {
-            Players[itarget].isDead = true;
+        if(target.health <= 0 && !target.isDead) { //player dies
+            target.isDead = true;
 
-            Players[itarget].deaths++;
-            Players[isender].kills++;
+            target.deaths++;
 
-            Players[isender].score += 100;
+            Vector3 pos = target.playerGameObject.GetComponent<Player>().playerCharacter.transform.position;
+            Quaternion rot = target.playerGameObject.GetComponent<Player>().playerCharacter.transform.rotation;
+            Vector3 vel = target.playerGameObject.GetComponent<Player>().playerState.Velocity;
 
-            Vector3 pos = Players[itarget].playerGameObject.GetComponent<Player>().playerCharacter.transform.position;
-            Quaternion rot = Players[itarget].playerGameObject.GetComponent<Player>().playerCharacter.transform.rotation;
-            Vector3 vel = Players[itarget].playerGameObject.GetComponent<Player>().playerState.Velocity;
-
-            Players[itarget].playerGameObject.GetComponent<Player>().DieClientRpc();
+            target.playerGameObject.GetComponent<Player>().DieClientRpc();
 
             GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
             ragdoll.GetComponent<NetworkObject>().Spawn();
             ragdoll.GetComponent<NetworkProp>().ApplyForceServerRpc(vel, ragdollPrefab.transform.position);
 
-            if(GameManager.instance != null) {
-                GameManager.instance.worldObjects.Add(ragdoll);
+            if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
 
-                //Players[itarget].health = 100f;
-                if(damage == 1234f)
-                {
-                    Players[itarget].playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.currentRoom.objectivePoint.position);
-                }
+            //self kill
+            if(damage == 1234f)
+            {
+                if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.currentRoom.objectivePoint.position);
+            } else
+            {
+                sender.kills++;
+                sender.score += 100;
+            }
+
+            foreach(PlayerData _player in Players) {
+                _player.playerGameObject.GetComponent<Player>().ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
+                _player.playerGameObject.GetComponent<Player>().ScoreboardUpdateClientRpc(sender.ClientId, sender.wins, sender.kills, sender.deaths);
+
+                _player.playerGameObject.GetComponent<Player>().AddKillfeedClientRpc($"{sender.name}  >  {target.name}", _player.ClientId == sender.ClientId || _player.ClientId == target.ClientId);
             }
         }
 
@@ -105,7 +124,7 @@ public class PlayerManager : NetworkBehaviour
 
         playersAlive = Players.Count(x => x.isDead == false);
 
-        print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {Players[itarget].health}");
+        print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {target.health}");
     }
 
     [Rpc(SendTo.Server)]
@@ -124,11 +143,12 @@ public class PlayerManager : NetworkBehaviour
 [System.Serializable]
 public class PlayerData
 {
-    public PlayerData(GameObject GO, ulong id, float hp)
+    public PlayerData(GameObject GO, ulong id, float hp, string _name)
     {
         playerGameObject = GO;
         ClientId = id;
         health = hp;
+        name = _name;
     }
 
     public GameObject playerGameObject;

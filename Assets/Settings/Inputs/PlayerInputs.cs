@@ -199,6 +199,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Tab"",
+                    ""type"": ""Button"",
+                    ""id"": ""afb9f389-cba3-4d59-bc00-6f90c913c71e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -443,6 +452,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""action"": ""NumKeys"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""568b8b7c-e251-4e1a-b6f1-4c0d1b9c4075"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Tab"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -463,6 +483,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Gameplay_Drop = m_Gameplay.FindAction("Drop", throwIfNotFound: true);
         m_Gameplay_Scroll = m_Gameplay.FindAction("Scroll", throwIfNotFound: true);
         m_Gameplay_NumKeys = m_Gameplay.FindAction("NumKeys", throwIfNotFound: true);
+        m_Gameplay_Tab = m_Gameplay.FindAction("Tab", throwIfNotFound: true);
     }
 
     ~@PlayerInputs()
@@ -555,6 +576,7 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Drop;
     private readonly InputAction m_Gameplay_Scroll;
     private readonly InputAction m_Gameplay_NumKeys;
+    private readonly InputAction m_Gameplay_Tab;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -614,6 +636,10 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/NumKeys".
         /// </summary>
         public InputAction @NumKeys => m_Wrapper.m_Gameplay_NumKeys;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/Tab".
+        /// </summary>
+        public InputAction @Tab => m_Wrapper.m_Gameplay_Tab;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -676,6 +702,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @NumKeys.started += instance.OnNumKeys;
             @NumKeys.performed += instance.OnNumKeys;
             @NumKeys.canceled += instance.OnNumKeys;
+            @Tab.started += instance.OnTab;
+            @Tab.performed += instance.OnTab;
+            @Tab.canceled += instance.OnTab;
         }
 
         /// <summary>
@@ -723,6 +752,9 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @NumKeys.started -= instance.OnNumKeys;
             @NumKeys.performed -= instance.OnNumKeys;
             @NumKeys.canceled -= instance.OnNumKeys;
+            @Tab.started -= instance.OnTab;
+            @Tab.performed -= instance.OnTab;
+            @Tab.canceled -= instance.OnTab;
         }
 
         /// <summary>
@@ -847,5 +879,12 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnNumKeys(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Tab" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTab(InputAction.CallbackContext context);
     }
 }

@@ -34,7 +34,7 @@ public class Room : NetworkBehaviour
 
     [Rpc(SendTo.ClientsAndHost)]
     public void DoorClientRpc(float state, float time) {
-        StartCoroutine(ChangeDoorState(state, time));
+        StartCoroutine(ChangeDoorState(state, time * GameMode.animTimeMult));
     }
     
     IEnumerator ChangeDoorState(float target, float time) {

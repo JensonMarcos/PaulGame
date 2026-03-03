@@ -173,6 +173,8 @@ public class Player : NetworkBehaviour
             Reload = inputs.Reload.WasPressedThisFrame()
         };
         playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
+
+        playerUI.SetInputs(inputs.Tab.IsPressed());
     }
 
     void UpdateState()
@@ -232,5 +234,24 @@ public class Player : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void TeleportClientRpc(Vector3 position) {
         if(IsOwner) playerCharacter.SetPosition(position);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void AddOrRemoveScoreboardItemClientRpc(bool add, ulong playerId, string playerName, int wins, int kills, int deaths) {
+        if(!IsOwner) return;
+        if(add) playerUI.scoreboard.AddItem(playerId, playerName, wins, kills, deaths);
+        else playerUI.scoreboard.RemoveItem(playerId);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void ScoreboardUpdateClientRpc(ulong playerId, int wins, int kills, int deaths) {
+        if(!IsOwner) return;
+        playerUI.scoreboard.UpdateItem(playerId, wins, kills, deaths);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void AddKillfeedClientRpc(string text, bool clientIncluded) {
+        if(!IsOwner) return;
+        playerUI.killfeed.AddKillfeedItem(text, clientIncluded);
     }
 }

@@ -1,12 +1,19 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PlayerUI : MonoBehaviour
 {
-    [SerializeField] GameObject canvas;
+    public Scoreboard scoreboard;
+    public Killfeed killfeed;
     [SerializeField] GunUI gunUI;
+
+    [SerializeField] GameObject canvas;
+    [SerializeField] Volume postProcessing;
     [SerializeField] GameObject crosshair;
     [SerializeField] GameObject scope;
     [SerializeField] float scopeThreshold = 0.99f;
+
+    bool tabPressed, tabLastPressed;
 
     public void Initialize(bool isOwner)
     {
@@ -14,7 +21,18 @@ public class PlayerUI : MonoBehaviour
         if(!isOwner)
         {
             canvas.SetActive(false);
+            postProcessing.enabled = false;
             return;
+        }
+    }
+
+    public void SetInputs(bool _tabPressed)
+    {
+        tabPressed = _tabPressed;
+        if(tabPressed != tabLastPressed)
+        {
+            scoreboard.InputUpdate(tabPressed);
+            tabLastPressed = tabPressed;
         }
     }
 
