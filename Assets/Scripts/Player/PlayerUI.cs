@@ -5,6 +5,7 @@ public class PlayerUI : MonoBehaviour
 {
     public Scoreboard scoreboard;
     public Killfeed killfeed;
+    public HUD hud;
     [SerializeField] GunUI gunUI;
 
     [SerializeField] GameObject canvas;

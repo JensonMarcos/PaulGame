@@ -85,6 +85,8 @@ public class PlayerManager : NetworkBehaviour
             target.playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
         }
 
+        target.playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(target.health);
+
         if(target.health <= 0 && !target.isDead) { //player dies
             target.isDead = true;
 
@@ -119,8 +121,6 @@ public class PlayerManager : NetworkBehaviour
                 _player.playerGameObject.GetComponent<Player>().AddKillfeedClientRpc($"{sender.name}  >  {target.name}", _player.ClientId == sender.ClientId || _player.ClientId == target.ClientId);
             }
         }
-
-        //Players[itarget].playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(Players[itarget].health);
 
         playersAlive = Players.Count(x => x.isDead == false);
 

@@ -5,8 +5,9 @@ using UnityEngine.InputSystem;
 public class Scoreboard : MonoBehaviour
 {
     public List<ScoreboardItem> items = new List<ScoreboardItem>();
-
+    [SerializeField] Transform layoutGroup;
     [SerializeField] GameObject scorboardItemPrefab;
+    [SerializeField] GameObject WKD;
     [SerializeField] int falloff;
 
     bool tabPressed;
@@ -25,6 +26,8 @@ public class Scoreboard : MonoBehaviour
                 item.canvasGroup.alpha = 1f;
 
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 1f;
+
+                WKD.SetActive(true);
             }
         }
         else
@@ -40,13 +43,15 @@ public class Scoreboard : MonoBehaviour
                 if(fallofftemp > 0) fallofftemp--;
 
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 0f;
+
+                WKD.SetActive(false);
             }
         }
     }
 
     public void AddItem(ulong playerId, string playerName, int wins, int kills, int deaths)
     {
-        ScoreboardItem item = Instantiate(scorboardItemPrefab, transform).GetComponent<ScoreboardItem>();
+        ScoreboardItem item = Instantiate(scorboardItemPrefab, layoutGroup).GetComponent<ScoreboardItem>();
         item.playerId = playerId;
         item.wins = wins;
 

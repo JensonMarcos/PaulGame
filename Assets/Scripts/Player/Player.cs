@@ -193,7 +193,13 @@ public class Player : NetworkBehaviour
         playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.ClientsAndHost)]
+    public void UpdateHealthClientRpc(float health) {
+        if(!IsOwner) return;
+        playerUI.hud.UpdateHealth(health);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
     public void DieClientRpc() {
         isDead = true;
         //if(IsServer) serverCollider.gameObject.layer = LayerMask.NameToLayer("Ghost");
@@ -209,6 +215,7 @@ public class Player : NetworkBehaviour
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
         playerCharacter.SetSpectator(true);
 
+        playerUI.hud.SetDead(true);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -224,6 +231,8 @@ public class Player : NetworkBehaviour
         playerAnimations.SetAnimationActive(true);
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
         playerCharacter.SetSpectator(false);
+
+        playerUI.hud.SetDead(false);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
