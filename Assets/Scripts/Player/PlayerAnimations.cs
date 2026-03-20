@@ -7,6 +7,7 @@ public class PlayerAnimations : NetworkBehaviour
     [SerializeField] BodyAnimation body;
     [SerializeField] HandsAnimation hands;
     [SerializeField] ItemAnimation item;
+    [SerializeField] FingerAnimation fingers;
     [SerializeField] PlayerCamera cam;
 
     [SerializeField] PlayerCharacter character;
@@ -14,8 +15,10 @@ public class PlayerAnimations : NetworkBehaviour
     public void Initialize()
     {
         body.Initialize();
+        fingers.Initialize();
         //hands.Initialize();
         body.BodyAnimator.enabled = false;
+        
     }
 
     //control animator
@@ -76,6 +79,8 @@ public class PlayerAnimations : NetworkBehaviour
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
         item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+
+        fingers.UpdateFingers();
     }
 
     // public void UpdateItem(PlayerState _state, ItemClient _item, Transform camTarget)
@@ -118,6 +123,7 @@ public class PlayerAnimations : NetworkBehaviour
     {
         //hands.ResetHands();
         hands.Pullout(_pullOutTime);
+        fingers.GripGun();
     }
 
     public void SetAnimationActive(bool _active)

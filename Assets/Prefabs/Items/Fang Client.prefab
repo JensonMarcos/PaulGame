@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3013250083669858047}
   - component: {fileID: 4210303473863103812}
   - component: {fileID: 7850544806735750823}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: g17Pistol_lowpoly
   m_TagString: Untagged
   m_Icon: {fileID: 0}

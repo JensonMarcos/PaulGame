@@ -1684,6 +1684,7 @@ MonoBehaviour:
   body: {fileID: 2292759806596770658}
   hands: {fileID: 7621855210100900278}
   item: {fileID: 7504670541029732348}
+  fingers: {fileID: 5540201145756040076}
   cam: {fileID: 7242442766532918349}
   character: {fileID: 3154624319263331040}
 --- !u!1 &2080416065396797856
@@ -7492,6 +7493,7 @@ GameObject:
   - component: {fileID: 2243326496528321038}
   - component: {fileID: 2292759806596770658}
   - component: {fileID: 1433011063803294000}
+  - component: {fileID: 5540201145756040076}
   m_Layer: 6
   m_Name: Y Bot
   m_TagString: Untagged
@@ -7583,7 +7585,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8210235116782953518}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2d8418b0b9634b1892b0268dd9c2743, type: 3}
   m_Name: 
@@ -7659,6 +7661,85 @@ MonoBehaviour:
   - {fileID: 7737640033001903415}
   - {fileID: 3089270415600591186}
   - {fileID: 1609890900829486359}
+--- !u!114 &5540201145756040076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8210235116782953518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95913add8d7c8f547a11a13bfb9093a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FingerAnimation
+  fingers:
+  - tip: {fileID: 9029464644479734002}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 5396720311905189703}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 7916446090466824893}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 6638906245704908015}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 5730948702871506900}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 5730948702871506900}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 1084032463006852423}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 8161839619048149808}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 2034677410997090561}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  - tip: {fileID: 7833251871344487634}
+    jointCount: 3
+    joints: []
+    jointDone: 
+    jointRot: []
+    fingerDone: 0
+  gunLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  maxCurlDegrees: 90
+  stepDegrees: 0.1
+  probeRadius: 0.007
 --- !u!1 &8269184702870122359
 GameObject:
   m_ObjectHideFlags: 0
