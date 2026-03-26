@@ -7674,12 +7674,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FingerAnimation
   fingers:
-  - tip: {fileID: 9029464644479734002}
-    jointCount: 3
-    joints: []
-    jointDone: 
-    jointRot: []
-    fingerDone: 0
   - tip: {fileID: 5396720311905189703}
     jointCount: 3
     joints: []
@@ -7693,12 +7687,6 @@ MonoBehaviour:
     jointRot: []
     fingerDone: 0
   - tip: {fileID: 6638906245704908015}
-    jointCount: 3
-    joints: []
-    jointDone: 
-    jointRot: []
-    fingerDone: 0
-  - tip: {fileID: 5730948702871506900}
     jointCount: 3
     joints: []
     jointDone: 
@@ -7738,7 +7726,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   maxCurlDegrees: 90
-  stepDegrees: 0.1
+  stepDegrees: 3
   probeRadius: 0.007
 --- !u!1 &8269184702870122359
 GameObject:

@@ -86,7 +86,8 @@ public class FingerAnimation : MonoBehaviour
 
             for(int j = 0; j < finger.jointCount; j++)
             {   
-                finger.joints[j].localEulerAngles = new Vector3(finger.jointRot[j], finger.joints[j].localEulerAngles.y, finger.joints[j].localEulerAngles.z);
+                //finger.joints[j].localEulerAngles = new Vector3(finger.jointRot[j], finger.joints[j].localEulerAngles.y, finger.joints[j].localEulerAngles.z);
+                finger.joints[j].localRotation = Quaternion.AngleAxis(finger.jointRot[j], Vector3.right);
             }
 
             //curl joints
@@ -96,11 +97,12 @@ public class FingerAnimation : MonoBehaviour
 
             for(int j = 0; j < finger.jointCount; j++)
             {   
-                if(finger.jointDone[j] || (j > 0 && !finger.jointDone[j-1])) continue;
+                if(finger.jointDone[j]) continue;
 
 
-                finger.jointRot[j] += stepDegrees;
-                finger.joints[j].localEulerAngles = new Vector3(finger.jointRot[j], finger.joints[j].localEulerAngles.y, finger.joints[j].localEulerAngles.z);
+                finger.jointRot[j] += stepDegrees/(j+1);
+                //finger.joints[j].localEulerAngles = new Vector3(finger.jointRot[j], finger.joints[j].localEulerAngles.y, finger.joints[j].localEulerAngles.z);
+                finger.joints[j].localRotation = Quaternion.AngleAxis(finger.jointRot[j], Vector3.right);
 
                 if(j >= finger.jointCount-1) {
                     if(JointHit(finger.tip, probeRadius)) finger.jointDone[j] = true;
