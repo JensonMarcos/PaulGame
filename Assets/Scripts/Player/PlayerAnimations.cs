@@ -80,7 +80,7 @@ public class PlayerAnimations : NetworkBehaviour
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
         item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
 
-        fingers.UpdateFingers();
+        //fingers.UpdateFingers();
     }
 
     // public void UpdateItem(PlayerState _state, ItemClient _item, Transform camTarget)

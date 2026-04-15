@@ -1,14 +1,15 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Unity.Collections;
 using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
 {
-    [SerializeField] Image bar;
+    public TMP_Text gameTitle;
 
     [SerializeField] TMP_Text healthText, hpText, deadText;
-
+    [SerializeField] Image bar;
     [SerializeField] float flashDuration;
 
     bool isDead;
@@ -30,6 +31,11 @@ public class HUD : MonoBehaviour
         bar.color = isDead ? Color.red : Color.blue;
 
         if(!isDead) hpText.text = "100";
+    }
+
+    public void OnTitleChanged(FixedString32Bytes previous, FixedString32Bytes current)
+    {
+        gameTitle.text = current.ToString();
     }
 
     IEnumerator FlashRed()

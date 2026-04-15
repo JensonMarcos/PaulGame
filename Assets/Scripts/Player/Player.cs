@@ -73,6 +73,13 @@ public class Player : NetworkBehaviour
 
         //serverCollider.Initialize(IsServer && !IsOwner);
 
+        if(IsOwner && GameManager.instance != null)
+        {
+            print("subed");
+            GameManager.instance.GameTitle.OnValueChanged += playerUI.hud.OnTitleChanged;
+        }
+            
+
         if(!IsOwner)
         {
             playerCharacter.Motor.enabled = false;
@@ -83,6 +90,9 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        if(IsOwner && GameManager.instance != null) 
+            GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
+        
         playerInputs.Dispose();
     }
 
@@ -262,5 +272,11 @@ public class Player : NetworkBehaviour
     public void AddKillfeedClientRpc(string text, bool clientIncluded) {
         if(!IsOwner) return;
         playerUI.killfeed.AddKillfeedItem(text, clientIncluded);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void ClearInventoryClientRpc() {
+        if(!IsOwner) return;
+        //playerInventory.ClearInventory();
     }
 }

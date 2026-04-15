@@ -15,6 +15,10 @@ public class PlayerManager : NetworkBehaviour
     public NetworkVariable<bool> damageEnabled = new();
 
     public override void OnNetworkSpawn() {
+        // if(instance) {
+        //     Destroy(gameObject);
+        //     return;
+        // }
         instance = this;
         
         if(!IsServer) return;
@@ -35,21 +39,11 @@ public class PlayerManager : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
     }
 
-    private void OnClientConnectedCallback(ulong id)
+    void OnClientConnectedCallback(ulong id)
     {
         if(!IsServer) return;
         SpawnPlayer(id);
     }
-
-    // void Start() {
-    //     if(!IsOwner || !IsServer) return;
-    //     instance = this;
-    //     List<ulong>clients = new List<ulong>(NetworkManager.Singleton.ConnectedClientsIds);
-    //     print(clients.Count);
-    //     foreach(ulong id in clients) {
-    //         SpawnPlayer(id);
-    //     }
-    // }
 
     void SpawnPlayer(ulong id) {
         foreach(PlayerData _player in Players) {
@@ -137,6 +131,26 @@ public class PlayerManager : NetworkBehaviour
         } 
 
         playersAlive = Players.Count(x => x.isDead == false);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void TeleportServerRpc(ulong playerid, Vector3 position, RpcParams rpcParams = default){
+        int id = Players.FindIndex(x => x.ClientId == playerid);
+        Players[id].playerGameObject.GetComponent<Player>().TeleportClientRpc(position);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void ClearInventoryServerRpc(RpcParams rpcParams = default){
+        for(int i = 0; i < Players.Count; i++) {
+            Players[i].playerGameObject.GetComponent<Player>().ClearInventoryClientRpc();
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void GiveItemServerRpc(string name, ulong playerid, RpcParams rpcParams = default)
+    {
+        int id = Players.FindIndex(x => x.ClientId == playerid);
+        
     }
 }
 
