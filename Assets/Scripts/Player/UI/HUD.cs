@@ -17,7 +17,7 @@ public class HUD : MonoBehaviour
     public void UpdateHealth(float health)
     {
         hpText.text = Mathf.CeilToInt(health).ToString();
-        StartCoroutine(FlashRed());
+        if(health < 100) StartCoroutine(FlashRed());
     }
 
     public void SetDead(bool _isDead)

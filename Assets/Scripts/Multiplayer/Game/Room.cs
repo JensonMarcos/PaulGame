@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+public enum doorState
+{
+    enter, //0
+    exit, //1
+    closed //0.5
+}
+
 public class Room : NetworkBehaviour
 {
     //public GameObject enterDoor, exitDoor;
@@ -33,13 +40,14 @@ public class Room : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void DoorClientRpc(float state, float time) {
+    public void DoorClientRpc(doorState state, float time) {
         StartCoroutine(ChangeDoorState(state, time * GameMode.animTimeMult));
     }
     
-    IEnumerator ChangeDoorState(float target, float time) {
+    IEnumerator ChangeDoorState(doorState state, float time) {
         float t = 0f;
         float start = anim.GetFloat("OpenState");
+        float target = state == doorState.enter ? 0f : state == doorState.exit ? 1f : 0.5f;
         while(t < 1f) {
             t += Time.deltaTime / time;
             anim.SetFloat("OpenState", Mathf.Lerp(start, target, easeInOutQuad(t)));

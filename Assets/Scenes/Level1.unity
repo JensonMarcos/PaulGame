@@ -684,11 +684,12 @@ MonoBehaviour:
   - {fileID: 507386311}
   itemList: {fileID: 11400000, guid: 6ea5b60b0df2d9c43916724e6745d235, type: 2}
   startingRoom: {fileID: 1453712072}
-  roomList: []
-  roomIndex: 0
-  currentRoom: {fileID: 0}
+  rooms:
+    previous: {fileID: 0}
+    current: {fileID: 0}
+    next: {fileID: 0}
   gameModes:
-  - name: 0
+  - name: Deathmatch
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
     gameModeWeight: 3
@@ -701,7 +702,7 @@ MonoBehaviour:
     animTimeMult: 1
     useTeams: 0
     numberOfTeams: 0
-  - name: 1
+  - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
     gameModeWeight: 1
@@ -714,7 +715,7 @@ MonoBehaviour:
     animTimeMult: 1
     useTeams: 0
     numberOfTeams: 0
-  - name: 4
+  - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
     gameModeWeight: 1
@@ -728,7 +729,7 @@ MonoBehaviour:
     useTeams: 0
     numberOfTeams: 0
   currentGameMode:
-    name: 0
+    name: 
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
@@ -2178,7 +2179,7 @@ MonoBehaviour:
   openSpeed: 1
   playersInRoom: []
   GameMode:
-    name: 0
+    name: 
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
