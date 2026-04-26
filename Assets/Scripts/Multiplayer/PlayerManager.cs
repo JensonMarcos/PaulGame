@@ -151,17 +151,18 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void ClearInventoryServerRpc(RpcParams rpcParams = default){
+    public void ClearItemServerRpc(int itemId = -1, RpcParams rpcParams = default){ //prolly switch this to clearing a specific player not all 
         for(int i = 0; i < Players.Count; i++) {
-            Players[i].playerGameObject.GetComponent<Player>().ClearInventoryClientRpc();
+            Players[i].playerGameObject.GetComponent<Player>().ClearItemClientRpc(itemId);
         }
     }
 
     [Rpc(SendTo.Server)]
-    public void GiveItemServerRpc(string name, ulong playerid, RpcParams rpcParams = default)
+    public void GiveItemServerRpc(int itemId, ulong playerId, RpcParams rpcParams = default)
     {
-        int id = Players.FindIndex(x => x.ClientId == playerid);
-        
+        NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
+        int id = Players.FindIndex(x => x.ClientId == playerId);
+        Players[id].playerGameObject.GetComponent<Player>().GiveItemClientRpc(netObj.NetworkObjectId);
     }
 }
 

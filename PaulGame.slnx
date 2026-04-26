@@ -75,6 +75,7 @@
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetVis.Configuration.csproj" />
   <Project Path="UnityEditor.UI.Analytics.csproj" />
+  <Project Path="Unity.VSCode.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkSolutionInterface.csproj" />
   <Project Path="Unity.Settings.Editor.csproj" />
   <Project Path="Unity.InputSystem.TestFramework.csproj" />

@@ -277,17 +277,20 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void SpawnItems(Vector3 center, float radius, int amount)
+    public void SpawnItem(GameObject prefab, Vector3 pos)
     {
-        for (int i = 0; i < amount; i++)
-        {
-            Vector2 ranCircle = Random.insideUnitCircle * radius;
-            Vector3 pos = center + new Vector3(ranCircle.x, 0f, ranCircle.y);
-            pos.y = 10f;
-            GameObject item = Instantiate(itemList.GetItem(itemList.GetRandomItemId()), pos, Quaternion.identity);
-            item.GetComponent<NetworkObject>().Spawn(true);
-            worldObjects.Add(item);
-        }
+        GameObject item = Instantiate(prefab, pos, Quaternion.identity);
+        item.GetComponent<NetworkObject>().Spawn(true);
+        worldObjects.Add(item);
+    }
+
+    public NetworkObject SpawnItem(int itemId)
+    {
+        GameObject item = Instantiate(itemList.GetItem(itemId), Vector3.down, Quaternion.identity);
+        NetworkObject netObj = item.GetComponent<NetworkObject>();
+        netObj.Spawn(true);
+        worldObjects.Add(item);
+        return netObj;
     }
 
     void CleanObjects()
@@ -333,8 +336,18 @@ public class GameManager : NetworkBehaviour
 
     void StartRoom()
     {
-        if(currentGameMode.spawnItems) SpawnItems(rooms.current.objectivePoint.position, 10f, (int)(playerManager.Players.Count * 1.5f) + 4); //spawn items in the room
-
+        if(currentGameMode.spawnItems)//spawn items in the room
+        {
+            float _radius = 10f;
+            for (int i = 0; i < (int)(playerManager.Players.Count * 1.5f) + 4; i++)
+            {
+                Vector2 ranCircle = Random.insideUnitCircle * _radius;
+                Vector3 pos = rooms.current.objectivePoint.position + new Vector3(ranCircle.x, 0f, ranCircle.y);
+                pos.y = 10f;
+                SpawnItem(itemList.GetItem(itemList.GetRandomItemId()), pos);
+            }
+        }
+        
         if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
 
         GameTitle.Value = "";

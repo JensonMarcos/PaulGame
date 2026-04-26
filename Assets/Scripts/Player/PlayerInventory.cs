@@ -114,54 +114,7 @@ public class PlayerInventory : NetworkBehaviour
     }
 
     public void TryPickUp() {
-        Item selectedItem = GetTarget();
-
-        if(selectedItem != currentHovered)
-        {
-            if(currentHovered != null) currentHovered.SetHovered(false);
-
-            currentHovered = selectedItem;
-
-            if(currentHovered != null) currentHovered.SetHovered(true);
-        }
-
-        if(selectedItem == null) return;
-
-        if(!wishPickUp) return;
-
-        int slot = selectedItem.data.slot;
-
-        if(Inventory[slot] != handsItem) Drop(slot);
-
-        selectedItem.GetComponent<Item>().ItemPickupServerRpc(transform.root.GetComponent<NetworkObject>());
-
-        Inventory[slot] = selectedItem.gameObject;
-        NetworkIDInventory[slot] = selectedItem.GetComponent<NetworkObject>().NetworkObjectId;
-
-        float _pullOutTime;
-        bool _animate = false;
-        if(Inventory[InvIndex] == handsItem || slot == InvIndex) { //equip item if hands out or if pickup in selected index
-            InvIndex = slot;
-
-            ReadyPull = false;
-            
-            _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
-            StopCoroutine("WaitToReadyPull");
-            StartCoroutine(WaitToReadyPull(_pullOutTime));
-
-            _animate = true;
-        }
-
-        SyncClientInventory();
-
-        _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
-        Select(InvIndex, _pullOutTime, _animate);
-        SelectServerRpc(InvIndex, _pullOutTime, _animate);
-
-    }
-
-    Item GetTarget()
-    {
+        //find target (change later to be better)
         RaycastHit[] hits = Physics.RaycastAll(cam.position, cam.forward, pickupDistance, pickupMask, QueryTriggerInteraction.Collide);
 
         Item closestInner = null;
@@ -199,7 +152,53 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        return closestInner != null ? closestInner : closestOuter;
+        //pickup/hover logic
+        Item selectedItem = closestInner != null ? closestInner : closestOuter;
+
+        if(selectedItem != currentHovered)
+        {
+            if(currentHovered != null) currentHovered.SetHovered(false);
+
+            currentHovered = selectedItem;
+
+            if(currentHovered != null) currentHovered.SetHovered(true);
+        }
+
+        if(selectedItem == null) return;
+
+        if(!wishPickUp) return;
+
+        PickupItem(selectedItem);
+    }
+
+    void PickupItem(Item item)
+    {
+        int slot = item.data.slot;
+
+        if(Inventory[slot] != handsItem) Drop(slot);
+
+        item.ItemPickupServerRpc(transform.root.GetComponent<NetworkObject>());
+
+        Inventory[slot] = item.gameObject;
+        NetworkIDInventory[slot] = item.GetComponent<NetworkObject>().NetworkObjectId;
+
+        float _pullOutTime;
+        bool _animate = false;
+        if(Inventory[InvIndex] == handsItem || slot == InvIndex)
+        {
+            InvIndex = slot;
+            ReadyPull = false;
+            _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            StopCoroutine("WaitToReadyPull");
+            StartCoroutine(WaitToReadyPull(_pullOutTime));
+            _animate = true;
+        }
+
+        SyncClientInventory();
+
+        _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+        Select(InvIndex, _pullOutTime, _animate);
+        SelectServerRpc(InvIndex, _pullOutTime, _animate);
     }
 
     void Drop(int i)
@@ -219,6 +218,26 @@ public class PlayerInventory : NetworkBehaviour
                 Drop(i);
             }
         }
+    }
+
+    public void GiveItem(ulong itemNetworkId)
+    {
+        NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out var netObj);
+        if(netObj == null) return;
+        PickupItem(netObj.GetComponent<Item>());
+    }
+
+    public void ClearItem(int itemId = -1) //-1 or no param to clear full inventory
+    {
+        for (int i = 0; i < Inventory.Length; i++)
+        {
+            if(Inventory[i] == handsItem) continue;
+            if(itemId != -1 && GameManager.instance.itemList.GetItemId(Inventory[i]) != itemId) continue;
+            Inventory[i].GetComponent<Item>().ItemClearServerRpc();
+            Inventory[i] = handsItem;
+            NetworkIDInventory[i] = 0UL;
+        }
+        SyncClientInventory();
     }
 
     [Rpc(SendTo.Server)]

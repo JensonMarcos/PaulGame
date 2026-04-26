@@ -275,8 +275,14 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void ClearInventoryClientRpc() {
+    public void ClearItemClientRpc(int itemId = -1) {
         if(!IsOwner) return;
-        //playerInventory.ClearInventory();
+        playerInventory.ClearItem(itemId);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void GiveItemClientRpc(ulong itemNetworkId) {
+        if(!IsOwner) return;
+        playerInventory.GiveItem(itemNetworkId);
     }
 }

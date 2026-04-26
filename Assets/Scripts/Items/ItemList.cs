@@ -27,6 +27,18 @@ public class ItemList : ScriptableObject
         return null;
     }
 
+    public int GetItemId(GameObject itemInstance)
+    {
+        ItemData data = itemInstance.GetComponent<Item>().data;
+        for(int i = 0; i < itemPool.Length; i++) {
+            if(itemPool[i].item.GetComponent<Item>().data == data) return itemPool[i].id;
+        }
+        for(int i = 0; i < specialItems.Length; i++) {
+            if(specialItems[i].item.GetComponent<Item>().data == data) return specialItems[i].id;
+        }
+        return -1;
+    }
+
     public int GetRandomItemId()
     {
         float totalWeight = 0f;

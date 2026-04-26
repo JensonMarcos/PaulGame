@@ -86,6 +86,12 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.ide.vscode": {
+      "version": "file:com.unity.ide.vscode",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.inputsystem": {
       "version": "1.18.0",
       "depth": 0,
@@ -120,7 +126,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.multiplayer.tools": {
-      "version": "2.2.7",
+      "version": "2.2.8",
       "depth": 0,
       "source": "registry",
       "dependencies": {

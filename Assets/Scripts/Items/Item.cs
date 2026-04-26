@@ -16,11 +16,10 @@ public class Item : NetworkBehaviour
     Rigidbody rb;
     Outline outline;
 
-    Transform ownerTransform;
+    //Transform ownerTransform;
 
     public override void OnNetworkSpawn()
     {
-        //HasOwner.OnValueChanged += OnOwnerChanged;
         itemCollider = GetComponent<Collider>();
         rb = GetComponent<Rigidbody>();
         outline = GetComponent<Outline>();
@@ -32,32 +31,27 @@ public class Item : NetworkBehaviour
         if(IsServer) Ammo.Value = data.ammoCap;
     }
 
-    public override void OnNetworkDespawn()
-    {
-        //HasOwner.OnValueChanged -= OnOwnerChanged;
-    }
-
-    void LateUpdate()
-    {
-        // if(HasOwner.Value)
-        // {
-        //     if(ownerTransform == null)
-        //     {
-        //         if(OwnerNetObj.Value.TryGet(out var obj))
-        //         {
-        //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
-        //         }
-        //     } else
-        //     { //called next frame, prob not an issue
-        //         transform.position = ownerTransform.position;
-        //         transform.rotation = ownerTransform.rotation;                
-        //     }
-        // } else
-        // {
-            // outline.enabled = hovered;
-            // if(hovered) hovered = false;
-        //}
-    }
+    // void LateUpdate()
+    // {
+    //     // if(HasOwner.Value)
+    //     // {
+    //     //     if(ownerTransform == null)
+    //     //     {
+    //     //         if(OwnerNetObj.Value.TryGet(out var obj))
+    //     //         {
+    //     //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
+    //     //         }
+    //     //     } else
+    //     //     { //called next frame, prob not an issue
+    //     //         transform.position = ownerTransform.position;
+    //     //         transform.rotation = ownerTransform.rotation;                
+    //     //     }
+    //     // } else
+    //     // {
+    //         // outline.enabled = hovered;
+    //         // if(hovered) hovered = false;
+    //     //}
+    // }
 
     public void SetHovered(bool value)
     {
@@ -102,6 +96,13 @@ public class Item : NetworkBehaviour
         itemCollider.enabled = true;
     }
 
+
+    [Rpc(SendTo.Server)]
+    public void ItemClearServerRpc()
+    {
+        GameManager.instance.worldObjects.Remove(gameObject);
+        GetComponent<NetworkObject>().Despawn(true);
+    }
     // void OnOwnerChanged(bool previousValue, bool newValue)
     // {
     //     if(newValue) //just assigned to owner
