@@ -680,8 +680,7 @@ MonoBehaviour:
         byte0027: 0
         byte0028: 0
         byte0029: 0
-  worldObjects:
-  - {fileID: 507386311}
+  worldObjects: []
   itemList: {fileID: 11400000, guid: 6ea5b60b0df2d9c43916724e6745d235, type: 2}
   startingRoom: {fileID: 1453712072}
   rooms:
@@ -1113,11 +1112,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 85a5f1e581782074dbebc57c3946e6b3, type: 3}
---- !u!1 &507386311 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8675460888937436188, guid: 85a5f1e581782074dbebc57c3946e6b3, type: 3}
-  m_PrefabInstance: {fileID: 507386310}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &586843950
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,6 +13,7 @@ public class PlayerManager : NetworkBehaviour
     public int playersAlive = 0;
 
     public NetworkVariable<bool> damageEnabled = new();
+    public bool reloadEnabled = true;
 
     public override void OnNetworkSpawn() {
         // if(instance) {

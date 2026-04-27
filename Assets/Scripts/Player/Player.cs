@@ -170,8 +170,8 @@ public class Player : NetworkBehaviour
             Interact = inputs.Interact.WasPressedThisFrame(),
             Drop = inputs.Drop.WasPressedThisFrame(),
             Velocity = playerCharacter.State.Velocity,
-            Scroll = inputs.Scroll.ReadValue<float>(),
-            NumKeys = (int)inputs.NumKeys.ReadValue<float>()-1
+            //Scroll = inputs.Scroll.ReadValue<float>(),
+            //NumKeys = (int)inputs.NumKeys.ReadValue<float>()-1
         };
         playerInventory.SetInputs(inventoryInputs);
 
@@ -180,7 +180,7 @@ public class Player : NetworkBehaviour
         CombatInputs combatInputs = new CombatInputs {
             Attack = _auto ? inputs.Attack.IsPressed() : inputs.Attack.WasPressedThisFrame(),
             Aim = inputs.Aim.IsPressed(),
-            Reload = inputs.Reload.WasPressedThisFrame()
+            Reload = PlayerManager.instance.reloadEnabled ? inputs.Reload.WasPressedThisFrame() : false
         };
         playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
 

@@ -27,8 +27,18 @@ public class Item : NetworkBehaviour
         outline.enabled = false;
 
         if(!IsOwner) rb.isKinematic = true;
-
-        if(IsServer) Ammo.Value = data.ammoCap;
+        
+        if(IsServer)
+        {
+            if(PlayerManager.instance != null)
+            {
+                Ammo.Value = PlayerManager.instance.reloadEnabled ? data.ammoCap : data.ammoSpawn;
+            } else
+            {
+                Ammo.Value = data.ammoCap;
+            }
+            
+        } 
     }
 
     // void LateUpdate()

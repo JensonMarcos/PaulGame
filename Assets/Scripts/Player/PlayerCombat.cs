@@ -94,7 +94,7 @@ public class PlayerCombat : MonoBehaviour
             if(!PlayerManager.instance.damageEnabled.Value) return;
 
             if(_item.Ammo <= 0) {
-                StartCoroutine(Reload(_item));
+                if(PlayerManager.instance.reloadEnabled) StartCoroutine(Reload(_item));
                 return;
             }
 
@@ -175,7 +175,7 @@ public class PlayerCombat : MonoBehaviour
             {
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
 
-                PlayerManager.instance.DealDamageServerRpc(hitObject.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, (cam.transform.forward + Vector3.up * upForceMult) * _data.impactForcePlayer);
+                PlayerManager.instance.DealDamageServerRpc(hitObject.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult);
                 
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);

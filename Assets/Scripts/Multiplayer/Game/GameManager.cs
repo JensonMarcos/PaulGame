@@ -121,12 +121,12 @@ public class GameManager : NetworkBehaviour
         rooms.AddRoom(startingRoom.GetComponent<Room>());
         GameTitle.Value = "Waiting to start";
         playerManager.damageEnabled.Value = false;
+        playerManager.reloadEnabled = false;
         CreateRoom();
     }
 
     void OnGameStateChange(GameState newState)
     {
-        CleanObjects();
         switch (newState)
         {
             case GameState.Lobby:
@@ -134,6 +134,8 @@ public class GameManager : NetworkBehaviour
             case GameState.MoveRoom:
                 playerManager.damageEnabled.Value = false;
                 playerManager.RespawnEveryone();
+                playerManager.ClearItemServerRpc();
+                CleanObjects();
 
                 rooms.NextRoom();
 
@@ -294,12 +296,14 @@ public class GameManager : NetworkBehaviour
     }
 
     void CleanObjects()
-    {   
-        for (int i = 0; i < worldObjects.Count; i++)
+    {
+        for (int i = worldObjects.Count - 1; i >= 0; i--)
         {
-            if (worldObjects[i].GetComponent<NetworkProp>().rb.transform.position.y < -10)
-            { //destroy objects that fall off the map
-                worldObjects[i].GetComponent<NetworkObject>().Despawn(true);
+            GameObject obj = worldObjects[i];
+            NetworkProp prop = obj.GetComponent<NetworkProp>();
+            if (obj.GetComponent<Item>() != null || (prop != null && prop.rb.transform.position.y < -10))
+            {
+                obj.GetComponent<NetworkObject>().Despawn(true);
                 worldObjects.RemoveAt(i);
             }
         }

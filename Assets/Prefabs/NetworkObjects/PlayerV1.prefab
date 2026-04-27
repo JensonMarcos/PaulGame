@@ -1605,7 +1605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1440644931
+  GlobalObjectIdHash: 2222791315
   InScenePlacedSourceGlobalObjectIdHash: 1440644931
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1667,7 +1667,7 @@ MonoBehaviour:
   shootLayer:
     serializedVersion: 2
     m_Bits: 1745
-  upForceMult: 0.5
+  upForceMult: 3
 --- !u!114 &8215228522949132519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2003,7 +2003,7 @@ MonoBehaviour:
   worldMask:
     serializedVersion: 2
     m_Bits: 1025
-  throwForce: 10
+  throwForce: 15
 --- !u!1 &2272965483068478813
 GameObject:
   m_ObjectHideFlags: 0

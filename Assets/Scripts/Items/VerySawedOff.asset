@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VerySawedOff
   m_EditorClassIdentifier: 
   type: 2
-  slot: 1
+  slot: 0
   damage: 3.5
   position: {x: 0.14, y: -0.27, z: 0.22}
   pullOutTime: 0.3
@@ -21,6 +21,7 @@ MonoBehaviour:
   attackDelay: 0
   reloadSpeed: 1.5
   ammoCap: 2
+  ammoSpawn: 10
   isAutomatic: 1
   range: 100
   shootRadius: 0
@@ -42,4 +43,4 @@ MonoBehaviour:
   WidTopBot: {x: 0.6, y: 0.1, z: 0.1}
   impactForceObject: 20
   impactForcePlayer: 0
-  backwardVelocity: 5
+  backwardVelocity: 10

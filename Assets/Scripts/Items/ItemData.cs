@@ -29,6 +29,7 @@ public class ItemData : ScriptableObject
     [ShowIf("isMelee")] public float attackDelay;
     [ShowIf("isGun")] public float reloadSpeed;
     [ShowIf("isGun")] public int ammoCap;
+    [ShowIf("isGun")] public int ammoSpawn;
     public bool isAutomatic;
     public float range;
     public float shootRadius;
@@ -49,6 +50,8 @@ public class ItemData : ScriptableObject
     //[ShowIf("isGun")] public Vector3 adsOff;
 
     [Header("Animation")] 
+    public bool RightHandIK;
+    public bool LeftHandIK;
     [ShowIf("isGun")] public float backKick;
     // [ShowIf("isGun")] public float upKick;
     // [ShowIf("isGun")] public float randomKick;

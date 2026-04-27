@@ -372,6 +372,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void AddForce(Vector3 force)
     {
+        Motor.ForceUnground();
         Motor.BaseVelocity += force;
     }
 }
