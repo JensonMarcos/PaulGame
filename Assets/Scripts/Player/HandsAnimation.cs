@@ -16,7 +16,9 @@ public class HandsAnimation : MonoBehaviour
     [Header("Rig")]
     public HandRig RHand, LHand;
     [Range(0, 1)]
-    public float HandIKWeight;
+    public float RHandIKWeight;
+    [Range(0, 1)]
+    public float LHandIKWeight;
     [SerializeField] Transform HandParent;
     [SerializeField] float weightChangeSpeed;
 
@@ -54,12 +56,13 @@ public class HandsAnimation : MonoBehaviour
     //     //readyPunch = true;
     // }
 
-    public void UpdateRigs(Transform _rHand, Transform _lHand, bool _sprinting)
+    public void UpdateRigs(Transform _rHand, Transform _lHand, bool _rHandIK, bool _lHandIK)
     {
-        float targetWeight = _sprinting ? 0f : 1f;
-        HandIKWeight = Mathf.Lerp(HandIKWeight, targetWeight, weightChangeSpeed * Time.deltaTime);
+        RHandIKWeight = Mathf.Lerp(RHandIKWeight, _rHandIK ? 1f : 0f, weightChangeSpeed * Time.deltaTime);
+        LHandIKWeight = Mathf.Lerp(LHandIKWeight, _lHandIK ? 1f : 0f, weightChangeSpeed * Time.deltaTime);
 
-        RHand.IK.Weight = LHand.IK.Weight = HandIKWeight; //change this to individual weights later
+        RHand.IK.Weight = RHandIKWeight;
+        LHand.IK.Weight = LHandIKWeight;
 
         if (_rHand != null)
         {
@@ -73,10 +76,8 @@ public class HandsAnimation : MonoBehaviour
             LHand.hand.rotation = _lHand.rotation;
         }
 
-
         RHand.IK.ResolveIK();
         LHand.IK.ResolveIK();
-
     }
 
     public void UpdateTransform(Transform _target, float _reloading)

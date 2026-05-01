@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Netcode.Transports.Facepunch;
+using Steamworks;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -52,7 +54,7 @@ public class PlayerManager : NetworkBehaviour
         }
         GameObject player = Instantiate(playerPrefab);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
-        Players.Add(new PlayerData(player, id, 100f, "Player"+id));
+        Players.Add(new PlayerData(player, id, 100f, GetPlayerName(id)));
 
         playersAlive = Players.Count(x => x.isDead == false);
 
@@ -68,11 +70,49 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
+    string GetPlayerName(ulong id)
+    {
+        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is FacepunchTransport)
+        {
+            if (id == NetworkManager.ServerClientId) return SteamClient.Name;
+
+            if (SteamManager.Instance != null && SteamManager.Instance.Players != null)
+            {
+                foreach (Friend friend in SteamManager.Instance.Players)
+                {
+                    if (friend.Id == SteamClient.SteamId) continue;
+                    if (Players.All(p => p.name != friend.Name)) return friend.Name;
+                }
+            }
+        }
+        return "Player" + id;
+    }
+
+    public void AssignTeamsRandomly(int numberOfTeams)
+    {
+        List<PlayerData> shuffled = new List<PlayerData>(Players);
+        for (int i = shuffled.Count - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
+        }
+        for (int i = 0; i < shuffled.Count; i++)
+            shuffled[i].team = i % numberOfTeams;
+    }
+
+    public void AssignTeamsFFA()
+    {
+        foreach (PlayerData player in Players)
+            player.team = -1;
+    }
+
     [Rpc(SendTo.Server)]
     public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, RpcParams rpcParams = default) {
         ulong senderId = rpcParams.Receive.SenderClientId;
         PlayerData target = Players[Players.FindIndex(x => x.ClientId == targetid)];
         PlayerData sender = Players[Players.FindIndex(x => x.ClientId == senderId)];
+
+        if (damage != 1234f && sender.team >= 0 && sender.team == target.team) return;
 
         if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 
@@ -184,4 +224,5 @@ public class PlayerData
     public int kills, deaths, wins, score;
     public float health;
     public bool isDead = false;
+    public int team = -1;
 }

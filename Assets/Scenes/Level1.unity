@@ -741,8 +741,8 @@ MonoBehaviour:
     useTeams: 0
     numberOfTeams: 0
   moveTime: 8
-  startGameTime: 2
-  endGameTime: 3
+  startGameTime: 3
+  endGameTime: 2
 --- !u!4 &320267739
 Transform:
   m_ObjectHideFlags: 0

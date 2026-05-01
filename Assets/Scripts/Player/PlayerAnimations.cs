@@ -66,7 +66,8 @@ public class PlayerAnimations : NetworkBehaviour
         body.UpdateRigs(_state.Aiming);
 
         hands.UpdateTransform(camTarget, _state.Reloading);
-        hands.UpdateRigs(_item.RHand, _item.LHand, _state.Stance == Stance.Sprint && _state.Melee);
+        bool _ikSprint = _state.Stance == Stance.Sprint && _state.Melee;
+        hands.UpdateRigs(_item.RHand, _item.LHand, _item.data.RightHandIK || !_ikSprint, _item.data.LeftHandIK || !_ikSprint);
 
         Vector3 aimPos = _item.data.position; //if no sight, just keep same position
         if(_item.sight != null)

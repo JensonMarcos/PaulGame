@@ -933,7 +933,8 @@ MonoBehaviour:
   LHand:
     hand: {fileID: 8939073109438496829}
     IK: {fileID: 3323332558862989012}
-  HandIKWeight: 1
+  RHandIKWeight: 0
+  LHandIKWeight: 0
   HandParent: {fileID: 2084209997749870633}
   weightChangeSpeed: 10
   pulloutPosOffset: {x: 0, y: -0.6, z: 0}
@@ -3433,8 +3434,8 @@ GameObject:
   - component: {fileID: 7773675455286079409}
   - component: {fileID: 6879331919013833267}
   - component: {fileID: 8858863824464472894}
-  - component: {fileID: 6339237259115234445}
-  - component: {fileID: 2482120587233285742}
+  - component: {fileID: 3967984365727901201}
+  - component: {fileID: 8703956499200701339}
   m_Layer: 3
   m_Name: Character
   m_TagString: Untagged
@@ -3595,7 +3596,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 80
   m_CollisionDetection: 1
---- !u!114 &6339237259115234445
+--- !u!114 &3967984365727901201
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3606,7 +3607,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
@@ -3619,7 +3620,7 @@ MonoBehaviour:
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
-  AuthorityMode: 1
+  AuthorityMode: 0
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
   SyncPositionX: 1
@@ -3641,7 +3642,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &2482120587233285742
+--- !u!114 &8703956499200701339
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3652,7 +3653,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkRigidbodyBaseExpanded: 0
   UseRigidBodyForMotion: 1

@@ -21,6 +21,7 @@ MonoBehaviour:
   attackDelay: 0
   reloadSpeed: 0
   ammoCap: 0
+  ammoSpawn: 0
   isAutomatic: 0
   range: 0
   shootRadius: 0
@@ -33,7 +34,9 @@ MonoBehaviour:
   returnSpeed: 0
   adsSpeed: 0
   adsZoom: 0
-  backKick: 0
+  RightHandIK: 1
+  LeftHandIK: 0
+  backKick: -0.2
   ADSAnimMult: 0
   numberOfShots: 0
   AmmoPos: {x: 0, y: 0, z: 0}

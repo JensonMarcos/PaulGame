@@ -34,6 +34,8 @@ MonoBehaviour:
   returnSpeed: 3.5
   adsSpeed: 1
   adsZoom: 40
+  RightHandIK: 1
+  LeftHandIK: 1
   backKick: 0.2
   ADSAnimMult: 1
   numberOfShots: 0

@@ -70,7 +70,7 @@ public class ItemData : ScriptableObject
     [Header("Physics")]
     public float impactForceObject;
     public float impactForcePlayer;
-    [ShowIf("isGun")] public float backwardVelocity;
+    public float backwardVelocity;
 
     public ItemData Clone()
     {

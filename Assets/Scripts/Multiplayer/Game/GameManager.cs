@@ -256,7 +256,7 @@ public class GameManager : NetworkBehaviour
                     if(winner != null)
                     {
                         playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
-                        GameTitle.Value = winner.ClientId.ToString() + " won";
+                        GameTitle.Value = winner.name + " won";
                     } else
                     {
                         GameTitle.Value = "Nobody won";
@@ -352,6 +352,11 @@ public class GameManager : NetworkBehaviour
             }
         }
         
+        if (currentGameMode.useTeams)
+            playerManager.AssignTeamsRandomly(currentGameMode.numberOfTeams);
+        else
+            playerManager.AssignTeamsFFA();
+
         if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
 
         GameTitle.Value = "";
