@@ -101,22 +101,22 @@ public class PlayerAnimations : NetworkBehaviour
 
     #region Shoot
     [Rpc(SendTo.Server)]
-    public void ShootServerRpc(Vector3 _recoil, float _backKick)
+    public void ShootServerRpc(Vector3 _recoil, float _backKick, float _rotKick)
     {
-        ShootClientRpc(_recoil, _backKick);
+        ShootClientRpc(_recoil, _backKick, _rotKick);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void ShootClientRpc(Vector3 _recoil, float _backKick)
+    public void ShootClientRpc(Vector3 _recoil, float _backKick, float _rotKick)
     {
         if(IsOwner) return;
-        Shoot(_recoil, _backKick);
+        Shoot(_recoil, _backKick, _rotKick);
     }
 
-    public void Shoot(Vector3 _recoil, float _backKick)
+    public void Shoot(Vector3 _recoil, float _backKick, float _rotKick)
     {
         cam.AddRotation(_recoil.x, _recoil.y, _recoil.z, 1);
-        item.AddTransform(new Vector3(0, 0, _backKick));
+        item.AddTransform(new Vector3(0, 0, _backKick), Quaternion.Euler(_rotKick, 0, 0));
     }
     #endregion
 

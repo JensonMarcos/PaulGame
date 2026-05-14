@@ -68,7 +68,7 @@ public class Player : NetworkBehaviour
         playerCharacter.Initialize();
         playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
         playerAnimations.Initialize();
-        playerUI.Initialize(IsOwner);
+        playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
 
         //serverCollider.Initialize(IsServer && !IsOwner);

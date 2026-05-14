@@ -27,6 +27,7 @@ public struct GameMode
     public bool lastPlayerAliveWins;
     public bool spawnItems;
     public bool doDamage;
+    public bool doPunching;
 
     [Space]
     [Header("Timer")]
@@ -205,6 +206,7 @@ public class GameManager : NetworkBehaviour
                         if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                         {
                             playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
+                            playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.objectivePoint.position);
                         }
                     }
 

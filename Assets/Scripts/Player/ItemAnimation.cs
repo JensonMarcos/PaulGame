@@ -58,8 +58,9 @@ public class ItemAnimation : MonoBehaviour
         transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, 0f);
     }
 
-    public void AddTransform(Vector3 pos)
+    public void AddTransform(Vector3 pos, Quaternion rot)
     {
         transform.localPosition += pos;
+        transform.localRotation *= rot;
     }
 }

@@ -7,9 +7,10 @@ public class Scoreboard : MonoBehaviour
     public List<ScoreboardItem> items = new List<ScoreboardItem>();
     [SerializeField] Transform layoutGroup;
     [SerializeField] GameObject scorboardItemPrefab;
-    [SerializeField] GameObject WKD;
+    [SerializeField] GameObject Header;
     [SerializeField] int falloff;
 
+    public ulong localPlayerId;
     bool tabPressed;
 
     public void InputUpdate(bool _tabPressed)
@@ -20,31 +21,35 @@ public class Scoreboard : MonoBehaviour
         {
             foreach (ScoreboardItem item in items)
             {
-                item.gradient.color = new Color(item.gradient.color.r, item.gradient.color.g, item.gradient.color.b, 0.67f);
-                item.gradient.rectTransform.localScale = Vector3.one;
+                // item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, 0.67f);
+                // item.bg.rectTransform.localScale = Vector3.one;
 
                 item.canvasGroup.alpha = 1f;
 
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 1f;
 
-                WKD.SetActive(true);
+                item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, item.playerId == localPlayerId ? 1f : 0f);
+
+                Header.SetActive(true);
             }
         }
         else
         {
-            int fallofftemp = falloff;
+            //int fallofftemp = falloff;
             foreach (ScoreboardItem item in items)
             {
-                item.gradient.color = new Color(item.gradient.color.r, item.gradient.color.g, item.gradient.color.b, 0.33f + 0.33f * fallofftemp/falloff);
-                item.gradient.rectTransform.localScale = new Vector3(0.5f + 0.5f * fallofftemp/falloff, 1f, 1f);
+                // item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, 0.33f + 0.33f * fallofftemp/falloff);
+                // item.bg.rectTransform.localScale = new Vector3(0.5f + 0.5f * fallofftemp/falloff, 1f, 1f);
 
-                item.canvasGroup.alpha = (float)fallofftemp/falloff;
+                item.canvasGroup.alpha = 0f;//(float)fallofftemp/falloff;
 
-                if(fallofftemp > 0) fallofftemp--;
+                //if(fallofftemp > 0) fallofftemp--;
 
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 0f;
 
-                WKD.SetActive(false);
+                item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, 0f);
+
+                Header.SetActive(false);
             }
         }
     }
@@ -54,6 +59,7 @@ public class Scoreboard : MonoBehaviour
         ScoreboardItem item = Instantiate(scorboardItemPrefab, layoutGroup).GetComponent<ScoreboardItem>();
         item.playerId = playerId;
         item.wins = wins;
+        item.kills = kills;
 
         item.playerNameText.text = playerName;
         item.winsText.text = wins.ToString();
@@ -81,6 +87,7 @@ public class Scoreboard : MonoBehaviour
         if (item != null)
         {
             item.wins = wins;
+            item.kills = kills;
             item.winsText.text = wins.ToString();
             item.killsText.text = kills.ToString();
             item.deathsText.text = deaths.ToString();
@@ -90,7 +97,11 @@ public class Scoreboard : MonoBehaviour
 
     void SortItems()
     {
-        items.Sort((a, b) => b.wins.CompareTo(a.wins));
+        items.Sort((a, b) =>
+        {
+            int winsCompare = b.wins.CompareTo(a.wins);
+            return winsCompare != 0 ? winsCompare : b.kills.CompareTo(a.kills);
+        });
         for (int i = 0; i < items.Count; i++)
         {
             items[i].transform.SetSiblingIndex(i);

@@ -5,17 +5,21 @@ public class Killfeed : MonoBehaviour
 {
     [SerializeField] GameObject killfeedItemPrefab;
 
-    [SerializeField] float itemLifetime, decayDelay, opacity, length;
+    [SerializeField] float itemLifetime, decayDelay, backgroundLengthRatio, backgroundLengthInit;//, opacity, length;
 
     public void AddKillfeedItem(string text, bool clientIncluded)
     {
         KillfeedItem item = Instantiate(killfeedItemPrefab, transform).GetComponent<KillfeedItem>();
         item.killText.text = text;
+        int num_chars = text.Length;
+        item.line.rectTransform.localScale = new Vector3(num_chars*backgroundLengthRatio+backgroundLengthInit, 1f, 1f);
 
-        if(!clientIncluded) //clientIncluded state is just the default prefab state im lazy
+        if(clientIncluded) //clientIncluded state is just the default prefab state im lazy  <- wtf does this mean
         {
-            item.gradient.color = new Color(item.gradient.color.r, item.gradient.color.g, item.gradient.color.b, opacity);
-            item.gradient.rectTransform.localScale = new Vector3(length, 1f, 1f);
+            // item.gradient.color = new Color(item.gradient.color.r, item.gradient.color.g, item.gradient.color.b, opacity);
+            // item.gradient.rectTransform.localScale = new Vector3(length, 1f, 1f);
+            item.line.color = Color.white;
+            item.killText.color = Color.blue;
         }
 
         StartCoroutine(KillfeedItemDecay(item));

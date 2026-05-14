@@ -36,7 +36,8 @@ MonoBehaviour:
   adsZoom: 65
   RightHandIK: 1
   LeftHandIK: 1
-  backKick: 0.2
+  backKick: 0.25
+  rotKick: 15
   ADSAnimMult: 0.5
   numberOfShots: 16
   AmmoPos: {x: -0.09, y: 0.09, z: 0.11}

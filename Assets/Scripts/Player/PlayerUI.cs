@@ -16,7 +16,7 @@ public class PlayerUI : MonoBehaviour
 
     bool tabPressed, tabLastPressed;
 
-    public void Initialize(bool isOwner)
+    public void Initialize(bool isOwner, ulong localPlayerId)
     {
         gunUI.Initialize(isOwner);
         if(!isOwner)
@@ -25,6 +25,7 @@ public class PlayerUI : MonoBehaviour
             postProcessing.enabled = false;
             return;
         }
+        scoreboard.localPlayerId = localPlayerId;
     }
 
     public void SetInputs(bool _tabPressed)

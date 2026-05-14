@@ -116,7 +116,7 @@ public class PlayerManager : NetworkBehaviour
 
         if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 
-        if(force != Vector3.zero) {
+        if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.currentGameMode.doPunching)) {
             target.playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
         }
 
@@ -142,7 +142,7 @@ public class PlayerManager : NetworkBehaviour
             //self kill
             if(damage == 1234f)
             {
-                if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.objectivePoint.position);
+                //if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.objectivePoint.position);
             } else
             {
                 sender.kills++;

@@ -37,6 +37,7 @@ MonoBehaviour:
   RightHandIK: 1
   LeftHandIK: 1
   backKick: 0.1
+  rotKick: 30
   ADSAnimMult: 0.5
   numberOfShots: 0
   AmmoPos: {x: -0.0724, y: 0.02, z: 0.1}

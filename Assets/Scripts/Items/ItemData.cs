@@ -53,7 +53,7 @@ public class ItemData : ScriptableObject
     public bool RightHandIK;
     public bool LeftHandIK;
     [ShowIf("isGun")] public float backKick;
-    // [ShowIf("isGun")] public float upKick;
+    [ShowIf("isGun")] public float rotKick;
     // [ShowIf("isGun")] public float randomKick;
     // [ShowIf("isGun")] public float animationReturn;
     [ShowIf("isGun")] public float ADSAnimMult;

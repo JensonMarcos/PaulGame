@@ -1,5 +1,4 @@
 using System.Collections;
-using NUnit.Framework;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -113,8 +112,9 @@ public class PlayerCombat : MonoBehaviour
 
             Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
             float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
-            animations.Shoot(_recoil, _backKick);
-            animations.ShootServerRpc(_recoil, _backKick);
+            float _rotKick = -_data.rotKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
+            animations.Shoot(_recoil, _backKick, _rotKick);
+            animations.ShootServerRpc(_recoil, _backKick, _rotKick);
 
             if(_data.backwardVelocity != 0 && !grounded) {
                 character.AddForce(-cam.forward * _data.backwardVelocity);
@@ -175,7 +175,8 @@ public class PlayerCombat : MonoBehaviour
             {
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
 
-                PlayerManager.instance.DealDamageServerRpc(hitObject.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult);
+                Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult;
+                PlayerManager.instance.DealDamageServerRpc(hitObject.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, _force);
                 
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);
