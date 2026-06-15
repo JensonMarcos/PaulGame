@@ -707,7 +707,7 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 0
     spawnItems: 0
     doDamage: 0
@@ -721,7 +721,7 @@ MonoBehaviour:
   - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 1
     spawnItems: 0
     doDamage: 0
@@ -2185,10 +2185,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  spawnPoint: {fileID: 2025917991}
-  objectivePoint: {fileID: 586843951}
+  roomSpawnPoint: {fileID: 2025917991}
+  respawnPoint: {fileID: 0}
+  moveSpawnPoint: {fileID: 0}
   objectsToSpawn: []
-  objectSpawnPoints: []
   anim: {fileID: 0}
   openSpeed: 1
   playersInRoom: []
@@ -3343,7 +3343,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2025917991}
   m_Layer: 0
-  m_Name: Spawning
+  m_Name: RoomSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

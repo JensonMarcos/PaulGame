@@ -183,6 +183,10 @@ public class PlayerCombat : MonoBehaviour
                 // hitSound.PlayOneShot(hitSound.clip, 1f);
                 // HUD.HUDHit(hitObject.transform.tag == "Head");
             } 
+            else if(hitObject.transform.root.GetComponent<ItemCrate>())
+            {
+                hitObject.transform.root.GetComponent<ItemCrate>().BreakCrateServerRpc();
+            }
             else if(hitObject.transform.root.GetComponent<NetworkProp>())
             {
                 hitObject.transform.root.GetComponent<NetworkProp>().ApplyForceServerRpc(cam.transform.forward * _data.impactForceObject, hitObject.point);

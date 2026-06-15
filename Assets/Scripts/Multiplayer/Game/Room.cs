@@ -10,13 +10,20 @@ public enum doorState
     closed //0.5
 }
 
+[System.Serializable]
+public struct SpawnObject
+{
+    public GameObject prefab;
+    public Transform point;
+}
+
 public class Room : NetworkBehaviour
 {
     //public GameObject enterDoor, exitDoor;
-    public Transform spawnPoint, objectivePoint;
+    public Transform roomSpawnPoint;
+    public Transform respawnPoint, moveSpawnPoint;
 
-    public GameObject[] objectsToSpawn;
-    public Transform[] objectSpawnPoints;
+    public List<SpawnObject> objectsToSpawn;
 
     public Animator anim;
     float openState = 0.5f;
@@ -32,8 +39,9 @@ public class Room : NetworkBehaviour
         anim.SetFloat("OpenState", openState);
 
         if(!IsServer) return;
-        for (int i = 0; i < objectsToSpawn.Length; i++) {
-            GameObject obj = Instantiate(objectsToSpawn[i], objectSpawnPoints[i].position, objectSpawnPoints[i].rotation);
+        foreach (SpawnObject spawnObject in objectsToSpawn) {
+            if (spawnObject.prefab == null || spawnObject.point == null) continue;
+            GameObject obj = Instantiate(spawnObject.prefab, spawnObject.point.position, spawnObject.point.rotation);
             obj.GetComponent<NetworkObject>().Spawn(true);
             GameManager.instance.worldObjects.Add(obj);
         }

@@ -1049,7 +1049,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3142574847516635038}
   m_Layer: 0
-  m_Name: ObjectiveSpawn
+  m_Name: Respawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1064,7 +1064,7 @@ Transform:
   m_GameObject: {fileID: 1894564701534766832}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 36}
+  m_LocalPosition: {x: 0, y: 1, z: 15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4087,6 +4087,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &6511625421664042186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7436486647488899236}
+  m_Layer: 0
+  m_Name: MoveSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7436486647488899236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6511625421664042186}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 40}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8617070619084925712}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6963714123175166548
 GameObject:
   m_ObjectHideFlags: 0
@@ -4797,6 +4828,7 @@ Transform:
   - {fileID: 5020998513219660648}
   - {fileID: 6188438813428130665}
   - {fileID: 3142574847516635038}
+  - {fileID: 7436486647488899236}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &888913911772537590
@@ -4811,7 +4843,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 623490795
+  GlobalObjectIdHash: 2412909885
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -4837,10 +4869,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  spawnPoint: {fileID: 6188438813428130665}
-  objectivePoint: {fileID: 3142574847516635038}
+  roomSpawnPoint: {fileID: 6188438813428130665}
+  respawnPoint: {fileID: 3142574847516635038}
+  moveSpawnPoint: {fileID: 7436486647488899236}
   objectsToSpawn: []
-  objectSpawnPoints: []
   anim: {fileID: 0}
   openSpeed: 2
   playersInRoom: []
@@ -4851,6 +4883,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     spawnItems: 0
     doDamage: 0
+    doPunching: 0
     showTimer: 0
     gameTime: 0
     highestScoreWins: 0
@@ -4934,7 +4967,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6188438813428130665}
   m_Layer: 0
-  m_Name: Spawning
+  m_Name: RoomSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

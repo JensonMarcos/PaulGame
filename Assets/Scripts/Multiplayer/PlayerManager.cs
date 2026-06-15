@@ -142,7 +142,7 @@ public class PlayerManager : NetworkBehaviour
             //self kill
             if(damage == 1234f)
             {
-                //if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.objectivePoint.position);
+                //if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
             } else
             {
                 sender.kills++;
@@ -165,6 +165,17 @@ public class PlayerManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void RespawnServerRpc(ulong playerid, RpcParams rpcParams = default){
         int id = Players.FindIndex(x => x.ClientId == playerid);
+        Revive(id);
+
+        //individual respawn during a round -> send them to the room's respawn point
+        if(GameManager.instance != null && GameManager.instance.rooms.current != null)
+            Players[id].playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
+
+        playersAlive = Players.Count(x => x.isDead == false);
+    }
+
+    void Revive(int id)
+    {
         if(Players[id].isDead) {
             Players[id].isDead = false;
             Players[id].health = 100f;
@@ -173,16 +184,16 @@ public class PlayerManager : NetworkBehaviour
             Players[id].health = 100f;
             Players[id].playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(100f);
         }
-
-        playersAlive = Players.Count(x => x.isDead == false);
     }
 
     public void RespawnEveryone()
     {
         foreach (PlayerData player in Players)
         {
-            RespawnServerRpc(player.ClientId);
+            Revive(Players.FindIndex(x => x.ClientId == player.ClientId));
         }
+
+        playersAlive = Players.Count(x => x.isDead == false);
     }
 
     [Rpc(SendTo.Server)]

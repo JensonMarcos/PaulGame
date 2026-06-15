@@ -100,6 +100,10 @@ public class GameManager : NetworkBehaviour
     public GameMode[] gameModes;
     public GameMode currentGameMode;
 
+    GameMode lastGameMode;
+    GameObject lastRoomPrefab;
+    bool hasLastRoom;
+
     [Space]
     [Header("Timers")]
     [SerializeField] float moveTime; 
@@ -206,7 +210,7 @@ public class GameManager : NetworkBehaviour
                         if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                         {
                             playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
-                            playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.objectivePoint.position);
+                            playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
                         }
                     }
 
@@ -311,6 +315,13 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void RemoveObject(GameObject obj)
+    {
+        if (!worldObjects.Contains(obj)) return;
+        worldObjects.Remove(obj);
+        obj.GetComponent<NetworkObject>().Despawn(true);
+    }
+
     void CreateRoom()
     {
         GameMode roomGameMode = new GameMode();
@@ -334,25 +345,38 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        GameObject newRoom = Instantiate(roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)], rooms.current.spawnPoint.position, rooms.current.spawnPoint.rotation);
+        GameObject roomPrefab = roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)];
+
+        //if the gamemode repeats, dont pick the same map again (unless its the only one)
+        if (hasLastRoom && roomGameMode.name == lastGameMode.name && roomGameMode.roomPrefabs.Length > 1)
+        {
+            while (roomPrefab == lastRoomPrefab)
+                roomPrefab = roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)];
+        }
+
+        GameObject newRoom = Instantiate(roomPrefab, rooms.current.roomSpawnPoint.position, rooms.current.roomSpawnPoint.rotation);
         newRoom.GetComponent<NetworkObject>().Spawn(true);
         newRoom.GetComponent<Room>().GameMode = roomGameMode;
         rooms.AddRoom(newRoom.GetComponent<Room>());
+
+        lastGameMode = roomGameMode;
+        lastRoomPrefab = roomPrefab;
+        hasLastRoom = true;
     }
 
     void StartRoom()
     {
-        if(currentGameMode.spawnItems)//spawn items in the room
-        {
-            float _radius = 10f;
-            for (int i = 0; i < (int)(playerManager.Players.Count * 1.5f) + 4; i++)
-            {
-                Vector2 ranCircle = Random.insideUnitCircle * _radius;
-                Vector3 pos = rooms.current.objectivePoint.position + new Vector3(ranCircle.x, 0f, ranCircle.y);
-                pos.y = 10f;
-                SpawnItem(itemList.GetItem(itemList.GetRandomItemId()), pos);
-            }
-        }
+        // if(currentGameMode.spawnItems)//spawn items in the room
+        // {
+        //     float _radius = 10f;
+        //     for (int i = 0; i < (int)(playerManager.Players.Count * 1.5f) + 4; i++)
+        //     {
+        //         Vector2 ranCircle = Random.insideUnitCircle * _radius;
+        //         Vector3 pos = rooms.current.moveSpawnPoint.position + new Vector3(ranCircle.x, 0f, ranCircle.y);
+        //         pos.y = 10f;
+        //         SpawnItem(itemList.GetItem(itemList.GetRandomItemId()), pos);
+        //     }
+        // }
         
         if (currentGameMode.useTeams)
             playerManager.AssignTeamsRandomly(currentGameMode.numberOfTeams);
