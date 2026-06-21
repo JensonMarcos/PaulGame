@@ -693,6 +693,7 @@ MonoBehaviour:
     - {fileID: 8812538440075657376, guid: aea3cd4dc6fc9d942a39680a419a15f5, type: 3}
     - {fileID: 8812538440075657376, guid: 0344eb5e8b47cd74c8a976bd32b3f62e, type: 3}
     - {fileID: 8812538440075657376, guid: 0eee629a07b16c54286b16a4dfa8d138, type: 3}
+    - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
     gameModeWeight: 1
     lastPlayerAliveWins: 1
     spawnItems: 1

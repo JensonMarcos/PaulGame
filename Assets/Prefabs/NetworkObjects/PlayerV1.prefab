@@ -3567,7 +3567,7 @@ MonoBehaviour:
   sprintSpeed: 15
   sprintAcceleration: 25
   airSpeed: 10
-  airAcceleration: 50
+  airAcceleration: 20
   crouchSpeed: 7
   crouchAcceleration: 20
   standHeight: 1.8
@@ -3582,6 +3582,9 @@ MonoBehaviour:
   slideThresholdSpeed: 11
   slideFriction: 0.8
   slideAcceleration: 5
+  wallJumpSpeed: 8
+  wallJumpPushSpeed: 4
+  wallCheckDistance: 0.1
 --- !u!136 &7773675455286079409
 CapsuleCollider:
   m_ObjectHideFlags: 8

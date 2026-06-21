@@ -90,6 +90,17 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float slideFriction;
     [SerializeField] float slideAcceleration;
 
+    [Space]
+    [Header("Wall Jump")]
+    [SerializeField] float wallJumpSpeed;
+    [SerializeField] float wallJumpPushSpeed;
+    [SerializeField] float wallCheckDistance;
+
+    Vector3 wallNormal, lastWallJumpNormal;
+    bool canWallJump;
+    bool touchingWall;
+    RaycastHit[] wallHits = new RaycastHit[8];
+
     public void Initialize()
     {
         Motor.CharacterController = this;
@@ -274,6 +285,18 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
                 currentVelocity += Motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
             }
+            else if (touchingWall && wallNormal != lastWallJumpNormal)
+            {
+                lastWallJumpNormal = wallNormal;
+
+                var currentVerticalSpeed = Vector3.Dot(currentVelocity, Motor.CharacterUp);
+                var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, wallJumpSpeed);
+                currentVelocity += Motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
+
+                var currentWallSpeed = Vector3.Dot(currentVelocity, wallNormal);
+                var targetWallSpeed = Mathf.Max(currentWallSpeed, wallJumpPushSpeed);
+                currentVelocity += wallNormal * (targetWallSpeed - currentWallSpeed);
+            }
             else
             {
                 timeJumpRequested += deltaTime;
@@ -326,9 +349,36 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
         }
 
+        UpdateWallContact();
+
         State.Grounded = Motor.GroundingStatus.IsStableOnGround;
         State.Velocity = Motor.Velocity;
         lastState = tempState;
+    }
+
+    void UpdateWallContact()
+    {
+        touchingWall = false;
+
+        if (Motor.GroundingStatus.IsStableOnGround)
+        {
+            lastWallJumpNormal = Vector3.zero;
+            wallNormal = Vector3.zero;
+            return;
+        }
+
+        if (wallNormal == Vector3.zero) return;
+
+        if (Motor.CharacterCollisionsSweep(Motor.TransientPosition, Motor.TransientRotation, -wallNormal, wallCheckDistance, out RaycastHit hit, wallHits) > 0
+            && Mathf.Abs(Vector3.Dot(hit.normal, Motor.CharacterUp)) < 0.1f)
+        {
+            wallNormal = hit.normal;
+            touchingWall = true;
+        }
+        else
+        {
+            wallNormal = Vector3.zero;
+        }
     }
 
     public void PostGroundingUpdate(float deltaTime)
@@ -347,7 +397,12 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
     {
+        //seed the wall direction
+        if (Motor.GroundingStatus.IsStableOnGround) return;
 
+        if (Mathf.Abs(Vector3.Dot(hitNormal, Motor.CharacterUp)) > 0.1f) return;
+
+        wallNormal = hitNormal;
     }
 
     public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition, Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)
