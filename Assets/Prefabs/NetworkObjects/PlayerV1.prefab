@@ -3562,29 +3562,32 @@ MonoBehaviour:
   spectatorLayerMask:
     serializedVersion: 2
     m_Bits: 1
-  walkSpeed: 10
-  walkAcceleration: 25
-  sprintSpeed: 15
-  sprintAcceleration: 25
-  airSpeed: 10
-  airAcceleration: 20
-  crouchSpeed: 7
-  crouchAcceleration: 20
+  walkSpeed: 8
+  walkAcceleration: 15
+  sprintSpeed: 12.5
+  sprintAcceleration: 20
+  airSpeed: 8
+  airSpeedCap: 1
+  airAcceleration: 10
+  crouchSpeed: 4
+  crouchAcceleration: 10
   standHeight: 1.8
   crouchHeight: 1.3
   camStandHeight: 1.75
   camCrouchHeight: 0.75
   jumpSpeed: 8
-  coyoteTime: 0.2
+  coyoteTime: 0.1
   gravity: -30
-  slideStartSpeed: 20
-  slideEndSpeed: 10
-  slideThresholdSpeed: 11
-  slideFriction: 0.8
+  slideStartSpeed: 15
+  slideEndSpeed: 8
+  slideThresholdSpeed: 9
+  slideFriction: 0.6
   slideAcceleration: 5
   wallJumpSpeed: 8
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1
+  vaultUpSpeed: 8
+  vaultCheckHeight: 1.5
 --- !u!136 &7773675455286079409
 CapsuleCollider:
   m_ObjectHideFlags: 8
@@ -3626,14 +3629,14 @@ MonoBehaviour:
   CapsuleYOffset: 1
   CapsulePhysicsMaterial: {fileID: 0}
   GroundDetectionExtraDistance: 0
-  MaxStableSlopeAngle: 60
+  MaxStableSlopeAngle: 46
   StableGroundLayers:
     serializedVersion: 2
     m_Bits: 4294967295
   DiscreteCollisionEvents: 0
   StepHandling: 1
-  MaxStepHeight: 0.5
-  AllowSteppingWithoutStableGrounding: 0
+  MaxStepHeight: 0.55
+  AllowSteppingWithoutStableGrounding: 1
   MinRequiredStepDepth: 0
   LedgeAndDenivelationHandling: 1
   MaxStableDistanceFromLedge: 0

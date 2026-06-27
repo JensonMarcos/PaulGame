@@ -66,6 +66,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [Space]
     [Header("Air")]
     [SerializeField] float airSpeed;
+    [SerializeField] float airSpeedCap;
     [SerializeField] float airAcceleration;
 
     [Space]
@@ -96,9 +97,14 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float wallJumpPushSpeed;
     [SerializeField] float wallCheckDistance;
 
+    [Space]
+    [Header("Vault")]
+    [SerializeField] float vaultUpSpeed;
+    [SerializeField] float vaultCheckHeight;
+
     Vector3 wallNormal, lastWallJumpNormal;
     bool canWallJump;
-    bool touchingWall;
+    bool canVault;
     RaycastHit[] wallHits = new RaycastHit[8];
 
     public void Initialize()
@@ -245,24 +251,45 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
             if (wishMovement.sqrMagnitude > 0f)
             {
-                var planarMovement = Vector3.ProjectOnPlane(wishMovement, Motor.CharacterUp);
-                var currentPlanarVelocity = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
-                var movementForce = planarMovement * airAcceleration * deltaTime;
-                //var movementForce = Accelerate(planarMovement, airSpeed, airAcceleration, currentPlanarVelocity);
+                // var planarMovement = Vector3.ProjectOnPlane(wishMovement, Motor.CharacterUp);
+                // var currentPlanarVelocity = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
+                // var movementForce = planarMovement * airAcceleration * deltaTime;
+                // //var movementForce = Accelerate(planarMovement, airSpeed, airAcceleration, currentPlanarVelocity);
 
-                if (currentPlanarVelocity.magnitude < airSpeed) //add air movement when below max speed
+                // if (currentPlanarVelocity.magnitude < airSpeed) //add air movement when below max speed
+                // {
+                //     var targetPlanarVelocity = currentPlanarVelocity + movementForce;
+                //     targetPlanarVelocity = Vector3.ClampMagnitude(targetPlanarVelocity, airSpeed);
+                //     movementForce = targetPlanarVelocity - currentPlanarVelocity;
+                // }
+                // else if (Vector3.Dot(currentPlanarVelocity, movementForce) > 0f)
+                // { //add movement force that isnt toward velocity
+                //     var constrainedMovementForce = Vector3.ProjectOnPlane(movementForce, currentPlanarVelocity.normalized);
+                //     movementForce = constrainedMovementForce;
+                // }
+
+                // currentVelocity += movementForce;
+                
+
+                //AIR STRAFING 
+
+                var wishDir = Vector3.ProjectOnPlane(wishMovement, Motor.CharacterUp).normalized;
+                var planarVel = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
+
+                // full desired air speed, plus the small cap Source applies for the accel test (air_speed_cap)
+                var wishSpeed = airSpeed;
+                var cappedWishSpeed = Mathf.Min(wishSpeed, airSpeedCap);
+
+                // how much of your velocity is already heading the way you're trying to go
+                var currentSpeed = Vector3.Dot(planarVel, wishDir);
+                var addSpeed = cappedWishSpeed - currentSpeed;
+
+                if (addSpeed > 0f)
                 {
-                    var targetPlanarVelocity = currentPlanarVelocity + movementForce;
-                    targetPlanarVelocity = Vector3.ClampMagnitude(targetPlanarVelocity, airSpeed);
-                    movementForce = targetPlanarVelocity - currentPlanarVelocity;
-                }
-                else if (Vector3.Dot(currentPlanarVelocity, movementForce) > 0f)
-                { //add movement force that isnt toward velocity
-                    var constrainedMovementForce = Vector3.ProjectOnPlane(movementForce, currentPlanarVelocity.normalized);
-                    movementForce = constrainedMovementForce;
+                    var accelSpeed = Mathf.Min(airAcceleration * wishSpeed * deltaTime, addSpeed);
+                    currentVelocity += wishDir * accelSpeed;
                 }
 
-                currentVelocity += movementForce;
             }
 
 
@@ -285,8 +312,16 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
                 currentVelocity += Motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
             }
-            else if (touchingWall && wallNormal != lastWallJumpNormal)
+            else if (canVault)
             {
+                wishJump = false;
+
+                currentVelocity = Motor.CharacterUp * vaultUpSpeed;
+            }
+            else if (canWallJump)
+            {
+                wishJump = false;
+
                 lastWallJumpNormal = wallNormal;
 
                 var currentVerticalSpeed = Vector3.Dot(currentVelocity, Motor.CharacterUp);
@@ -358,7 +393,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     void UpdateWallContact()
     {
-        touchingWall = false;
+        canWallJump = false;
+        canVault = false;
 
         if (Motor.GroundingStatus.IsStableOnGround)
         {
@@ -367,13 +403,21 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
             return;
         }
 
-        if (wallNormal == Vector3.zero) return;
+        if (wallNormal == Vector3.zero) return; //hasnt been seeded (didnt hit a wall)
 
-        if (Motor.CharacterCollisionsSweep(Motor.TransientPosition, Motor.TransientRotation, -wallNormal, wallCheckDistance, out RaycastHit hit, wallHits) > 0
-            && Mathf.Abs(Vector3.Dot(hit.normal, Motor.CharacterUp)) < 0.1f)
+        if (Motor.CharacterCollisionsSweep(Motor.TransientPosition, Motor.TransientRotation, -wallNormal, wallCheckDistance, out RaycastHit hit, wallHits) > 0 && Mathf.Abs(Vector3.Dot(hit.normal, Motor.CharacterUp)) < 0.1f)
         {
             wallNormal = hit.normal;
-            touchingWall = true;
+
+            if(wallNormal != lastWallJumpNormal)
+            {
+                canWallJump = true;
+            }
+
+            if(Vector3.Dot(transform.forward, wallNormal) < -0.5f && Motor.CharacterCollisionsRaycast(Motor.TransientPosition + Motor.CharacterUp * vaultCheckHeight, -wallNormal, Motor.Capsule.radius + wallCheckDistance, out _, wallHits) == 0)
+            {
+                canVault = true;
+            }
         }
         else
         {

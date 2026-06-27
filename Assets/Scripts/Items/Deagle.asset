@@ -15,7 +15,7 @@ MonoBehaviour:
   type: 0
   slot: 0
   damage: 34
-  position: {x: 0.12, y: -0.15, z: 0.3}
+  position: {x: 0.1, y: -0.18, z: 0.3}
   pullOutTime: 0.4
   fireRate: 3
   attackDelay: 0
