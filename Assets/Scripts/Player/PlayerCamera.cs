@@ -34,8 +34,8 @@ public class PlayerCamera : MonoBehaviour
     {
         FovSensitivity = cam.fieldOfView / defaultFov;
 
-        float xMovement = inputs.x * sensitivity * FovSensitivity;
-        float yMovement = -inputs.y * sensitivity * FovSensitivity;
+        float xMovement = inputs.x * sensitivity * FovSensitivity * 0.1f;
+        float yMovement = -inputs.y * sensitivity * FovSensitivity * 0.1f;
 
         // Calculate rotation from input
         realRotation = new Vector3(Mathf.Clamp(realRotation.x + yMovement, -89.9f, 89.9f), realRotation.y + xMovement, 0);
