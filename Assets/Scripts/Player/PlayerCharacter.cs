@@ -102,13 +102,19 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     [Space]
     [Header("Vault")]
-    [SerializeField] float vaultUpSpeed;
+    [SerializeField] float vaultForwardSpeed;
+    [SerializeField] float vaultExtraHeight;
     [SerializeField] float vaultCheckHeight;
 
     Vector3 wallNormal, lastWallJumpNormal;
     bool canWallJump;
     bool canVault;
     RaycastHit[] wallHits = new RaycastHit[8];
+
+    Vector3 vaultLandingPos;
+    Vector3 vaultForwardDir;
+    float vaultUpRemaining;
+    bool vaulting;
 
     float lurchTimer;
     bool movedLastFrame;
@@ -338,12 +344,32 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         }
         movedLastFrame = wishMovement.magnitude > 0.1f;
 
+        if (vaulting) {
+            if (vaultUpRemaining > 0f)
+            {
+                vaultUpRemaining -= Vector3.Dot(currentVelocity, Motor.CharacterUp) * deltaTime;
+            } else {
+                currentVelocity += vaultForwardDir * vaultForwardSpeed;
+                vaulting = false;
+            }
+        }
+
         if (wishJump)
         {
+            //probe for walls
+            UpdateWallContact();
+
             var grounded = Motor.GroundingStatus.IsStableOnGround;
             var canCoyote = timeUngrounded < coyoteTime && !ungroundedBcJump;
 
-            if (grounded || canCoyote)
+            if (!vaulting && canVault)
+            {
+                wishJump = false;
+                lurchTimer = 0f;
+
+                StartVault(ref currentVelocity);
+            }
+            else if (grounded || canCoyote)
             {
                 wishJump = false;
                 lurchTimer = 0f;
@@ -354,12 +380,6 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 var currentVerticalSpeed = Vector3.Dot(currentVelocity, Motor.CharacterUp);
                 var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
                 currentVelocity += Motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
-            }
-            else if (canVault)
-            {
-                wishJump = false;
-
-                currentVelocity = Motor.CharacterUp * vaultUpSpeed;
             }
             else if (canWallJump)
             {
@@ -431,7 +451,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
         }
 
-        UpdateWallContact();
+        if (Motor.GroundingStatus.IsStableOnGround) lastWallJumpNormal = Vector3.zero;
 
         State.Grounded = Motor.GroundingStatus.IsStableOnGround;
         State.Velocity = Motor.Velocity;
@@ -442,35 +462,96 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     {
         canWallJump = false;
         canVault = false;
+        wallNormal = Vector3.zero;
 
-        if (Motor.GroundingStatus.IsStableOnGround)
+        //fan sweeps out around the player to find a wall (the capsule radius makes each sweep a wide swath, so cardinal directions cover all sides)
+        const int directionCount = 4;
+        for (int i = 0; i < directionCount; i++)
         {
-            lastWallJumpNormal = Vector3.zero;
-            wallNormal = Vector3.zero;
-            return;
-        }
+            var direction = Quaternion.AngleAxis(i * (360f / directionCount), Motor.CharacterUp) * transform.forward;
 
-        if (wallNormal == Vector3.zero) return; //hasnt been seeded (didnt hit a wall)
+            if (Motor.CharacterCollisionsSweep(Motor.TransientPosition, Motor.TransientRotation, direction, wallCheckDistance, out RaycastHit hit, wallHits) == 0) continue;
 
-        if (Motor.CharacterCollisionsSweep(Motor.TransientPosition, Motor.TransientRotation, -wallNormal, wallCheckDistance, out RaycastHit hit, wallHits) > 0 && Mathf.Abs(Vector3.Dot(hit.normal, Motor.CharacterUp)) < 0.1f)
-        {
-            wallNormal = hit.normal;
+            //only near-vertical walls, ignore floors/ceilings
+            if (Mathf.Abs(Vector3.Dot(hit.normal, Motor.CharacterUp)) >= 0.1f) continue;
 
-            if(wallNormal != lastWallJumpNormal)
+            var normal = hit.normal;
+
+            //wall jump off any wall we didnt just jump from
+            if (!canWallJump && normal != lastWallJumpNormal)
             {
                 canWallJump = true;
+                wallNormal = normal;
             }
 
-            if(Vector3.Dot(transform.forward, wallNormal) < -0.5f && Motor.CharacterCollisionsRaycast(Motor.TransientPosition + Motor.CharacterUp * vaultCheckHeight, -wallNormal, Motor.Capsule.radius + wallCheckDistance, out _, wallHits) == 0)
+            //vault over a wall we are facing if theres a valid surface to land on
+            if (Vector3.Dot(transform.forward, normal) < -0.5f && TryFindVaultLanding(normal, out var landing))
             {
                 canVault = true;
+                wallNormal = normal;
+                vaultLandingPos = landing;
             }
         }
-        else
-        {
-            wallNormal = Vector3.zero;
-        }
     }
+
+    bool TryFindVaultLanding(Vector3 wallNormalDir, out Vector3 landing)
+    {
+        landing = Vector3.zero;
+
+        var up = Motor.CharacterUp;
+        var into = Vector3.ProjectOnPlane(-wallNormalDir, up).normalized;
+        var radius = Motor.Capsule.radius;
+
+        //the wall must be low enough that theres clearance to pass over it
+        if (Motor.CharacterCollisionsRaycast(Motor.TransientPosition + up * vaultCheckHeight, into, radius + wallCheckDistance, out _, wallHits) > 0)
+            return false;
+
+        //just past the edge so the feet land on stable ground without going deep onto the platform
+        var forwardDist = radius + wallCheckDistance + 0.1f;
+        var probeTop = Motor.TransientPosition + up * vaultCheckHeight + into * forwardDist;
+
+        //look down for the platform surface beneath the probe point
+        if (Motor.CharacterCollisionsRaycast(probeTop, -up, vaultCheckHeight + 0.2f, out RaycastHit hit, wallHits) == 0)
+            return false;
+
+        //only vault onto near-flat ground we can actually stand on
+        if (Vector3.Dot(hit.normal, up) < 0.7f) return false;
+
+        landing = hit.point;
+
+        //make sure the character fits at the landing spot
+        if (Motor.CharacterOverlap(landing + up * 0.05f, Motor.TransientRotation, uncrouchColliders, Motor.CollidableLayers, QueryTriggerInteraction.Ignore) > 0)
+            return false;
+
+        return true;
+    }
+
+    void StartVault(ref Vector3 currentVelocity)
+    {
+        vaulting = true;
+        ungroundedBcJump = true;
+        Motor.ForceUnground(0.1f);
+
+        var up = Motor.CharacterUp;
+        var toTarget = vaultLandingPos - Motor.TransientPosition;
+        var horizontal = Vector3.ProjectOnPlane(toTarget, up);
+
+        vaultForwardDir = horizontal.sqrMagnitude > 0f ? horizontal.normalized : Vector3.ProjectOnPlane(transform.forward, up).normalized;
+
+        //cancel sideways (left/right) velocity so the vault goes straight over the wall
+        var lateral = Vector3.Cross(up, vaultForwardDir).normalized;
+        currentVelocity -= lateral * Vector3.Dot(currentVelocity, lateral);
+
+        //rise this far before the forward force kicks in (the actual ledge height)
+        var climbHeight = Mathf.Max(0f, Vector3.Dot(toTarget, up));
+        vaultUpRemaining = climbHeight;
+
+        //launch a bit higher than the ledge
+        var launchSpeed = Mathf.Sqrt(2f * Mathf.Abs(gravity) * (climbHeight + vaultExtraHeight));
+        var currentUpSpeed = Vector3.Dot(currentVelocity, up);
+        currentVelocity += up * (launchSpeed - currentUpSpeed);
+    }
+
 
     public void PostGroundingUpdate(float deltaTime)
     {
@@ -488,12 +569,6 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
     {
-        //seed the wall direction
-        if (Motor.GroundingStatus.IsStableOnGround) return;
-
-        if (Mathf.Abs(Vector3.Dot(hitNormal, Motor.CharacterUp)) > 0.1f) return;
-
-        wallNormal = hitNormal;
     }
 
     public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition, Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)

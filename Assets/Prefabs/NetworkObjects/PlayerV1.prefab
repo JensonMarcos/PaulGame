@@ -3566,7 +3566,6 @@ MonoBehaviour:
   walkAcceleration: 12
   sprintSpeed: 12.5
   sprintAcceleration: 15
-  airSpeed: 8
   airAcceleration: 0.5
   lurchForce: 4
   lurchThreshold: 0.4
@@ -3587,7 +3586,8 @@ MonoBehaviour:
   wallJumpSpeed: 8
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1
-  vaultUpSpeed: 8
+  vaultForwardSpeed: 1.5
+  vaultExtraHeight: 0.2
   vaultCheckHeight: 1.5
   speedText: {fileID: 5350350435267155394}
 --- !u!136 &7773675455286079409
@@ -3638,7 +3638,7 @@ MonoBehaviour:
   DiscreteCollisionEvents: 0
   StepHandling: 1
   MaxStepHeight: 0.55
-  AllowSteppingWithoutStableGrounding: 1
+  AllowSteppingWithoutStableGrounding: 0
   MinRequiredStepDepth: 0
   LedgeAndDenivelationHandling: 1
   MaxStableDistanceFromLedge: 0
