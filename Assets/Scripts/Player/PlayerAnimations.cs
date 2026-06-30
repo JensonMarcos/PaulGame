@@ -120,6 +120,26 @@ public class PlayerAnimations : NetworkBehaviour
     }
     #endregion
 
+    #region HandPush
+    [Rpc(SendTo.Server)]
+    public void HandPushServerRpc(Vector3 force)
+    {
+        HandPushClientRpc(force);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void HandPushClientRpc(Vector3 force)
+    {
+        if(IsOwner) return;
+        HandPush(force);
+    }
+
+    public void HandPush(Vector3 force)
+    {
+        item.AddTransform(force, Quaternion.Euler(0, 0, 0));
+    }
+    #endregion
+
     public void SwitchItemAnimation(float _pullOutTime)
     {
         //hands.ResetHands();

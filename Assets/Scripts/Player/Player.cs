@@ -285,4 +285,9 @@ public class Player : NetworkBehaviour
         if(!IsOwner) return;
         playerInventory.GiveItem(itemNetworkId);
     }
+
+    public void HandPush(Vector3 force) {
+        playerAnimations.HandPushServerRpc(force);
+        playerAnimations.HandPush(force);
+    }
 }

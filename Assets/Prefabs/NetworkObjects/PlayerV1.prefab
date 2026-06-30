@@ -3586,6 +3586,7 @@ MonoBehaviour:
   wallJumpSpeed: 8
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1
+  handPushAmount: 0.05
   vaultForwardSpeed: 1.5
   vaultExtraHeight: 0.2
   vaultCheckHeight: 1.5

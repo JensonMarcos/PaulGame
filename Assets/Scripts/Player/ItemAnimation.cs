@@ -41,7 +41,7 @@ public class ItemAnimation : MonoBehaviour
             Vector3 aimTarget = cam.position + cam.forward * 100f;
             if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, 100f, groundMask.value))
             {
-                aimTarget = hit.point;
+                aimTarget = Vector3.Lerp(hit.point, aimTarget, Mathf.Pow(aimingValue, 2));
             }
 
             targetRot = Quaternion.LookRotation(aimTarget - transform.position);

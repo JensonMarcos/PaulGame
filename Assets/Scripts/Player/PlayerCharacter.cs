@@ -35,6 +35,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public Transform camTarget;
     public Transform root;
 
+    Player player;
+
     CharacterInputs characterInputs;
     Vector3 wishMovement;
     bool wishJump;
@@ -99,6 +101,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float wallJumpSpeed;
     [SerializeField] float wallJumpPushSpeed;
     [SerializeField] float wallCheckDistance;
+    [SerializeField] float handPushAmount;
 
     [Space]
     [Header("Vault")]
@@ -127,6 +130,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         Motor.SetCapsuleDimensions(Motor.Capsule.radius, standHeight, standHeight * 0.5f);
         State.Stance = Stance.Stand;
         lastState = State;
+        player = transform.root.GetComponent<Player>();
 
         uncrouchColliders = new Collider[8];
     }
@@ -362,7 +366,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
             var grounded = Motor.GroundingStatus.IsStableOnGround;
             var canCoyote = timeUngrounded < coyoteTime && !ungroundedBcJump;
 
-            if (!vaulting && canVault)
+            if (canVault)
             {
                 wishJump = false;
                 lurchTimer = 0f;
@@ -395,6 +399,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 var currentWallSpeed = Vector3.Dot(currentVelocity, wallNormal);
                 var targetWallSpeed = Mathf.Max(currentWallSpeed, wallJumpPushSpeed);
                 currentVelocity += wallNormal * (targetWallSpeed - currentWallSpeed);
+
+                player.HandPush(transform.InverseTransformDirection(-wallNormal) * handPushAmount);
             }
             else
             {
