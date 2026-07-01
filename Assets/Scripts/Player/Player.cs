@@ -290,4 +290,9 @@ public class Player : NetworkBehaviour
         playerAnimations.HandPushServerRpc(force);
         playerAnimations.HandPush(force);
     }
+
+    public void TriggerAnimation(string name) {
+        playerAnimations.TriggerAnimationServerRpc(name);
+        playerAnimations.TriggerAnimation(name);
+    }
 }

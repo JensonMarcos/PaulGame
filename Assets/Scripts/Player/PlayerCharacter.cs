@@ -17,7 +17,7 @@ public struct CharacterInputs
 
 public enum Stance : byte
 {
-    Stand, Crouch, Slide, Sprint
+    Stand, Crouch, Slide, Sprint, Vault
 }
 
 [System.Serializable]
@@ -217,7 +217,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 }
             }
             //move
-            if (State.Stance is Stance.Stand or Stance.Crouch or Stance.Sprint)
+            if (State.Stance is not Stance.Slide)
             {
                 if (State.Stance is Stance.Stand or Stance.Sprint) State.Stance = wishSprint ? Stance.Sprint : Stance.Stand;
 
@@ -227,6 +227,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                     Stance.Sprint => sprintSpeed,
                     Stance.Crouch => crouchSpeed,
                     Stance.Slide => 0f,
+                    Stance.Vault => 0f,
                     _ => 0f,
                 };
 
@@ -236,6 +237,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                     Stance.Sprint => sprintAcceleration,
                     Stance.Crouch => crouchAcceleration,
                     Stance.Slide => 0f,
+                    Stance.Vault => 0f,
                     _ => 0f,
                 };
 
@@ -351,10 +353,11 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         if (vaulting) {
             if (vaultUpRemaining > 0f)
             {
-                vaultUpRemaining -= Vector3.Dot(currentVelocity, Motor.CharacterUp) * deltaTime;
+                vaultUpRemaining -= deltaTime;
             } else {
                 currentVelocity += vaultForwardDir * vaultForwardSpeed;
                 vaulting = false;
+                State.Stance = Stance.Stand;
             }
         }
 
@@ -372,6 +375,9 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 lurchTimer = 0f;
 
                 StartVault(ref currentVelocity);
+
+                player.TriggerAnimation("Vault");
+                State.Stance = Stance.Vault;
             }
             else if (grounded || canCoyote)
             {
@@ -439,7 +445,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     /// </summary>
     public void AfterCharacterUpdate(float deltaTime)
     {
-        if (!wishCrouch && State.Stance is not (Stance.Stand or Stance.Sprint))
+        if (!wishCrouch && State.Stance is not (Stance.Stand or Stance.Sprint or Stance.Vault))
         {
             Motor.SetCapsuleDimensions(Motor.Capsule.radius, standHeight, standHeight * 0.5f);
 
@@ -458,6 +464,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         }
 
         if (Motor.GroundingStatus.IsStableOnGround) lastWallJumpNormal = Vector3.zero;
+
 
         State.Grounded = Motor.GroundingStatus.IsStableOnGround;
         State.Velocity = Motor.Velocity;
@@ -550,10 +557,11 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
         //rise this far before the forward force kicks in (the actual ledge height)
         var climbHeight = Mathf.Max(0f, Vector3.Dot(toTarget, up));
-        vaultUpRemaining = climbHeight;
+
+        vaultUpRemaining = Mathf.Sqrt(2f * climbHeight / -gravity); 
 
         //launch a bit higher than the ledge
-        var launchSpeed = Mathf.Sqrt(2f * Mathf.Abs(gravity) * (climbHeight + vaultExtraHeight));
+        var launchSpeed = Mathf.Sqrt(2f * -gravity * (climbHeight + vaultExtraHeight));
         var currentUpSpeed = Vector3.Dot(currentVelocity, up);
         currentVelocity += up * (launchSpeed - currentUpSpeed);
     }

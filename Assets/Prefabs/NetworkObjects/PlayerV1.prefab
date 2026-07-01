@@ -939,7 +939,7 @@ MonoBehaviour:
   RHandIKWeight: 0
   LHandIKWeight: 0
   HandParent: {fileID: 2084209997749870633}
-  weightChangeSpeed: 10
+  weightChangeSpeed: 15
   pulloutPosOffset: {x: 0, y: -0.6, z: 0}
   pulloutRotOffset: {x: 50, y: 0, z: 0}
   displacementAmount: 0.2
@@ -3587,8 +3587,8 @@ MonoBehaviour:
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1
   handPushAmount: 0.05
-  vaultForwardSpeed: 1.5
-  vaultExtraHeight: 0.2
+  vaultForwardSpeed: 1.7
+  vaultExtraHeight: 0.275
   vaultCheckHeight: 1.5
   speedText: {fileID: 5350350435267155394}
 --- !u!136 &7773675455286079409

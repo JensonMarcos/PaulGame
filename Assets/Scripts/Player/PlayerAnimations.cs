@@ -41,6 +41,7 @@ public class PlayerAnimations : NetworkBehaviour
             Stance.Sprint => character.sprintSpeed,
             Stance.Crouch => character.crouchSpeed,
             Stance.Slide => 0f,
+            Stance.Vault => 0f,
             _ => 0f,
         };
 
@@ -63,11 +64,13 @@ public class PlayerAnimations : NetworkBehaviour
     //adjustments after everything else (animator + cam)
     public void UpdateRigs(PlayerState _state, ItemClient _item, Transform camTarget)
     {
-        body.UpdateRigs(_state.Aiming);
+        body.UpdateRigs(_state.Aiming, 1f); //make this lerp
 
         hands.UpdateTransform(camTarget, _state.Reloading);
-        bool _ikSprint = _state.Stance == Stance.Sprint && _state.Melee;
-        hands.UpdateRigs(_item.RHand, _item.LHand, _item.data.RightHandIK || !_ikSprint, _item.data.LeftHandIK || !_ikSprint);
+
+        bool _doIKRight = _item.data.RightHandIK || !((_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault) && _state.Melee);
+        bool _doIKLeft = _item.data.LeftHandIK || !((_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault) && _state.Melee);
+        hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
 
         Vector3 aimPos = _item.data.position; //if no sight, just keep same position
         if(_item.sight != null)
@@ -79,7 +82,7 @@ public class PlayerAnimations : NetworkBehaviour
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
 
         //fingers.UpdateFingers();
     }
@@ -96,8 +99,40 @@ public class PlayerAnimations : NetworkBehaviour
     //     }
 
     //     item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-    //     item.UpdateRotation(_state.Stance is not Stance.Sprint && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+    //     item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
     // }
+    public void SwitchItemAnimation(float _pullOutTime)
+    {
+        //hands.ResetHands();
+        hands.Pullout(_pullOutTime);
+        fingers.GripGun();
+    }
+
+    public void SetAnimationActive(bool _active)
+    {
+        body.gameObject.SetActive(_active);
+    }
+
+    #region TriggerAnimation
+    [Rpc(SendTo.Server)]
+    public void TriggerAnimationServerRpc(string name)
+    {
+        TriggerAnimationClientRpc(name);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void TriggerAnimationClientRpc(string name)
+    {
+        if(IsOwner) return;
+        TriggerAnimation(name);
+    }
+
+    public void TriggerAnimation(string name)
+    {
+
+        body.TriggerAnimator(name);
+    }
+    #endregion
 
     #region Shoot
     [Rpc(SendTo.Server)]
@@ -140,15 +175,5 @@ public class PlayerAnimations : NetworkBehaviour
     }
     #endregion
 
-    public void SwitchItemAnimation(float _pullOutTime)
-    {
-        //hands.ResetHands();
-        hands.Pullout(_pullOutTime);
-        fingers.GripGun();
-    }
 
-    public void SetAnimationActive(bool _active)
-    {
-        body.gameObject.SetActive(_active);
-    }
 }

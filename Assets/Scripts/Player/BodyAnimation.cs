@@ -49,13 +49,13 @@ public class BodyAnimation : MonoBehaviour
         BodyAnimator.SetFloat("IdleState", Mathf.Lerp(BodyAnimator.GetFloat("IdleState"), IdleState, 10 * Time.deltaTime));
     }
 
-    public void UpdateRigs(float headAim)
+    public void UpdateRigs(float headAim, float overallWeight)
     {   
         upperBodyBone.transform.rotation *= Quaternion.Euler(0, UpperBodyTilt, 0);
 
         foreach (var rig in aimRig)
         {
-            var weight = Mathf.Lerp(rig.weight, rig.weightWhileAiming, headAim);
+            var weight = Mathf.Lerp(0, Mathf.Lerp(rig.weight, rig.weightWhileAiming, headAim), overallWeight);
 
             var newRot = Quaternion.Lerp(rig.bone.transform.rotation, cam.rotation, weight).eulerAngles;
             var oldRot = rig.bone.transform.eulerAngles;
