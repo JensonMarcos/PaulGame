@@ -3,7 +3,6 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Collections;
-using Unity.VisualScripting;
 
 public enum GameState
 {
@@ -120,14 +119,19 @@ public class GameManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        playerManager = PlayerManager.instance;
+        
 
         GameState = GameState.Lobby;
         rooms.AddRoom(startingRoom.GetComponent<Room>());
         GameTitle.Value = "Waiting to start";
+        CreateRoom();
+    }
+
+    void LobbyStart()
+    {
+        playerManager = PlayerManager.instance;
         playerManager.damageEnabled.Value = false;
         playerManager.reloadEnabled = false;
-        CreateRoom();
     }
 
     void OnGameStateChange(GameState newState)
@@ -193,7 +197,7 @@ public class GameManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        if(playerManager == null) playerManager = PlayerManager.instance;
+        if(playerManager == null) LobbyStart();
 
         #if UNITY_EDITOR
             if (Keyboard.current.lKey.wasPressedThisFrame) GameState = GameState.GameEnd;

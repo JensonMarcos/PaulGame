@@ -49,11 +49,14 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] float dropPickupCooldown = 1f;
     int autoPickupTick;
     readonly Collider[] autoPickupBuffer = new Collider[8];
+    readonly RaycastHit[] pickupHitsBuffer = new RaycastHit[16];
     Item lastDropped;
     float lastDropTime;
 
     bool wishPickUp;
     bool wishDrop;
+
+    Coroutine readyPullCoroutine;
     
     Vector3 velocity;
 
@@ -109,8 +112,8 @@ public class PlayerInventory : NetworkBehaviour
 
             float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
 
-            StopCoroutine("WaitToReadyPull");
-            StartCoroutine(WaitToReadyPull(_pullOutTime));
+            if(readyPullCoroutine != null) StopCoroutine(readyPullCoroutine);
+            readyPullCoroutine = StartCoroutine(WaitToReadyPull(_pullOutTime));
 
             Select(InvIndex, _pullOutTime, true);
             SelectServerRpc(InvIndex, _pullOutTime, true);
@@ -131,7 +134,7 @@ public class PlayerInventory : NetworkBehaviour
         }
 
         //find target (change later to be better)
-        RaycastHit[] hits = Physics.RaycastAll(cam.position, cam.forward, pickupDistance, pickupMask, QueryTriggerInteraction.Collide);
+        int hitCount = Physics.RaycastNonAlloc(cam.position, cam.forward, pickupHitsBuffer, pickupDistance, pickupMask, QueryTriggerInteraction.Collide);
 
         Item closestInner = null;
         float innerDistance = Mathf.Infinity;
@@ -139,8 +142,9 @@ public class PlayerInventory : NetworkBehaviour
         Item closestOuter = null;
         float outerDistance = Mathf.Infinity;
 
-        foreach(RaycastHit hit in hits)
+        for(int h = 0; h < hitCount; h++)
         {
+            RaycastHit hit = pickupHitsBuffer[h];
             Item _item = hit.transform.root.GetComponent<Item>();
             
             if(_item == null) continue;
@@ -223,8 +227,8 @@ public class PlayerInventory : NetworkBehaviour
             InvIndex = slot;
             ReadyPull = false;
             _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
-            StopCoroutine("WaitToReadyPull");
-            StartCoroutine(WaitToReadyPull(_pullOutTime));
+            if(readyPullCoroutine != null) StopCoroutine(readyPullCoroutine);
+            readyPullCoroutine = StartCoroutine(WaitToReadyPull(_pullOutTime));
             _animate = true;
         }
 
@@ -278,15 +282,14 @@ public class PlayerInventory : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void SelectServerRpc(int _index, float _pullOutTime, bool animate)
+    public void SelectServerRpc(int _index, float _pullOutTime, bool animate, RpcParams rpcParams = default)
     {
-        SelectClientRpc(_index, _pullOutTime, animate);
+        SelectClientRpc(_index, _pullOutTime, animate, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
-    [ClientRpc]
-    public void SelectClientRpc(int _index, float _pullOutTime, bool animate)
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void SelectClientRpc(int _index, float _pullOutTime, bool animate, RpcParams rpcParams = default)
     {
-        if(IsOwner) return;
         Select(_index, _pullOutTime, animate);
     }    
     

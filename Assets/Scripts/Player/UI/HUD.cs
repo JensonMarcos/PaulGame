@@ -14,16 +14,22 @@ public class HUD : MonoBehaviour
 
     bool isDead;
 
+    Coroutine flashCoroutine;
+
     public void UpdateHealth(float health)
     {
         hpText.text = Mathf.CeilToInt(health).ToString();
-        if(health < 100) StartCoroutine(FlashRed());
+        if(health < 100)
+        {
+            if(flashCoroutine != null) StopCoroutine(flashCoroutine);
+            flashCoroutine = StartCoroutine(FlashRed());
+        }
     }
 
     public void SetDead(bool _isDead)
     {
         isDead = _isDead;
-        StopCoroutine("FlashRed");
+        if(flashCoroutine != null) StopCoroutine(flashCoroutine);
 
         deadText.gameObject.SetActive(isDead);
         healthText.gameObject.SetActive(!isDead);

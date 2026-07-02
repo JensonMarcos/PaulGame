@@ -37,7 +37,7 @@ public class ItemData : ScriptableObject
     [Header("Accuracy")]
     [ShowIf("isGun")] public float accuracy;
     [ShowIf("isGun")] public float ADSAccuracy;
-    [ShowIf("isGun")] public float SprintAccuracy;
+    //[ShowIf("isGun")] public float SprintAccuracy;
 
     [Header("Recoil")]
     [ShowIf("isGun")] public Vector3 Recoil;
@@ -45,7 +45,7 @@ public class ItemData : ScriptableObject
     [ShowIf("isGun")] public float snap, returnSpeed;
 
     [Header("ADS")]
-    [ShowIf("isGun")] public float adsSpeed;
+    [ShowIf("isGun")] public float adsSpeed; //never used
     [ShowIf("isGun")] public float adsZoom;
     //[ShowIf("isGun")] public Vector3 adsOff;
 
@@ -71,10 +71,4 @@ public class ItemData : ScriptableObject
     public float impactForceObject;
     public float impactForcePlayer;
     public float backwardVelocity;
-
-    public ItemData Clone()
-    {
-        return (ItemData)this.MemberwiseClone();
-    }
-
 }

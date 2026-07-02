@@ -22,15 +22,6 @@ public class HandsAnimation : MonoBehaviour
     [SerializeField] Transform HandParent;
     [SerializeField] float weightChangeSpeed;
 
-    // [Header("Punch")]
-    // [SerializeField] Transform punchTarget;
-    // [SerializeField] float punchSpeed;
-    // [SerializeField] float punchHoldTime;
-    // [SerializeField] BodyAnimation body;
-    // [SerializeField] float tiltAmount;
-    //bool whichhand; 
-    //bool readyPunch;
-
     [Header("Pullout Animation")]
     [SerializeField] Vector3 pulloutPosOffset;
     [SerializeField] Vector3 pulloutRotOffset;
@@ -45,16 +36,6 @@ public class HandsAnimation : MonoBehaviour
 
     Transform lastTargetTrans;
     float lastReloadingVal;
-
-    // public void Initialize()
-    // {
-    //     // RHand.startPos = RHand.hand.localPosition;
-    //     // RHand.startRot = RHand.hand.localRotation;
-    //     // LHand.startPos = LHand.hand.localPosition;
-    //     // LHand.startRot = LHand.hand.localRotation;
-
-    //     //readyPunch = true;
-    // }
 
     public void UpdateRigs(Transform _rHand, Transform _lHand, bool _rHandIK, bool _lHandIK)
     {

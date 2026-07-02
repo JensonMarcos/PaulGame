@@ -11,6 +11,7 @@ public class EditorTester : NetworkBehaviour
     {
         #if !UNITY_EDITOR
             Destroy(gameObject);
+            return;
         #endif
 
         if(SteamManager.Instance == null)

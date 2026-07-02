@@ -33,6 +33,12 @@ public class BodyAnimation : MonoBehaviour
     [SerializeField] Transform upperBodyBone;
     public float UpperBodyTilt;
 
+    static readonly int StanceHash = Animator.StringToHash("Stance");
+    static readonly int SprintHash = Animator.StringToHash("Sprint");
+    static readonly int SlideHash = Animator.StringToHash("Slide");
+    static readonly int HorizontalHash = Animator.StringToHash("Horizontal");
+    static readonly int VerticalHash = Animator.StringToHash("Vertical");
+    static readonly int IdleStateHash = Animator.StringToHash("IdleState");
 
     public void Initialize()
     {
@@ -41,12 +47,12 @@ public class BodyAnimation : MonoBehaviour
 
     void Update()
     {
-        BodyAnimator.SetFloat("Stance", Mathf.Lerp(BodyAnimator.GetFloat("Stance"), Stance, crouchResponse * Time.deltaTime));
-        BodyAnimator.SetFloat("Sprint", Mathf.Lerp(BodyAnimator.GetFloat("Sprint"), Sprint, moveResponse * Time.deltaTime));
-        BodyAnimator.SetFloat("Slide", Mathf.Lerp(BodyAnimator.GetFloat("Slide"), Slide, moveResponse * Time.deltaTime));
-        BodyAnimator.SetFloat("Horizontal", Mathf.Lerp(BodyAnimator.GetFloat("Horizontal"), Horizontal, moveResponse * Time.deltaTime));
-        BodyAnimator.SetFloat("Vertical", Mathf.Lerp(BodyAnimator.GetFloat("Vertical"), Vertical, moveResponse * Time.deltaTime));
-        BodyAnimator.SetFloat("IdleState", Mathf.Lerp(BodyAnimator.GetFloat("IdleState"), IdleState, 10 * Time.deltaTime));
+        BodyAnimator.SetFloat(StanceHash, Mathf.Lerp(BodyAnimator.GetFloat(StanceHash), Stance, crouchResponse * Time.deltaTime));
+        BodyAnimator.SetFloat(SprintHash, Mathf.Lerp(BodyAnimator.GetFloat(SprintHash), Sprint, moveResponse * Time.deltaTime));
+        BodyAnimator.SetFloat(SlideHash, Mathf.Lerp(BodyAnimator.GetFloat(SlideHash), Slide, moveResponse * Time.deltaTime));
+        BodyAnimator.SetFloat(HorizontalHash, Mathf.Lerp(BodyAnimator.GetFloat(HorizontalHash), Horizontal, moveResponse * Time.deltaTime));
+        BodyAnimator.SetFloat(VerticalHash, Mathf.Lerp(BodyAnimator.GetFloat(VerticalHash), Vertical, moveResponse * Time.deltaTime));
+        BodyAnimator.SetFloat(IdleStateHash, Mathf.Lerp(BodyAnimator.GetFloat(IdleStateHash), IdleState, 10 * Time.deltaTime));
     }
 
     public void UpdateRigs(float headAim, float overallWeight)

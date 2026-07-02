@@ -1,6 +1,5 @@
 using System.Collections;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public struct CombatInputs
@@ -33,6 +32,8 @@ public class PlayerCombat : MonoBehaviour
     float nextTimeToFire;
 
     ItemClient prevItem;
+
+    readonly RaycastHit[] shootHitsBuffer = new RaycastHit[16];
 
     public void SetInputs(CombatInputs inputs, bool _sprinting, bool _readyPull)
     {
@@ -134,10 +135,11 @@ public class PlayerCombat : MonoBehaviour
         }
         
         
-        RaycastHit[] hits = Physics.RaycastAll(cam.position, cam.forward + accuracyOffset, _data.range, shootLayer);
-        if(_data.shootRadius > 0) hits = Physics.SphereCastAll(cam.position, _data.shootRadius, cam.forward + accuracyOffset, _data.range, shootLayer);
+        int hitCount = _data.shootRadius > 0
+            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, cam.forward + accuracyOffset, shootHitsBuffer, _data.range, shootLayer)
+            : Physics.RaycastNonAlloc(cam.position, cam.forward + accuracyOffset, shootHitsBuffer, _data.range, shootLayer);
 
-        if(hits.Length == 0)
+        if(hitCount == 0)
         {
             //shoot Fx in air
             if(_data.type != ItemType.Melee)
@@ -148,9 +150,10 @@ public class PlayerCombat : MonoBehaviour
             
         } else
         {
-            RaycastHit hitObject = hits[0];
-            foreach(RaycastHit hit in hits)
+            RaycastHit hitObject = shootHitsBuffer[0];
+            for(int i = 0; i < hitCount; i++)
             {
+                RaycastHit hit = shootHitsBuffer[i];
                 if((hit.distance < hitObject.distance && hit.transform.root != transform) || hitObject.transform.root == transform) { //shitty logic
                     hitObject = hit;
                 }
@@ -169,27 +172,28 @@ public class PlayerCombat : MonoBehaviour
 
             //Actualy hit something
 
-            print(hitObject.transform.name);
+            //print(hitObject.transform.name);
+            Transform hitRoot = hitObject.transform.root;
 
-            if (hitObject.transform.root.GetComponent<Player>()) //player damage
+            if (hitRoot.GetComponent<Player>()) //player damage
             {
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
 
                 Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult;
-                PlayerManager.instance.DealDamageServerRpc(hitObject.transform.root.GetComponent<NetworkObject>().OwnerClientId, _damage, _force);
+                PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force);
                 
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);
                 // hitSound.PlayOneShot(hitSound.clip, 1f);
                 // HUD.HUDHit(hitObject.transform.tag == "Head");
             } 
-            else if(hitObject.transform.root.GetComponent<ItemCrate>())
+            else if(hitRoot.TryGetComponent(out ItemCrate crate))
             {
-                hitObject.transform.root.GetComponent<ItemCrate>().BreakCrateServerRpc();
+                crate.BreakCrateServerRpc();
             }
-            else if(hitObject.transform.root.GetComponent<NetworkProp>())
+            else if(hitRoot.TryGetComponent(out NetworkProp prop))
             {
-                hitObject.transform.root.GetComponent<NetworkProp>().ApplyForceServerRpc(cam.transform.forward * _data.impactForceObject, hitObject.point);
+                prop.ApplyForceServerRpc(cam.transform.forward * _data.impactForceObject, hitObject.point);
             }
 
 

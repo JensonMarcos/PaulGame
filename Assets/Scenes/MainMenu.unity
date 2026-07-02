@@ -374,7 +374,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -499,6 +499,7 @@ GameObject:
   - component: {fileID: 1515804474}
   - component: {fileID: 1515804473}
   - component: {fileID: 1515804472}
+  - component: {fileID: 1515804475}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -580,6 +581,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1515804475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515804471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &1570989904
 GameObject:
   m_ObjectHideFlags: 0
@@ -763,7 +808,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -833,7 +878,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -1470,32 +1515,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1531654850832373761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6969030892337002687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c16c0b3215de53747b866e88b5948b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  menus:
-  - {fileID: 200195256519527296}
-  - {fileID: 6958890298518321938}
-  - {fileID: 3490171568324496341}
-  - {fileID: 3914862996431908384}
-  - {fileID: 5163713177555409388}
-  - {fileID: 383365449766404008}
-  LobbyIDInputField: {fileID: 7703938881492157953}
-  LobbyIDDisplay: {fileID: 2948196725486610659}
-  LobbyNameInput: {fileID: 4841854089013873219}
-  LobbyName: {fileID: 2438951659934452242}
-  playerListContent: {fileID: 8156355703588489841}
-  playerListItemPrefab: {fileID: 5936316413534886843, guid: 99d64d860509f5349b62a89ba9d41703, type: 3}
-  startButton: {fileID: 5647688676312447055}
 --- !u!1 &1532810723086606475
 GameObject:
   m_ObjectHideFlags: 0
@@ -1828,7 +1847,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -1932,7 +1951,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!224 &2206041052293118185
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1998,7 +2016,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -2092,7 +2110,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -2546,7 +2564,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!222 &2878517646656522864
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3213,7 +3230,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!224 &3721513276656682746
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3715,7 +3731,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!224 &4080039187125474815
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4018,7 +4033,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!224 &4518925277285811948
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4093,7 +4107,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!1 &4733305184344303537
 GameObject:
   m_ObjectHideFlags: 0
@@ -4155,7 +4168,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: quitGame
         m_Mode: 1
@@ -4457,7 +4470,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!1 &5288941585126380047
 GameObject:
   m_ObjectHideFlags: 0
@@ -5197,7 +5209,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1531654850832373761}
+      - m_Target: {fileID: 7664478975995031888}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: OpenMenu
         m_Mode: 2
@@ -5469,7 +5481,7 @@ GameObject:
   - component: {fileID: 5719555765430982637}
   - component: {fileID: 1668332189995943094}
   - component: {fileID: 7664478975995031887}
-  - component: {fileID: 1531654850832373761}
+  - component: {fileID: 7664478975995031888}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5513,7 +5525,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!222 &7049281201257368667
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5746,6 +5757,32 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7664478975995031888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6969030892337002687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cb71a7276675704a9ba271ae9b88b93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuManager
+  menus:
+  - {fileID: 200195256519527296}
+  - {fileID: 6958890298518321938}
+  - {fileID: 3490171568324496341}
+  - {fileID: 3914862996431908384}
+  - {fileID: 5163713177555409388}
+  - {fileID: 383365449766404008}
+  LobbyIDInputField: {fileID: 7703938881492157953}
+  LobbyIDDisplay: {fileID: 2948196725486610659}
+  LobbyNameInput: {fileID: 4841854089013873219}
+  LobbyName: {fileID: 2438951659934452242}
+  playerListContent: {fileID: 8156355703588489841}
+  playerListItemPrefab: {fileID: 5936316413534886843, guid: 99d64d860509f5349b62a89ba9d41703, type: 3}
+  startButton: {fileID: 5647688676312447055}
 --- !u!222 &7686636715956069044
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5948,7 +5985,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!224 &7817758124471463472
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6109,7 +6145,6 @@ MonoBehaviour:
   inverse: 0
   toggle: 0
   isToggled: 0
-  roomNum: 0
 --- !u!222 &7962729577155942453
 CanvasRenderer:
   m_ObjectHideFlags: 0

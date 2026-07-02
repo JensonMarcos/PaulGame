@@ -4,7 +4,6 @@ using UnityEngine;
 public class Item : NetworkBehaviour
 {
     public NetworkVariable<bool> HasOwner = new(false);
-    //public NetworkVariable<NetworkObjectReference> OwnerNetObj = new();
     public NetworkVariable<int> Ammo = new();
 
     public GameObject clientPrefab;
@@ -15,8 +14,6 @@ public class Item : NetworkBehaviour
     Collider itemCollider;
     Rigidbody rb;
     Outline outline;
-
-    //Transform ownerTransform;
 
     public override void OnNetworkSpawn()
     {
@@ -40,28 +37,6 @@ public class Item : NetworkBehaviour
             
         } 
     }
-
-    // void LateUpdate()
-    // {
-    //     // if(HasOwner.Value)
-    //     // {
-    //     //     if(ownerTransform == null)
-    //     //     {
-    //     //         if(OwnerNetObj.Value.TryGet(out var obj))
-    //     //         {
-    //     //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
-    //     //         }
-    //     //     } else
-    //     //     { //called next frame, prob not an issue
-    //     //         transform.position = ownerTransform.position;
-    //     //         transform.rotation = ownerTransform.rotation;                
-    //     //     }
-    //     // } else
-    //     // {
-    //         // outline.enabled = hovered;
-    //         // if(hovered) hovered = false;
-    //     //}
-    // }
 
     public void SetHovered(bool value)
     {
@@ -113,23 +88,4 @@ public class Item : NetworkBehaviour
         GameManager.instance.worldObjects.Remove(gameObject);
         GetComponent<NetworkObject>().Despawn(true);
     }
-    // void OnOwnerChanged(bool previousValue, bool newValue)
-    // {
-    //     if(newValue) //just assigned to owner
-    //     {
-    //         model.SetActive(false);
-    //         itemCollider.enabled = false;
-
-    //         if(OwnerNetObj.Value.TryGet(out var obj))
-    //         {
-    //             ownerTransform = obj.gameObject.GetComponent<Player>().playerInventory.transform;
-    //         }
-    //     } else //unassigned
-    //     {
-    //         model.SetActive(true);
-    //         itemCollider.enabled = true;
-            
-    //         ownerTransform = null;
-    //     }
-    // }
 }

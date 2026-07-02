@@ -27,18 +27,11 @@ public class Room : NetworkBehaviour
 
     public List<SpawnObject> objectsToSpawn;
 
-    //public Animator anim;
-    //float openState = 0.5f;
-
     public List<GameObject> playersInRoom;
 
     public GameMode GameMode;
     
     void Start() {
-        // anim = GetComponent<Animator>();
-        // openState = 0.5f;
-        // anim.SetFloat("OpenState", openState);
-
         if(!IsServer) return;
         foreach (SpawnObject spawnObject in objectsToSpawn) {
             if (spawnObject.prefab == null || spawnObject.point == null) continue;
@@ -50,8 +43,6 @@ public class Room : NetworkBehaviour
 
     [Rpc(SendTo.ClientsAndHost)]
     public void DoorClientRpc(doorState state) {
-        //StartCoroutine(ChangeDoorState(state, time * GameMode.animTimeMult));
-        
         switch(state) {
             case doorState.enter:
                 doorEnter.Play("DoorOpen");
@@ -64,18 +55,6 @@ public class Room : NetworkBehaviour
                 break;
         }
     }
-    
-    // IEnumerator ChangeDoorState(doorState state, float time) {
-    //     float t = 0f;
-    //     float start = anim.GetFloat("OpenState");
-    //     float target = state == doorState.enter ? 0f : state == doorState.exit ? 1f : 0.5f;
-    //     while(t < 1f) {
-    //         t += Time.deltaTime / time;
-    //         anim.SetFloat("OpenState", Mathf.Lerp(start, target, easeInOutQuad(t)));
-    //         yield return null;
-    //     }
-    //     anim.SetFloat("OpenState", target);
-    // }
 
     void OnTriggerEnter(Collider other)
     {

@@ -10,7 +10,7 @@ public class Buttons : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
     public Image theImage, icon;
     [SerializeField] private bool inverse= false, toggle = false, isToggled = false;
     //[SerializeField] Launcher launcher;
-    [SerializeField] int roomNum;
+    //[SerializeField] int roomNum;
     Color selected, notselected;
 
     void Start() {

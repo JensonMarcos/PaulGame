@@ -4,7 +4,6 @@ using System.Linq;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerManager : NetworkBehaviour
@@ -54,19 +53,20 @@ public class PlayerManager : NetworkBehaviour
         }
         GameObject player = Instantiate(playerPrefab);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
-        Players.Add(new PlayerData(player, id, 100f, GetPlayerName(id)));
+        PlayerData newPlayer = new PlayerData(player, id, 100f, GetPlayerName(id));
+        Players.Add(newPlayer);
 
         playersAlive = Players.Count(x => x.isDead == false);
 
-        //add existing players to scoreboard of new player, retarded ass code
+        //add existing players to scoreboard of new player
         foreach(PlayerData _player in Players) {
             if(_player.ClientId == id) continue;
-            Players[Players.FindIndex(x => x.ClientId == id)].playerGameObject.GetComponent<Player>().AddOrRemoveScoreboardItemClientRpc(true, _player.ClientId, _player.name, _player.wins, _player.kills, _player.deaths);
+            newPlayer.player.AddOrRemoveScoreboardItemClientRpc(true, _player.ClientId, _player.name, _player.wins, _player.kills, _player.deaths);
         }
 
         //add new player to scoreboards of all players (including self)
         foreach(PlayerData _player in Players) {
-            _player.playerGameObject.GetComponent<Player>().AddOrRemoveScoreboardItemClientRpc(true, id, Players[Players.FindIndex(x => x.ClientId == id)].name, 0, 0, 0);
+            _player.player.AddOrRemoveScoreboardItemClientRpc(true, id, newPlayer.name, 0, 0, 0);
         }
     }
 
@@ -117,21 +117,21 @@ public class PlayerManager : NetworkBehaviour
         if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 
         if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.currentGameMode.doPunching)) {
-            target.playerGameObject.GetComponent<Player>().RecieveForceClientRpc(force);
+            target.player.RecieveForceClientRpc(force);
         }
 
-        target.playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(target.health);
+        target.player.UpdateHealthClientRpc(target.health);
 
         if(target.health <= 0 && !target.isDead) { //player dies
             target.isDead = true;
 
             target.deaths++;
 
-            Vector3 pos = target.playerGameObject.GetComponent<Player>().playerCharacter.transform.position;
-            Quaternion rot = target.playerGameObject.GetComponent<Player>().playerCharacter.transform.rotation;
-            Vector3 vel = target.playerGameObject.GetComponent<Player>().playerState.Velocity;
+            Vector3 pos = target.player.playerCharacter.transform.position;
+            Quaternion rot = target.player.playerCharacter.transform.rotation;
+            Vector3 vel = target.player.playerState.Velocity;
 
-            target.playerGameObject.GetComponent<Player>().DieClientRpc();
+            target.player.DieClientRpc();
 
             GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
             ragdoll.GetComponent<NetworkObject>().Spawn();
@@ -150,10 +150,10 @@ public class PlayerManager : NetworkBehaviour
             }
 
             foreach(PlayerData _player in Players) {
-                _player.playerGameObject.GetComponent<Player>().ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
-                _player.playerGameObject.GetComponent<Player>().ScoreboardUpdateClientRpc(sender.ClientId, sender.wins, sender.kills, sender.deaths);
+                _player.player.ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
+                _player.player.ScoreboardUpdateClientRpc(sender.ClientId, sender.wins, sender.kills, sender.deaths);
 
-                _player.playerGameObject.GetComponent<Player>().AddKillfeedClientRpc($"{sender.name}  >  {target.name}", _player.ClientId == sender.ClientId || _player.ClientId == target.ClientId);
+                _player.player.AddKillfeedClientRpc($"{sender.name}  >  {target.name}", _player.ClientId == sender.ClientId || _player.ClientId == target.ClientId);
             }
         }
 
@@ -169,7 +169,7 @@ public class PlayerManager : NetworkBehaviour
 
         //individual respawn during a round -> send them to the room's respawn point
         if(GameManager.instance != null && GameManager.instance.rooms.current != null)
-            Players[id].playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
+            Players[id].player.TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
 
         playersAlive = Players.Count(x => x.isDead == false);
     }
@@ -179,18 +179,18 @@ public class PlayerManager : NetworkBehaviour
         if(Players[id].isDead) {
             Players[id].isDead = false;
             Players[id].health = 100f;
-            Players[id].playerGameObject.GetComponent<Player>().RespawnClientRpc();
+            Players[id].player.RespawnClientRpc();
         }  else {
             Players[id].health = 100f;
-            Players[id].playerGameObject.GetComponent<Player>().UpdateHealthClientRpc(100f);
+            Players[id].player.UpdateHealthClientRpc(100f);
         }
     }
 
     public void RespawnEveryone()
     {
-        foreach (PlayerData player in Players)
+        for (int i = 0; i < Players.Count; i++)
         {
-            Revive(Players.FindIndex(x => x.ClientId == player.ClientId));
+            Revive(i);
         }
 
         playersAlive = Players.Count(x => x.isDead == false);
@@ -199,13 +199,13 @@ public class PlayerManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void TeleportServerRpc(ulong playerid, Vector3 position, RpcParams rpcParams = default){
         int id = Players.FindIndex(x => x.ClientId == playerid);
-        Players[id].playerGameObject.GetComponent<Player>().TeleportClientRpc(position);
+        Players[id].player.TeleportClientRpc(position);
     }
 
     [Rpc(SendTo.Server)]
     public void ClearItemServerRpc(int itemId = -1, RpcParams rpcParams = default){ //prolly switch this to clearing a specific player not all 
         for(int i = 0; i < Players.Count; i++) {
-            Players[i].playerGameObject.GetComponent<Player>().ClearItemClientRpc(itemId);
+            Players[i].player.ClearItemClientRpc(itemId);
         }
     }
 
@@ -214,7 +214,7 @@ public class PlayerManager : NetworkBehaviour
     {
         NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
         int id = Players.FindIndex(x => x.ClientId == playerId);
-        Players[id].playerGameObject.GetComponent<Player>().GiveItemClientRpc(netObj.NetworkObjectId);
+        Players[id].player.GiveItemClientRpc(netObj.NetworkObjectId);
     }
 }
 
@@ -224,12 +224,14 @@ public class PlayerData
     public PlayerData(GameObject GO, ulong id, float hp, string _name)
     {
         playerGameObject = GO;
+        player = GO.GetComponent<Player>();
         ClientId = id;
         health = hp;
         name = _name;
     }
 
     public GameObject playerGameObject;
+    public Player player;
     public ulong ClientId;
     public string name;
     public int kills, deaths, wins, score;

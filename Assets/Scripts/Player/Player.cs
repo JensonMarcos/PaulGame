@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [System.Serializable]
-public struct PlayerState : INetworkSerializable
+public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
 {
     [Header("Character")]
     public bool Grounded;
@@ -36,6 +36,18 @@ public struct PlayerState : INetworkSerializable
 
         serializer.SerializeValue(ref Melee);
     }
+
+    public bool Equals(PlayerState other)
+    {
+        return Grounded == other.Grounded
+            && Stance == other.Stance
+            && Velocity.Equals(other.Velocity)
+            && InventoryIndex == other.InventoryIndex
+            && Aiming == other.Aiming
+            && ReadyPull == other.ReadyPull
+            && Reloading == other.Reloading
+            && Melee == other.Melee;
+    }
 }
 
 public class Player : NetworkBehaviour
@@ -56,8 +68,6 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
 
-    //[SerializeField] ServerCollider serverCollider;
-
     bool isDead;
   
     public override void OnNetworkSpawn()
@@ -71,11 +81,8 @@ public class Player : NetworkBehaviour
         playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
 
-        //serverCollider.Initialize(IsServer && !IsOwner);
-
         if(IsOwner && GameManager.instance != null)
         {
-            print("subed");
             GameManager.instance.GameTitle.OnValueChanged += playerUI.hud.OnTitleChanged;
         }
             
@@ -83,8 +90,6 @@ public class Player : NetworkBehaviour
         if(!IsOwner)
         {
             playerCharacter.Motor.enabled = false;
-            playerCharacter.gameObject.GetComponent<KinematicCharacterMotor>().enabled = false;
-            //playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
         }
     }
 
@@ -103,7 +108,6 @@ public class Player : NetworkBehaviour
         if(IsOwner)
         {
             HandleInputs();
-            UpdateState();
         }
 
         if(!isDead)
@@ -122,6 +126,9 @@ public class Player : NetworkBehaviour
 
     void LateUpdate()
     {
+        //single state refresh per frame, after the character motor has moved
+        if(IsOwner) UpdateState();
+
         int i = playerState.InventoryIndex;
 
         if(!isDead) playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
@@ -138,15 +145,11 @@ public class Player : NetworkBehaviour
 
             playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
 
-            UpdateState();
-            NetworkPlayerState.Value = playerState;
+            //only mark the network variable dirty when the state actually changed
+            if(!playerState.Equals(NetworkPlayerState.Value)) NetworkPlayerState.Value = playerState;
         }
     }
 
-    // void FixedUpdate()
-    // {
-    //     if(IsServer && !IsOwner) serverCollider.UpdateCollider(playerState.Stance, playerState.Velocity);
-    // }
 
     void HandleInputs()
     {
@@ -212,7 +215,6 @@ public class Player : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void DieClientRpc() {
         isDead = true;
-        //if(IsServer) serverCollider.gameObject.layer = LayerMask.NameToLayer("Ghost");
 
         if(!IsOwner) {
             playerCharacter.gameObject.SetActive(false);
@@ -231,7 +233,6 @@ public class Player : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void RespawnClientRpc() {
         isDead = false;
-        //if(IsServer) serverCollider.gameObject.layer = LayerMask.NameToLayer("Player");
 
         if(!IsOwner) {
             playerCharacter.gameObject.SetActive(true);

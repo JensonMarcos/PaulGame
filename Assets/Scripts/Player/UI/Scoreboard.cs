@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Scoreboard : MonoBehaviour
 {
@@ -8,7 +7,7 @@ public class Scoreboard : MonoBehaviour
     [SerializeField] Transform layoutGroup;
     [SerializeField] GameObject scorboardItemPrefab;
     [SerializeField] GameObject Header;
-    [SerializeField] int falloff;
+    //[SerializeField] int falloff;
 
     public ulong localPlayerId;
     bool tabPressed;
@@ -16,6 +15,8 @@ public class Scoreboard : MonoBehaviour
     public void InputUpdate(bool _tabPressed)
     {
         tabPressed = _tabPressed;
+
+        Header.SetActive(tabPressed);
 
         if(tabPressed)
         {
@@ -29,8 +30,6 @@ public class Scoreboard : MonoBehaviour
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 1f;
 
                 item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, item.playerId == localPlayerId ? 1f : 0f);
-
-                Header.SetActive(true);
             }
         }
         else
@@ -48,8 +47,6 @@ public class Scoreboard : MonoBehaviour
                 item.winsText.alpha = item.killsText.alpha = item.deathsText.alpha = 0f;
 
                 item.bg.color = new Color(item.bg.color.r, item.bg.color.g, item.bg.color.b, 0f);
-
-                Header.SetActive(false);
             }
         }
     }

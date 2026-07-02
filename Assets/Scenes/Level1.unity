@@ -743,7 +743,7 @@ MonoBehaviour:
     doPunching: 1
     showTimer: 0
     gameTime: 30
-    highestScoreWins: 0
+    highestScoreWins: 1
     animTimeMult: 2
     useTeams: 0
     numberOfTeams: 0

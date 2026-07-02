@@ -87,25 +87,11 @@ public class PlayerAnimations : NetworkBehaviour
         //fingers.UpdateFingers();
     }
 
-    // public void UpdateItem(PlayerState _state, ItemClient _item, Transform camTarget)
-    // {
-    //     Vector3 aimPos = _item.data.position; //if no sight, just keep same position
-    //     if(_item.sight != null)
-    //     {
-    //         aimPos = camTarget.transform.position - _item.sight.position; ;
-
-    //         aimPos = item.transform.parent.InverseTransformVector(aimPos);
-    //         aimPos = item.transform.localPosition + aimPos;
-    //     }
-
-    //     item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-    //     item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
-    // }
     public void SwitchItemAnimation(float _pullOutTime)
     {
         //hands.ResetHands();
         hands.Pullout(_pullOutTime);
-        fingers.GripGun();
+        //fingers.GripGun();
     }
 
     public void SetAnimationActive(bool _active)
@@ -115,15 +101,14 @@ public class PlayerAnimations : NetworkBehaviour
 
     #region TriggerAnimation
     [Rpc(SendTo.Server)]
-    public void TriggerAnimationServerRpc(string name)
+    public void TriggerAnimationServerRpc(string name, RpcParams rpcParams = default)
     {
-        TriggerAnimationClientRpc(name);
+        TriggerAnimationClientRpc(name, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    public void TriggerAnimationClientRpc(string name)
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void TriggerAnimationClientRpc(string name, RpcParams rpcParams = default)
     {
-        if(IsOwner) return;
         TriggerAnimation(name);
     }
 
@@ -136,15 +121,14 @@ public class PlayerAnimations : NetworkBehaviour
 
     #region Shoot
     [Rpc(SendTo.Server)]
-    public void ShootServerRpc(Vector3 _recoil, float _backKick, float _rotKick)
+    public void ShootServerRpc(Vector3 _recoil, float _backKick, float _rotKick, RpcParams rpcParams = default)
     {
-        ShootClientRpc(_recoil, _backKick, _rotKick);
+        ShootClientRpc(_recoil, _backKick, _rotKick, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    public void ShootClientRpc(Vector3 _recoil, float _backKick, float _rotKick)
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void ShootClientRpc(Vector3 _recoil, float _backKick, float _rotKick, RpcParams rpcParams = default)
     {
-        if(IsOwner) return;
         Shoot(_recoil, _backKick, _rotKick);
     }
 
@@ -157,15 +141,14 @@ public class PlayerAnimations : NetworkBehaviour
 
     #region HandPush
     [Rpc(SendTo.Server)]
-    public void HandPushServerRpc(Vector3 force)
+    public void HandPushServerRpc(Vector3 force, RpcParams rpcParams = default)
     {
-        HandPushClientRpc(force);
+        HandPushClientRpc(force, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    public void HandPushClientRpc(Vector3 force)
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void HandPushClientRpc(Vector3 force, RpcParams rpcParams = default)
     {
-        if(IsOwner) return;
         HandPush(force);
     }
 
