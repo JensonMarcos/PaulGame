@@ -2083,6 +2083,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1025
   throwForce: 15
+  character: {fileID: 4810549488884055170}
+  autoPickupRadius: 1
+  autoPickupInterval: 5
+  dropPickupCooldown: 0.5
 --- !u!1 &2272965483068478813
 GameObject:
   m_ObjectHideFlags: 0

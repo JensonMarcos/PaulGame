@@ -19,24 +19,25 @@ public struct SpawnObject
 
 public class Room : NetworkBehaviour
 {
-    //public GameObject enterDoor, exitDoor;
-    public Transform roomSpawnPoint;
-    public Transform respawnPoint, moveSpawnPoint;
+    public Transform nextRoomPoint;
+    public Transform respawnPoint;
+    public Transform moveSpawnPoint;
+    public Animator doorEnter;
+    public Animator doorExit;
 
     public List<SpawnObject> objectsToSpawn;
 
-    public Animator anim;
-    float openState = 0.5f;
-    public float openSpeed = 5f;
+    //public Animator anim;
+    //float openState = 0.5f;
 
     public List<GameObject> playersInRoom;
 
     public GameMode GameMode;
     
     void Start() {
-        anim = GetComponent<Animator>();
-        openState = 0.5f;
-        anim.SetFloat("OpenState", openState);
+        // anim = GetComponent<Animator>();
+        // openState = 0.5f;
+        // anim.SetFloat("OpenState", openState);
 
         if(!IsServer) return;
         foreach (SpawnObject spawnObject in objectsToSpawn) {
@@ -48,21 +49,33 @@ public class Room : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void DoorClientRpc(doorState state, float time) {
-        StartCoroutine(ChangeDoorState(state, time * GameMode.animTimeMult));
+    public void DoorClientRpc(doorState state) {
+        //StartCoroutine(ChangeDoorState(state, time * GameMode.animTimeMult));
+        
+        switch(state) {
+            case doorState.enter:
+                doorEnter.Play("DoorOpen");
+                break;
+            case doorState.exit:
+                doorExit.Play("DoorOpen");
+                break;
+            case doorState.closed:
+                doorEnter.Play("DoorClose");
+                break;
+        }
     }
     
-    IEnumerator ChangeDoorState(doorState state, float time) {
-        float t = 0f;
-        float start = anim.GetFloat("OpenState");
-        float target = state == doorState.enter ? 0f : state == doorState.exit ? 1f : 0.5f;
-        while(t < 1f) {
-            t += Time.deltaTime / time;
-            anim.SetFloat("OpenState", Mathf.Lerp(start, target, easeInOutQuad(t)));
-            yield return null;
-        }
-        anim.SetFloat("OpenState", target);
-    }
+    // IEnumerator ChangeDoorState(doorState state, float time) {
+    //     float t = 0f;
+    //     float start = anim.GetFloat("OpenState");
+    //     float target = state == doorState.enter ? 0f : state == doorState.exit ? 1f : 0.5f;
+    //     while(t < 1f) {
+    //         t += Time.deltaTime / time;
+    //         anim.SetFloat("OpenState", Mathf.Lerp(start, target, easeInOutQuad(t)));
+    //         yield return null;
+    //     }
+    //     anim.SetFloat("OpenState", target);
+    // }
 
     void OnTriggerEnter(Collider other)
     {

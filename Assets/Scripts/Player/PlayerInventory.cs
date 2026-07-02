@@ -42,6 +42,16 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] float throwForce;
     Item currentHovered;
 
+    [Header("Auto Pickup")]
+    [SerializeField] Transform character;
+    [SerializeField] float autoPickupRadius = 1f;
+    [SerializeField] int autoPickupInterval = 4;
+    [SerializeField] float dropPickupCooldown = 1f;
+    int autoPickupTick;
+    readonly Collider[] autoPickupBuffer = new Collider[8];
+    Item lastDropped;
+    float lastDropTime;
+
     bool wishPickUp;
     bool wishDrop;
     
@@ -114,6 +124,12 @@ public class PlayerInventory : NetworkBehaviour
     }
 
     public void TryPickUp() {
+        if(++autoPickupTick >= autoPickupInterval)
+        {
+            autoPickupTick = 0;
+            AutoPickUp();
+        }
+
         //find target (change later to be better)
         RaycastHit[] hits = Physics.RaycastAll(cam.position, cam.forward, pickupDistance, pickupMask, QueryTriggerInteraction.Collide);
 
@@ -171,6 +187,24 @@ public class PlayerInventory : NetworkBehaviour
         PickupItem(selectedItem);
     }
 
+    void AutoPickUp()
+    {
+        int count = Physics.OverlapSphereNonAlloc(character.position, autoPickupRadius, autoPickupBuffer, itemLayer, QueryTriggerInteraction.Collide);
+
+        for (int i = 0; i < count; i++)
+        {
+            Item item = autoPickupBuffer[i].transform.root.GetComponent<Item>();
+            if(item == null) continue;
+
+            if(item == lastDropped && Time.time - lastDropTime < dropPickupCooldown) continue; //just dropped
+
+            int slot = item.data.slot;
+            if(Inventory[slot] != handsItem) continue; //slot already filled
+
+            PickupItem(item);
+        }
+    }
+
     void PickupItem(Item item)
     {
         int slot = item.data.slot;
@@ -203,6 +237,9 @@ public class PlayerInventory : NetworkBehaviour
 
     void Drop(int i)
     {
+        lastDropped = Inventory[i].GetComponent<Item>();
+        lastDropTime = Time.time;
+
         Inventory[i].GetComponent<Item>().ItemDropServerRpc(transform.position, transform.rotation, velocity + cam.forward * throwForce, ClientInventory[i].Ammo);
         Inventory[i] = handsItem;
         NetworkIDInventory[i] = 0UL;

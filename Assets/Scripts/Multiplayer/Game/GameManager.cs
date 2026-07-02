@@ -144,8 +144,8 @@ public class GameManager : NetworkBehaviour
 
                 rooms.NextRoom();
 
-                rooms.previous.DoorClientRpc(doorState.exit, 1f); 
-                rooms.current.DoorClientRpc(doorState.enter, 1f); 
+                rooms.previous.DoorClientRpc(doorState.exit); 
+                rooms.current.DoorClientRpc(doorState.enter); 
 
                 timer = Time.time + moveTime;
 
@@ -158,19 +158,28 @@ public class GameManager : NetworkBehaviour
             case GameState.GameStart:
                 playerManager.damageEnabled.Value = false;
 
-                rooms.previous.DoorClientRpc(doorState.closed, 1f);
-                rooms.current.DoorClientRpc(doorState.closed, 2f); 
+                rooms.previous.DoorClientRpc(doorState.closed);
+                rooms.current.DoorClientRpc(doorState.closed); 
 
                 GameTitle.Value = currentGameMode.name.Replace("_", " ");
 
                 timer = Time.time + startGameTime;
                 break;
             case GameState.InGame:
+                for (int i = 0; i < playerManager.Players.Count; i++)
+                {
+                    playerManager.Players[i].score = 0;
+                    if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
+                    {
+                        playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
+                        playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
+                    }
+                }
                 StartRoom();
                 break;
             case GameState.GameEnd:
                 playerManager.damageEnabled.Value = false;
-                rooms.current.DoorClientRpc(doorState.exit, 1f); 
+                rooms.current.DoorClientRpc(doorState.exit); 
 
                 timer = Time.time + endGameTime;
 
@@ -204,16 +213,6 @@ public class GameManager : NetworkBehaviour
             case GameState.GameStart:
                 if (Time.time >= timer)
                 {
-                    for (int i = 0; i < playerManager.Players.Count; i++)
-                    {
-                        playerManager.Players[i].score = 0;
-                        if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
-                        {
-                            playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
-                            playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
-                        }
-                    }
-
                     GameState = GameState.InGame;
                 }
 
@@ -354,7 +353,7 @@ public class GameManager : NetworkBehaviour
                 roomPrefab = roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)];
         }
 
-        GameObject newRoom = Instantiate(roomPrefab, rooms.current.roomSpawnPoint.position, rooms.current.roomSpawnPoint.rotation);
+        GameObject newRoom = Instantiate(roomPrefab, rooms.current.nextRoomPoint.position, rooms.current.nextRoomPoint.rotation);
         newRoom.GetComponent<NetworkObject>().Spawn(true);
         newRoom.GetComponent<Room>().GameMode = roomGameMode;
         rooms.AddRoom(newRoom.GetComponent<Room>());
