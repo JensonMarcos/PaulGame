@@ -27,14 +27,16 @@ MonoBehaviour:
   shootRadius: 0.05
   accuracy: 0
   ADSAccuracy: 0
-  SprintAccuracy: 0
   Recoil: {x: 0, y: 0, z: 0}
   ADSRecoilMult: 0
   snap: 0
   returnSpeed: 0
   adsSpeed: 0
   adsZoom: 0
+  RightHandIK: 0
+  LeftHandIK: 0
   backKick: 0
+  rotKick: 0
   ADSAnimMult: 0
   numberOfShots: 0
   AmmoPos: {x: 0, y: 0, z: 0}
@@ -44,3 +46,10 @@ MonoBehaviour:
   impactForceObject: 50
   impactForcePlayer: 12
   backwardVelocity: 0
+  AttackSound:
+    clipID: 0
+    loop: 0
+    volume: 0
+    pitchDeviation: 0
+    spatialBlend: 0
+    play2DLocal: 1

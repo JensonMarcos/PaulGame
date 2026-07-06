@@ -27,7 +27,6 @@ MonoBehaviour:
   shootRadius: 0
   accuracy: 0.006
   ADSAccuracy: 0.001
-  SprintAccuracy: 0.03
   Recoil: {x: 2, y: 1.4, z: 0.2}
   ADSRecoilMult: 0.5
   snap: 4
@@ -47,3 +46,10 @@ MonoBehaviour:
   impactForceObject: 40
   impactForcePlayer: 0
   backwardVelocity: 0
+  AttackSound:
+    clipID: 0
+    loop: 0
+    volume: 1
+    pitchDeviation: 0.05
+    spatialBlend: 1
+    play2DLocal: 1

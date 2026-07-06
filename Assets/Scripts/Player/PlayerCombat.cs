@@ -82,11 +82,15 @@ public class PlayerCombat : MonoBehaviour
 
         _item.LeftClick();
 
+        
+
         if (_data.type is ItemType.Melee)
         {
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
             StartCoroutine(DelayShoot(_item, _data.attackDelay));
+
+            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
         }
 
         if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
@@ -98,6 +102,8 @@ public class PlayerCombat : MonoBehaviour
                 return;
             }
 
+            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
+
             _item.Ammo--;
 
             nextTimeToFire = Time.time + 1f / _data.fireRate;
@@ -105,10 +111,10 @@ public class PlayerCombat : MonoBehaviour
             if(_data.type is ItemType.Shotgun) {
                 for (int i = 0; i < _data.numberOfShots; i++)
                 {
-                    Shoot(_item);
+                    Shoot(_item, i == 0);
                 }
             } else {
-                Shoot(_item);
+                Shoot(_item, true);
             }
 
             Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
@@ -123,7 +129,7 @@ public class PlayerCombat : MonoBehaviour
         }
     }
     
-    void Shoot(ItemClient _item)
+    void Shoot(ItemClient _item, bool firstShot)
     {
         ItemData _data = _item.data;
         
@@ -145,7 +151,7 @@ public class PlayerCombat : MonoBehaviour
             if(_data.type != ItemType.Melee)
             {
                 Vector3 targetPoint = cam.transform.position + cam.transform.forward*_data.range;
-                GameFX.instance.LocalShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, 0);
+                FXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
             } 
             
         } else
@@ -154,18 +160,18 @@ public class PlayerCombat : MonoBehaviour
             for(int i = 0; i < hitCount; i++)
             {
                 RaycastHit hit = shootHitsBuffer[i];
-                if((hit.distance < hitObject.distance && hit.transform.root != transform) || hitObject.transform.root == transform) { //shitty logic
+                if((hit.distance < hitObject.distance && hit.transform.root != transform) || hitObject.transform.root == transform) { //shitty logic  <- pick closest point question mark ?
                     hitObject = hit;
                 }
             }
 
-            if(hitObject.transform.root == transform)
+            if(hitObject.transform.root == transform) //wtf
             {
                 //shoot Fx in air
                 if(_data.type != ItemType.Melee)
                 {
                     Vector3 targetPoint = cam.transform.position + cam.transform.forward*_data.range;
-                    GameFX.instance.LocalShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, 0);
+                    FXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
                 } 
                 return;
             }
@@ -197,14 +203,14 @@ public class PlayerCombat : MonoBehaviour
             }
 
 
-            if(_data.type != ItemType.Melee) GameFX.instance.LocalShootFX(_item.muzzleTrans.position, hitObject.point, Vector3.zero, false, true, 0);
+            if(_data.type != ItemType.Melee) FXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, Vector3.zero, true, true, firstShot, 0);
         }
     }
 
     IEnumerator DelayShoot(ItemClient _item, float _delay)
     {
         yield return new WaitForSeconds(_delay);
-        Shoot(_item);
+        Shoot(_item, false);
     }
 
 

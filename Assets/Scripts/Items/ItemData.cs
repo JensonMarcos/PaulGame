@@ -71,4 +71,7 @@ public class ItemData : ScriptableObject
     public float impactForceObject;
     public float impactForcePlayer;
     public float backwardVelocity;
+
+    [Header("FX")]
+    public SoundData AttackSound;
 }

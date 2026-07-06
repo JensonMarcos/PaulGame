@@ -160,7 +160,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         if(spectator)
         {
             wishCrouch = false;
-            wishSprint = false;
+            //wishSprint = false;
         }
     }
 

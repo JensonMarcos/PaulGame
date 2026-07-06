@@ -22,12 +22,11 @@ MonoBehaviour:
   reloadSpeed: 1.5
   ammoCap: 2
   ammoSpawn: 10
-  isAutomatic: 1
+  isAutomatic: 0
   range: 100
   shootRadius: 0
   accuracy: 0.1
   ADSAccuracy: 0.05
-  SprintAccuracy: 0.15
   Recoil: {x: 2, y: 2, z: 0.1}
   ADSRecoilMult: 1
   snap: 6
@@ -47,3 +46,10 @@ MonoBehaviour:
   impactForceObject: 20
   impactForcePlayer: 0
   backwardVelocity: 10
+  AttackSound:
+    clipID: 0
+    loop: 0
+    volume: 1
+    pitchDeviation: 0.05
+    spatialBlend: 1
+    play2DLocal: 1
