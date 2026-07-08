@@ -90,7 +90,7 @@ public class PlayerCombat : MonoBehaviour
 
             StartCoroutine(DelayShoot(_item, _data.attackDelay));
 
-            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
+            SoundManager.instance.PlayNetworkSound(_data.AttackSound, cam.position);
         }
 
         if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
