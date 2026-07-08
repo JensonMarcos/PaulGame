@@ -64,11 +64,13 @@ public class FXManager : NetworkBehaviour
         if(!didHit) return;
 
         //Decals, hit fx
-        StartCoroutine(SpawnDecal(decal, endPos, Quaternion.LookRotation(hitNormal)));
+        Vector3 safeNormal = hitNormal.sqrMagnitude > 0.0001f ? hitNormal : Vector3.up;
+        StartCoroutine(SpawnDecal(decal, endPos, Quaternion.LookRotation(safeNormal)));
     }
 
     IEnumerator SpawnDecal(int decal, Vector3 pos, Quaternion rot) {
         GameObject _decal = decalPools[decal].Get();
+
         _decal.transform.SetPositionAndRotation(pos, rot);
 
         Collider[] colliders = Physics.OverlapSphere(pos, 0.2f);
