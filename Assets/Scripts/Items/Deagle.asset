@@ -49,7 +49,7 @@ MonoBehaviour:
   AttackSound:
     clipID: 3
     loop: 0
-    volume: 0.5
+    volume: 0.2
     pitchDeviation: 0.05
     spatialBlend: 1
     play2DLocal: 1

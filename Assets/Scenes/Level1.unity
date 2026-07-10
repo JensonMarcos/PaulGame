@@ -581,7 +581,8 @@ GameObject:
   - component: {fileID: 320267739}
   - component: {fileID: 320267736}
   - component: {fileID: 320267738}
-  - component: {fileID: 320267737}
+  - component: {fileID: 320267741}
+  - component: {fileID: 320267740}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -614,24 +615,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &320267737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320267735}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631f250d45d56f14289ebc4599286829, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  bulletTrailPrefab: {fileID: 8033789990124155721, guid: 5e4652b463480ff4aaad40406c8adeea, type: 3}
-  trailSpeed: 600
-  muzzleFlashPrefab: {fileID: 302656432113164353, guid: 338ea35511b6d764da7cea6c96d96dfa, type: 3}
-  hitDecals:
-  - {fileID: 2710676648699921312, guid: abe39eb683c27f245a7f072497564acc, type: 3}
 --- !u!114 &320267738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -736,7 +719,7 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 0
     lastPlayerAliveWins: 0
     spawnItems: 0
     doDamage: 0
@@ -779,6 +762,46 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &320267740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320267735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8ab3b01992eda4b91049d6a7f65569, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoundManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  soundEmitterPrefab: {fileID: 6032024220949397087, guid: 86a7320c618076a409b852926146172b, type: 3}
+  AudioClipList:
+  - {fileID: 8300000, guid: f67e95323dd7c7843949d8f49b8eef7b, type: 3}
+  - {fileID: 8300000, guid: e460e652afcec304c87b259ca494932e, type: 3}
+  - {fileID: 8300000, guid: a026a31791ba44245ba9841300daa66f, type: 3}
+  - {fileID: 8300000, guid: 92ebc39a6795b1e4aab8b177d82f3701, type: 3}
+--- !u!114 &320267741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320267735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b66bc1f2ca9dd43a31314c811ce8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FXManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  bulletTrailPrefab: {fileID: 8033789990124155721, guid: 5e4652b463480ff4aaad40406c8adeea, type: 3}
+  trailSpeed: 600
+  muzzleFlashPrefab: {fileID: 302656432113164353, guid: 338ea35511b6d764da7cea6c96d96dfa, type: 3}
+  muzzleFlashDuration: 0.1
+  hitDecals:
+  - {fileID: 2710676648699921312, guid: abe39eb683c27f245a7f072497564acc, type: 3}
+  - {fileID: 2710676648699921312, guid: 38efeca37f696f34f9ea4bafcb08a4fb, type: 3}
+  decalDuration: 5
 --- !u!1 &369320401
 GameObject:
   m_ObjectHideFlags: 0

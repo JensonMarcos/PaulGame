@@ -8,7 +8,7 @@ public class PlayerAnimations : NetworkBehaviour
     [SerializeField] HandsAnimation hands;
     [SerializeField] ItemAnimation item;
     [SerializeField] FingerAnimation fingers;
-    [SerializeField] PlayerCamera cam;
+    public PlayerCamera cam;
 
     [SerializeField] PlayerCharacter character;
 
@@ -22,12 +22,12 @@ public class PlayerAnimations : NetworkBehaviour
     }
 
     //control animator
-    public void UpdateAnimatorValues(PlayerState _state)
+    public void UpdateAnimatorValues(PlayerState _state, ItemData _item)
     {
         var _stance = _state.Stance is Stance.Stand or Stance.Sprint ? 1f : 0f;
         var _sprint = _state.Stance is Stance.Sprint? 1f : 0f;
         var _slide = _state.Stance is Stance.Slide? 1f : 0f;
-        var _idleState = _state.Melee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
+        var _idleState = _item.type == ItemType.Melee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
 
         //Logic for the walking animation, bacically normalizing but kinda weird
         var _vel = character.transform.InverseTransformDirection(_state.Velocity);
@@ -68,8 +68,12 @@ public class PlayerAnimations : NetworkBehaviour
 
         hands.UpdateTransform(camTarget, _state.Reloading);
 
-        bool _doIKRight = _item.data.RightHandIK || !((_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault) && _state.Melee);
-        bool _doIKLeft = _item.data.LeftHandIK || !((_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault) && _state.Melee);
+        bool _doIKRight = _item.data.RightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+        bool _doIKLeft = _item.data.LeftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+
+        body.SetLayerWeight(2, _doIKRight ? 1f : 0f);
+        //body.SetLayerWeight(3, _doIKLeft ? 1f : 0f);
+        
         hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
 
         Vector3 aimPos = _item.data.position; //if no sight, just keep same position
@@ -82,7 +86,7 @@ public class PlayerAnimations : NetworkBehaviour
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_state.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && _item.data.type != ItemType.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
 
         //fingers.UpdateFingers();
     }
@@ -97,6 +101,11 @@ public class PlayerAnimations : NetworkBehaviour
     public void SetAnimationActive(bool _active)
     {
         body.gameObject.SetActive(_active);
+    }
+
+    public void SetUpperBodyTilt(float _tilt)
+    {
+        body.UpperBodyTilt = _tilt;
     }
 
     #region TriggerAnimation

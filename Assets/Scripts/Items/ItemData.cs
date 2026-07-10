@@ -74,4 +74,5 @@ public class ItemData : ScriptableObject
 
     [Header("FX")]
     public SoundData AttackSound;
+    public int DecalIndex;
 }

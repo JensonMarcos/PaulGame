@@ -82,6 +82,11 @@ public class BodyAnimation : MonoBehaviour
         Horizontal = x;
         Vertical = y;
         IdleState = idle;
+    }  
+
+    public void SetLayerWeight(int layer, float weight)
+    {
+        BodyAnimator.SetLayerWeight(layer, weight);
     }
 
     public void TriggerAnimator(string name)

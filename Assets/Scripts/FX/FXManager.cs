@@ -68,6 +68,11 @@ public class FXManager : NetworkBehaviour
         StartCoroutine(SpawnDecal(decal, endPos, Quaternion.LookRotation(safeNormal)));
     }
 
+    void LocalDecalFX(Vector3 pos, Vector3 hitNormal, int decal) {
+        Vector3 safeNormal = hitNormal.sqrMagnitude > 0.0001f ? hitNormal : Vector3.up;
+        StartCoroutine(SpawnDecal(decal, pos, Quaternion.LookRotation(safeNormal)));
+    }
+
     IEnumerator SpawnDecal(int decal, Vector3 pos, Quaternion rot) {
         GameObject _decal = decalPools[decal].Get();
 
@@ -106,7 +111,7 @@ public class FXManager : NetworkBehaviour
         muzzleFlashPool.Release(_flash);
     }
 
-
+    #region Shoot FX
     public void ShootFX(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, bool doMuzzle, int decal) {
         LocalShootFX(startPos, endPos, hitNormal, didHit, doTrail, doMuzzle, decal);
         ShootFXServerRpc(startPos, endPos, hitNormal, didHit, doTrail, doMuzzle, decal);
@@ -123,4 +128,24 @@ public class FXManager : NetworkBehaviour
     public void ShootFXClientRpc(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, bool doMuzzle, int decal, RpcParams rpcParams = default) {
         LocalShootFX(startPos, endPos, hitNormal, didHit, doTrail, doMuzzle, decal);
     }
+    #endregion
+
+    #region Decal FX
+    public void DecalFX(Vector3 pos, Vector3 hitNormal, int decal) {
+        LocalDecalFX(pos, hitNormal, decal);
+        DecalFXServerRpc(pos, hitNormal, decal);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void DecalFXServerRpc(Vector3 pos, Vector3 hitNormal, int decal, RpcParams rpcParams = default) {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        DecalFXClientRpc(pos, hitNormal, decal, RpcTarget.Not(senderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void DecalFXClientRpc(Vector3 pos, Vector3 hitNormal, int decal, RpcParams rpcParams = default) {
+        LocalDecalFX(pos, hitNormal, decal);
+    }
+    #endregion
 }

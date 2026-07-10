@@ -32,8 +32,14 @@ public class PlayerCombat : MonoBehaviour
     float nextTimeToFire;
 
     ItemClient prevItem;
+    Player player;
 
     readonly RaycastHit[] shootHitsBuffer = new RaycastHit[16];
+
+    void Awake()
+    {
+        player = transform.root.GetComponent<Player>();
+    }
 
     public void SetInputs(CombatInputs inputs, bool _sprinting, bool _readyPull)
     {
@@ -80,9 +86,7 @@ public class PlayerCombat : MonoBehaviour
 
         if(nextTimeToFire > Time.time) return;
 
-        _item.LeftClick();
-
-        
+        player.CallItemAction(false);
 
         if (_data.type is ItemType.Melee)
         {
@@ -203,7 +207,8 @@ public class PlayerCombat : MonoBehaviour
             }
 
 
-            if(_data.type != ItemType.Melee) FXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, Vector3.zero, true, true, firstShot, 0);
+            if(_data.type != ItemType.Melee) FXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, _data.DecalIndex);
+            else FXManager.instance.DecalFX(hitObject.point, hitObject.normal, _data.DecalIndex);
         }
     }
 

@@ -248,6 +248,10 @@ public class PlayerInventory : NetworkBehaviour
         Inventory[i] = handsItem;
         NetworkIDInventory[i] = 0UL;
         SyncClientInventory();
+
+        float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+        Select(i, _pullOutTime, true);
+        SelectServerRpc(i, _pullOutTime, true);
     }
 
     public void DropAll()

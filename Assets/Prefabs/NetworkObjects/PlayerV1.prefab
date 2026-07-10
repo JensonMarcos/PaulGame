@@ -1,36 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &94711447051757929
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2710600104649862563}
-  m_Layer: 3
-  m_Name: PunchTarget
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2710600104649862563
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 94711447051757929}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 2.9558573e-12, z: 2.2454107e-15, w: 0.70710677}
-  m_LocalPosition: {x: 0, y: 0, z: 0.55}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8418498531701191655}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &200219740211322441
 GameObject:
   m_ObjectHideFlags: 0
@@ -3485,7 +3454,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cea0b535f4859f4d99f124932894211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
   RHand:
     transform: {fileID: 2087391735233662819}
     startPos: {x: 0, y: 0, z: 0}
@@ -3494,15 +3462,13 @@ MonoBehaviour:
     transform: {fileID: 8960439865454848169}
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}
-  handParent: {fileID: 1707472341572310751}
-  punchTarget: {fileID: 2710600104649862563}
-  body: {fileID: 2292759806596770658}
   punchSpeed: 6
   retractSpeed: 4
   punchHoldTime: 0
+  punchDistance: 0.55
+  punchEndRot: {x: 90, y: 0, z: 0}
   tiltAmount: 20
   rotWeight: 0.85
-  handedness: 0
 --- !u!1 &3749683256609901313
 GameObject:
   m_ObjectHideFlags: 0
@@ -7197,7 +7163,6 @@ Transform:
   m_Children:
   - {fileID: 8988247101069907987}
   - {fileID: 3992418633902817877}
-  - {fileID: 2710600104649862563}
   - {fileID: 1162888870160651042}
   m_Father: {fileID: 626301126728090735}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8016,7 +7981,6 @@ MonoBehaviour:
   layoutGroup: {fileID: 6552012165652164609}
   scorboardItemPrefab: {fileID: 2882304568963352407, guid: 90cefe50f0ce8e04eb1d6272461dc1cb, type: 3}
   Header: {fileID: 753652523250172991}
-  falloff: 3
   localPlayerId: 0
 --- !u!1 &8191023195361609713
 GameObject:

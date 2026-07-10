@@ -1,5 +1,5 @@
 using System.Collections;
-using Unity.Netcode;
+//using Unity.Netcode;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,24 +10,29 @@ public struct HandData
     public Quaternion startRot;
 }
 
-public class HandsPunch : NetworkBehaviour, IItemAction
+public class HandsPunch : MonoBehaviour, IItemAction
 {
     [SerializeField] HandData RHand, LHand;
 
-    [SerializeField] Transform handParent;
-    [SerializeField] Transform punchTarget;
-
-    [SerializeField] BodyAnimation body;
+    Transform parent;
+    PlayerAnimations anim;
+    Transform cam;
 
     [SerializeField] float punchSpeed, retractSpeed;
     [SerializeField] float punchHoldTime;
+    [SerializeField] float punchDistance = 0.55f;
+    [SerializeField] Vector3 punchEndRot = new Vector3(90, 0, 0);
     [SerializeField] float tiltAmount;
     [SerializeField] float rotWeight;
 
-    [SerializeField] bool handedness;
+    bool handedness;
 
     void Start()
     {
+        parent = transform.parent;
+        anim = transform.root.GetComponent<PlayerAnimations>();
+        cam = anim.cam.transform;
+
         RHand.startPos = RHand.transform.localPosition;
         RHand.startRot = RHand.transform.localRotation;
         LHand.startPos = LHand.transform.localPosition;
@@ -40,12 +45,12 @@ public class HandsPunch : NetworkBehaviour, IItemAction
 
         //ResetHands();
 
-        body.UpperBodyTilt = 0f;
+        anim.SetUpperBodyTilt(0f);
 
         handedness = !handedness;
 
         StartCoroutine(PunchAnimation(handedness ? RHand : LHand, handedness ? -2f : 1f));
-        PunchServerRpc(handedness);
+        //PunchServerRpc(handedness);
     }
 
     public void OnRightClick()
@@ -53,18 +58,18 @@ public class HandsPunch : NetworkBehaviour, IItemAction
         
     }
 
-    [Rpc(SendTo.Server)]
-    public void PunchServerRpc(bool _handedness)
-    {
-        PunchClientRpc(_handedness);
-    }
+    // [Rpc(SendTo.Server)]
+    // public void PunchServerRpc(bool _handedness)
+    // {
+    //     PunchClientRpc(_handedness);
+    // }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    public void PunchClientRpc(bool _handedness)
-    {
-        if(IsOwner) return;
-        StartCoroutine(PunchAnimation(_handedness ? RHand : LHand, _handedness ? -2f : 1f));
-    }
+    // [Rpc(SendTo.ClientsAndHost)]
+    // public void PunchClientRpc(bool _handedness)
+    // {
+    //     if(IsOwner) return;
+    //     StartCoroutine(PunchAnimation(_handedness ? RHand : LHand, _handedness ? -2f : 1f));
+    // }
 
     IEnumerator PunchAnimation(HandData hand, float tiltMult)
     {
@@ -80,13 +85,13 @@ public class HandsPunch : NetworkBehaviour, IItemAction
             //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
             t = 2.70158f * x * x * x - 1.70158f * x * x;
 
-            punchPos = handParent.InverseTransformPoint(punchTarget.position);
-            punchRot = Quaternion.Inverse(handParent.rotation) * punchTarget.rotation;
+            punchPos = parent.InverseTransformPoint(cam.forward * punchDistance + cam.position);
+            punchRot = Quaternion.Inverse(parent.rotation) * cam.rotation * Quaternion.Euler(punchEndRot);
 
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, punchPos, t);
             hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x * rotWeight);
 
-            body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
+            anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
         }
 
 
@@ -100,19 +105,19 @@ public class HandsPunch : NetworkBehaviour, IItemAction
             x -= retractSpeed * Time.deltaTime;
             t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
 
-            punchPos = handParent.InverseTransformPoint(punchTarget.position);
-            punchRot = Quaternion.Inverse(handParent.rotation) * punchTarget.rotation;
+            punchPos = parent.InverseTransformPoint(cam.forward * punchDistance + cam.position);
+            punchRot = Quaternion.Inverse(parent.rotation) * cam.rotation * Quaternion.Euler(punchEndRot);
 
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, punchPos, t);
             hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x * rotWeight);
 
-            body.UpperBodyTilt = Mathf.Lerp(0, tiltAmount * tiltMult, t);
+            anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
         }
 
         hand.transform.localPosition = hand.startPos;
         hand.transform.localRotation = hand.startRot;
 
-        body.UpperBodyTilt = 0f;
+        anim.SetUpperBodyTilt(0f);
 
         
     }

@@ -20,8 +20,8 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
     public bool ReadyPull;
     public float Reloading;
 
-    [Header("Animation")]
-    public bool Melee;
+    // [Header("Animation")]
+    // public bool Melee;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -34,7 +34,7 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
         serializer.SerializeValue(ref ReadyPull);
         serializer.SerializeValue(ref Reloading);
 
-        serializer.SerializeValue(ref Melee);
+        //serializer.SerializeValue(ref Melee);
     }
 
     public bool Equals(PlayerState other)
@@ -45,8 +45,8 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
             && InventoryIndex == other.InventoryIndex
             && Aiming == other.Aiming
             && ReadyPull == other.ReadyPull
-            && Reloading == other.Reloading
-            && Melee == other.Melee;
+            && Reloading == other.Reloading;
+            //&& Melee == other.Melee;
     }
 }
 
@@ -112,7 +112,7 @@ public class Player : NetworkBehaviour
 
         if(!isDead)
         {
-            playerAnimations.UpdateAnimatorValues(playerState);
+            playerAnimations.UpdateAnimatorValues(playerState, playerInventory.ClientInventory[playerState.InventoryIndex].data);
 
             playerAnimations.UpdateAnimator(Time.deltaTime);
         }
@@ -203,7 +203,7 @@ public class Player : NetworkBehaviour
         playerState.ReadyPull = playerInventory.ReadyPull;
         playerState.Reloading = playerCombat.Reloading;
 
-        playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
+        // playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -295,5 +295,26 @@ public class Player : NetworkBehaviour
     public void TriggerAnimation(string name) {
         playerAnimations.TriggerAnimationServerRpc(name);
         playerAnimations.TriggerAnimation(name);
+    }
+
+    public void CallItemAction(bool rightClick) {
+        CallItemActionServerRpc(rightClick);
+        LocalCallItemAction(rightClick);
+    }
+
+    [Rpc(SendTo.Server)]
+    void CallItemActionServerRpc(bool rightClick, RpcParams rpcParams = default) {
+        CallItemActionClientRpc(rightClick, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void CallItemActionClientRpc(bool rightClick, RpcParams rpcParams = default) {
+        LocalCallItemAction(rightClick);
+    }
+
+    void LocalCallItemAction(bool rightClick) {
+        ItemClient item = playerInventory.ClientInventory[playerState.InventoryIndex];
+        if(rightClick) item.RightClick();
+        else item.LeftClick();
     }
 }
