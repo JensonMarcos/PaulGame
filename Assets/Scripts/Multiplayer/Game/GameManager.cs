@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Collections;
+using System.Linq;
 
 public enum GameState
 {
@@ -24,7 +25,6 @@ public struct GameMode
     [Space]
     [Header("GameMode Settings")]
     public bool lastPlayerAliveWins;
-    public bool spawnItems;
     public bool doDamage;
     public bool doPunching;
 
@@ -39,6 +39,12 @@ public struct GameMode
     [Header("Teams")]
     public bool useTeams;
     public int numberOfTeams;
+
+    [Space]
+    [Header("Items")]
+    public bool spawnInitialItem;
+    public int initialItemID;
+    public int numberOfInitialItems;
 }
 
 [System.Serializable]
@@ -143,7 +149,6 @@ public class GameManager : NetworkBehaviour
             case GameState.MoveRoom:
                 playerManager.damageEnabled.Value = false;
                 playerManager.RespawnEveryone();
-                playerManager.ClearItemServerRpc();
                 CleanObjects();
 
                 rooms.NextRoom();
@@ -183,6 +188,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.GameEnd:
                 playerManager.damageEnabled.Value = false;
+                playerManager.ClearItemServerRpc();
                 rooms.current.DoorClientRpc(doorState.exit); 
 
                 timer = Time.time + endGameTime;
@@ -242,9 +248,9 @@ public class GameManager : NetworkBehaviour
                             }
                             if (player.score > winner.score) winner = player;
                         }
-                        playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
-
-                        GameTitle.Value = winner.ClientId.ToString() + " won";
+                        winner.wins++;
+                        playerManager.UpdatePlayerScoreboardServerRpc(winner.ClientId);
+                        GameTitle.Value = winner.name + " won";
 
                     } else
                     {
@@ -264,7 +270,8 @@ public class GameManager : NetworkBehaviour
 
                     if(winner != null)
                     {
-                        playerManager.Players[playerManager.Players.FindIndex(x => x == winner)].wins++;
+                        winner.wins++;
+                        playerManager.UpdatePlayerScoreboardServerRpc(winner.ClientId);
                         GameTitle.Value = winner.name + " won";
                     } else
                     {
@@ -390,5 +397,17 @@ public class GameManager : NetworkBehaviour
 
         GameTitle.Value = "";
         timer = Time.time + currentGameMode.gameTime;
+
+        //items
+        if(currentGameMode.spawnInitialItem)
+        {
+            int _count = (currentGameMode.numberOfInitialItems < playerManager.Players.Count) ? currentGameMode.numberOfInitialItems : playerManager.Players.Count;
+            ulong[] _shuffledIds = playerManager.Players.Select(p => p.ClientId).OrderBy(id => System.Guid.NewGuid()).ToArray();
+
+            for(int i = 0; i < _count; i++)
+            {
+                playerManager.GiveItemServerRpc(currentGameMode.initialItemID, _shuffledIds[i]);
+            }
+        }
     }
 }

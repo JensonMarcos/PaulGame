@@ -154,8 +154,8 @@ public class PlayerCombat : MonoBehaviour
             //shoot Fx in air
             if(_data.type != ItemType.Melee)
             {
-                Vector3 targetPoint = cam.transform.position + cam.transform.forward*_data.range;
-                FXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                Vector3 targetPoint = cam.transform.position + (cam.transform.forward+accuracyOffset)*_data.range;
+                VFXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
             } 
             
         } else
@@ -174,8 +174,8 @@ public class PlayerCombat : MonoBehaviour
                 //shoot Fx in air
                 if(_data.type != ItemType.Melee)
                 {
-                    Vector3 targetPoint = cam.transform.position + cam.transform.forward*_data.range;
-                    FXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                    Vector3 targetPoint = cam.transform.position + (cam.transform.forward+accuracyOffset)*_data.range;
+                    VFXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
                 } 
                 return;
             }
@@ -207,8 +207,8 @@ public class PlayerCombat : MonoBehaviour
             }
 
 
-            if(_data.type != ItemType.Melee) FXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, _data.DecalIndex);
-            else FXManager.instance.DecalFX(hitObject.point, hitObject.normal, _data.DecalIndex);
+            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, _data.DecalIndex);
+            else VFXManager.instance.DecalFX(hitObject.point, hitObject.normal, _data.DecalIndex);
         }
     }
 

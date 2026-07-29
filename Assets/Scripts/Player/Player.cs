@@ -216,17 +216,18 @@ public class Player : NetworkBehaviour
     public void DieClientRpc() {
         isDead = true;
 
+        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
+
         if(!IsOwner) {
-            playerCharacter.gameObject.SetActive(false);
+            playerCharacter.root.gameObject.SetActive(false);
             return;
         }
 
-        playerAnimations.SetAnimationActive(false);
         playerInventory.DropAll();
-
-        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
+        playerInventory.Deselect();
+        
+        playerAnimations.SetAnimationActive(false);
         playerCharacter.SetSpectator(true);
-
         playerUI.hud.SetDead(true);
     }
 
@@ -234,15 +235,15 @@ public class Player : NetworkBehaviour
     public void RespawnClientRpc() {
         isDead = false;
 
+        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
+
         if(!IsOwner) {
-            playerCharacter.gameObject.SetActive(true);
+            playerCharacter.root.gameObject.SetActive(true);
             return;
         } 
 
         playerAnimations.SetAnimationActive(true);
-        playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
         playerCharacter.SetSpectator(false);
-
         playerUI.hud.SetDead(false);
     }
 

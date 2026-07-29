@@ -32,7 +32,7 @@ public class SoundManager : NetworkBehaviour
     [SerializeField] SoundEmitter soundEmitterPrefab;
     ObjectPool<SoundEmitter> soundEmitterPool;
     
-    public AudioClip[] AudioClipList;
+    public SoundList SoundList;
 
     void Awake()
     {

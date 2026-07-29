@@ -4,9 +4,9 @@ using System.Linq;
 using System.Collections;
 using UnityEngine.Pool;
 
-public class FXManager : NetworkBehaviour
+public class VFXManager : NetworkBehaviour
 {
-    public static FXManager instance;
+    public static VFXManager instance;
 
     [Header("Shoot FX")]
     [Space]

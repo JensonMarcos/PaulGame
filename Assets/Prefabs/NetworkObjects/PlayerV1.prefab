@@ -1653,7 +1653,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2222791315
+  GlobalObjectIdHash: 1643099095
   InScenePlacedSourceGlobalObjectIdHash: 1440644931
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1687,7 +1687,6 @@ MonoBehaviour:
     Aiming: 0
     ReadyPull: 0
     Reloading: 0
-    Melee: 0
   playerInventory: {fileID: 8977595956255095959}
   playerCharacter: {fileID: 3154624319263331040}
   playerCamera: {fileID: 7242442766532918349}

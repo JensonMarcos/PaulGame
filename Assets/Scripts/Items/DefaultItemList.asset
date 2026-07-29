@@ -28,4 +28,7 @@ MonoBehaviour:
   - item: {fileID: 6043181894173564170, guid: 0f91ef01aeeeb5247bb89df9e9e3f1de, type: 3}
     id: 4
     weight: 1
-  specialItems: []
+  specialItems:
+  - item: {fileID: 7023030012164714213, guid: fc0d5ba0d1cf4be47a3def4064724b27, type: 3}
+    id: 100
+    weight: 0

@@ -367,5 +367,8 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
  
-
+    public void Deselect() {
+        if(currentHovered != null) currentHovered.SetHovered(false);
+        currentHovered = null;
+    }
 }

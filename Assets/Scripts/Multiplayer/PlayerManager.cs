@@ -116,6 +116,13 @@ public class PlayerManager : NetworkBehaviour
 
         if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 
+        // track last attacker for world-kill credit (ignore the 1234 world-damage special case)
+        if (damage != 1234f)
+        {
+            target.lastAttackedBy = senderId;
+            target.lastAttackedTime = Time.time;
+        }
+
         if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.currentGameMode.doPunching)) {
             target.player.RecieveForceClientRpc(force);
         }
@@ -139,21 +146,29 @@ public class PlayerManager : NetworkBehaviour
 
             if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
 
-            //self kill
-            if(damage == 1234f)
+            PlayerData killer = sender;
+            if (damage == 1234f)
             {
-                //if(GameManager.instance != null) target.playerGameObject.GetComponent<Player>().TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
-            } else
-            {
-                sender.kills++;
-                sender.score += 100;
+                if (target.lastAttackedBy.HasValue && Time.time - target.lastAttackedTime < 20f) //idk lowkey arbitrary value
+                {
+                    int _index = Players.FindIndex(x => x.ClientId == target.lastAttackedBy.Value);
+                    if (_index >= 0) killer = Players[_index];
+                }
             }
+
+            if (killer != target)
+            {
+                killer.kills++;
+                killer.score += 100;
+            }
+
+            target.lastAttackedBy = null;
 
             foreach(PlayerData _player in Players) {
                 _player.player.ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
-                _player.player.ScoreboardUpdateClientRpc(sender.ClientId, sender.wins, sender.kills, sender.deaths);
+                _player.player.ScoreboardUpdateClientRpc(killer.ClientId, killer.wins, killer.kills, killer.deaths);
 
-                _player.player.AddKillfeedClientRpc($"{sender.name}  >  {target.name}", _player.ClientId == sender.ClientId || _player.ClientId == target.ClientId);
+                _player.player.AddKillfeedClientRpc($"{killer.name}  >  {target.name}", _player.ClientId == killer.ClientId || _player.ClientId == target.ClientId);
             }
         }
 
@@ -216,6 +231,14 @@ public class PlayerManager : NetworkBehaviour
         int id = Players.FindIndex(x => x.ClientId == playerId);
         Players[id].player.GiveItemClientRpc(netObj.NetworkObjectId);
     }
+
+    [Rpc(SendTo.Server)]
+    public void UpdatePlayerScoreboardServerRpc(ulong playerId, RpcParams rpcParams = default) {
+        PlayerData targetPlayer = Players.Find(x => x.ClientId == playerId);
+        foreach(PlayerData _player in Players) {
+            _player.player.ScoreboardUpdateClientRpc(targetPlayer.ClientId, targetPlayer.wins, targetPlayer.kills, targetPlayer.deaths);
+        }
+    }
 }
 
 [System.Serializable]
@@ -238,4 +261,6 @@ public class PlayerData
     public float health;
     public bool isDead = false;
     public int team = -1;
+    public ulong? lastAttackedBy;
+    public float lastAttackedTime;
 }

@@ -11,7 +11,7 @@ public class SoundEmitter : MonoBehaviour
         transform.position = position;
         if(parent != null) transform.SetParent(parent);
 
-        audioSource.clip = SoundManager.instance.AudioClipList[soundData.clipID];
+        audioSource.clip = SoundManager.instance.SoundList.Clips[soundData.clipID];
         audioSource.loop = soundData.loop;
         audioSource.volume = soundData.volume;
         audioSource.pitch = 1 + soundData.pitchDeviation * Random.Range(-1f, 1f);
