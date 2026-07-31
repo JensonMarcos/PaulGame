@@ -13,6 +13,7 @@ public class PlayerCamera : MonoBehaviour
     [Header("Camera Animations")]
     public Vector3 targetRot;
     [SerializeField] Vector3 offsetRot;
+    [SerializeField] float deathCamRotSpeed = 12f;
 
 
     public void Initialize(Transform target, bool owner)
@@ -53,6 +54,11 @@ public class PlayerCamera : MonoBehaviour
     public void UpdatePosition(Transform target)
     {
         transform.position = target.position;
+    }
+
+    public void UpdateDeathCamRotation(Transform target)
+    {
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(target.forward), deathCamRotSpeed * Time.deltaTime);
     }
 
     public void AddRotation(float x, float y, float z, float mult)

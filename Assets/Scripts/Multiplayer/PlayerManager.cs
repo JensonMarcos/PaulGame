@@ -139,10 +139,11 @@ public class PlayerManager : NetworkBehaviour
             Vector3 vel = target.player.playerState.Velocity + propForce;
 
             GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
-            ragdoll.GetComponent<NetworkObject>().Spawn();
+            NetworkObject ragdollNet = ragdoll.GetComponent<NetworkObject>();
+            ragdollNet.Spawn();
             ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
 
-            target.player.DieClientRpc();
+            target.player.DieClientRpc(ragdollNet.NetworkObjectId);
 
             if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
 

@@ -13,12 +13,14 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] GameObject crosshair;
     [SerializeField] GameObject scope;
     [SerializeField] float scopeThreshold = 0.99f;
+    [SerializeField] GameObject crown;
 
     bool tabPressed, tabLastPressed;
 
     public void Initialize(bool isOwner, ulong localPlayerId)
     {
         gunUI.Initialize(isOwner);
+        crown.SetActive(false);
         if(!isOwner)
         {
             canvas.SetActive(false);
@@ -58,5 +60,10 @@ public class PlayerUI : MonoBehaviour
         } 
 
         gunUI.UpdateUI(_item, aiming > 0.5f, scoped, _state.Reloading);
+    }
+
+    public void SetCrown(bool enabled)
+    {
+        crown.SetActive(enabled);
     }
 }

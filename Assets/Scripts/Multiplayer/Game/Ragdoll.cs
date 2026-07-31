@@ -5,6 +5,7 @@ using UnityEngine;
 public class Ragdoll : NetworkBehaviour
 {
     [SerializeField] Rigidbody hips;
+    public Transform CameraTarget;
 
     [Rpc(SendTo.ClientsAndHost)]
     public void ApplyPoseAndVelocityClientRpc(ulong playerNetworkId, Vector3 velocity)

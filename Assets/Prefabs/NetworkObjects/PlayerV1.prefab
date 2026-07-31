@@ -1797,7 +1797,7 @@ MonoBehaviour:
   playerAnimations: {fileID: 8215228522949132519}
   playerCombat: {fileID: 1746808595021971831}
   playerUI: {fileID: 4503881391566056838}
-  crown: {fileID: 1092954505118450511}
+  deathCamDuration: 3
 --- !u!114 &1746808595021971831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4227,6 +4227,7 @@ MonoBehaviour:
   crosshair: {fileID: 3983993665659106132}
   scope: {fileID: 6918950720797383909}
   scopeThreshold: 0.99
+  crown: {fileID: 1092954505118450511}
 --- !u!1 &4200389699174821345
 GameObject:
   m_ObjectHideFlags: 0

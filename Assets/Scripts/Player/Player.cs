@@ -67,10 +67,11 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
-
-    [SerializeField] GameObject crown;
+    [SerializeField] float deathCamDuration = 3f;
 
     bool isDead;
+    Transform deathCamTarget;
+    Coroutine deathCamRoutine;
   
     public override void OnNetworkSpawn()
     {
@@ -82,8 +83,6 @@ public class Player : NetworkBehaviour
         playerAnimations.Initialize();
         playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
-
-        crown.SetActive(false);
 
         if(IsOwner && GameManager.instance != null)
         {
@@ -137,7 +136,10 @@ public class Player : NetworkBehaviour
 
         if(!isDead) playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
 
-        playerCamera.UpdatePosition(playerCharacter.camTarget);
+        Transform camFollow = deathCamTarget != null ? deathCamTarget : playerCharacter.camTarget;
+        playerCamera.UpdatePosition(camFollow);
+        if (deathCamTarget != null)
+            playerCamera.UpdateDeathCamRotation(deathCamTarget);
 
         if(IsOwner) {
             if(!isDead)
@@ -159,9 +161,11 @@ public class Player : NetworkBehaviour
     {
         var inputs = playerInputs.Gameplay;
 
-        Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();
-        playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex].data);
-        
+        if (deathCamTarget == null)
+        {
+            Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();
+            playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex].data);
+        }
 
         CharacterInputs characterInputs = new CharacterInputs {
             ForwardAxis = inputs.Move.ReadValue<Vector2>().y,
@@ -217,7 +221,7 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void DieClientRpc() {
+    public void DieClientRpc(ulong ragdollNetworkId) {
         isDead = true;
 
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
@@ -233,11 +237,40 @@ public class Player : NetworkBehaviour
         playerAnimations.SetAnimationActive(false);
         playerCharacter.SetSpectator(true);
         playerUI.hud.SetDead(true);
+
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ragdollNetworkId, out NetworkObject ragdollObj))
+        {
+            Ragdoll ragdoll = ragdollObj.GetComponent<Ragdoll>();
+            if (ragdoll != null && ragdoll.CameraTarget != null)
+            {
+                if (deathCamRoutine != null) StopCoroutine(deathCamRoutine);
+                deathCamRoutine = StartCoroutine(DeathCam(ragdoll.CameraTarget));
+            }
+        }
+    }
+
+    IEnumerator DeathCam(Transform target)
+    {
+        deathCamTarget = target;
+        yield return new WaitForSeconds(deathCamDuration);
+        deathCamTarget = null;
+        deathCamRoutine = null;
+    }
+
+    void ClearDeathCam()
+    {
+        if (deathCamRoutine != null)
+        {
+            StopCoroutine(deathCamRoutine);
+            deathCamRoutine = null;
+        }
+        deathCamTarget = null;
     }
 
     [Rpc(SendTo.ClientsAndHost)]
     public void RespawnClientRpc() {
         isDead = false;
+        ClearDeathCam();
 
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
 
@@ -276,8 +309,7 @@ public class Player : NetworkBehaviour
 
     [Rpc(SendTo.ClientsAndHost)]
     public void SetCrownClientRpc(bool enabled) {
-        // owners dont see their own crown
-        crown.gameObject.SetActive(enabled && !IsOwner);
+        playerUI.SetCrown(enabled && !IsOwner);
     }
 
     [Rpc(SendTo.ClientsAndHost)]

@@ -43,7 +43,7 @@ MonoBehaviour:
   sightPos: {x: 0, y: 0, z: 0}
   ADSAmmoPos: {x: -0.082, y: 0.04, z: 0.2}
   WidTopBot: {x: 0, y: 0, z: 0}
-  impactForceObject: 100
+  impactForceObject: 1000
   impactForcePlayer: 0
   backwardVelocity: 0
   AttackSound:
