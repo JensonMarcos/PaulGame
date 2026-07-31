@@ -180,7 +180,7 @@ public class GameManager : NetworkBehaviour
                     playerManager.Players[i].score = 0;
                     if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                     {
-                        playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero);
+                        playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero, Vector3.zero);
                         playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
                     }
                 }

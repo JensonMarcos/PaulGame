@@ -17,11 +17,11 @@ public class Killzone : NetworkBehaviour
         switch (mode)
         {
             case Mode.KillAndTeleport:
-                PlayerManager.instance.DealDamageServerRpc(player.OwnerClientId, 1234f, Vector3.zero);
+                PlayerManager.instance.DealDamageServerRpc(player.OwnerClientId, 1234f, Vector3.zero, Vector3.zero);
                 PlayerManager.instance.TeleportServerRpc(player.OwnerClientId, GameManager.instance.rooms.current.respawnPoint.position);
                 break;
             case Mode.Kill:
-                PlayerManager.instance.DealDamageServerRpc(player.OwnerClientId, 1234f, Vector3.zero);
+                PlayerManager.instance.DealDamageServerRpc(player.OwnerClientId, 1234f, Vector3.zero, Vector3.zero);
                 break;
             case Mode.Teleport:
                 PlayerManager.instance.TeleportServerRpc(player.OwnerClientId, GameManager.instance.rooms.current.respawnPoint.position);

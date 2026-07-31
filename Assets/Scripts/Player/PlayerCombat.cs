@@ -190,7 +190,8 @@ public class PlayerCombat : MonoBehaviour
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
 
                 Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult;
-                PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force);
+                Vector3 _propForce = cam.transform.forward * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
+                PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
                 
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);

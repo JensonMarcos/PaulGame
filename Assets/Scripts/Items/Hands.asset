@@ -44,7 +44,7 @@ MonoBehaviour:
   ADSAmmoPos: {x: 0, y: 0, z: 0}
   WidTopBot: {x: 0, y: 0, z: 0}
   impactForceObject: 50
-  impactForcePlayer: 12
+  impactForcePlayer: 8
   backwardVelocity: 0
   AttackSound:
     clipID: 0

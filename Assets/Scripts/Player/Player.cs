@@ -68,6 +68,8 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
 
+    [SerializeField] GameObject crown;
+
     bool isDead;
   
     public override void OnNetworkSpawn()
@@ -80,6 +82,8 @@ public class Player : NetworkBehaviour
         playerAnimations.Initialize();
         playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
+
+        crown.SetActive(false);
 
         if(IsOwner && GameManager.instance != null)
         {
@@ -268,6 +272,12 @@ public class Player : NetworkBehaviour
     public void ScoreboardUpdateClientRpc(ulong playerId, int wins, int kills, int deaths) {
         if(!IsOwner) return;
         playerUI.scoreboard.UpdateItem(playerId, wins, kills, deaths);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void SetCrownClientRpc(bool enabled) {
+        // owners dont see their own crown
+        crown.gameObject.SetActive(enabled && !IsOwner);
     }
 
     [Rpc(SendTo.ClientsAndHost)]

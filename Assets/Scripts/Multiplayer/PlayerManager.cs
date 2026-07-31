@@ -107,7 +107,7 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, RpcParams rpcParams = default) {
+    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, Vector3 propForce, RpcParams rpcParams = default) {
         ulong senderId = rpcParams.Receive.SenderClientId;
         PlayerData target = Players[Players.FindIndex(x => x.ClientId == targetid)];
         PlayerData sender = Players[Players.FindIndex(x => x.ClientId == senderId)];
@@ -136,13 +136,13 @@ public class PlayerManager : NetworkBehaviour
 
             Vector3 pos = target.player.playerCharacter.transform.position;
             Quaternion rot = target.player.playerCharacter.transform.rotation;
-            Vector3 vel = target.player.playerState.Velocity;
-
-            target.player.DieClientRpc();
+            Vector3 vel = target.player.playerState.Velocity + propForce;
 
             GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
             ragdoll.GetComponent<NetworkObject>().Spawn();
-            ragdoll.GetComponent<NetworkProp>().ApplyForceServerRpc(vel, ragdollPrefab.transform.position);
+            ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
+
+            target.player.DieClientRpc();
 
             if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
 
@@ -238,6 +238,30 @@ public class PlayerManager : NetworkBehaviour
         foreach(PlayerData _player in Players) {
             _player.player.ScoreboardUpdateClientRpc(targetPlayer.ClientId, targetPlayer.wins, targetPlayer.kills, targetPlayer.deaths);
         }
+        UpdateCrowns();
+    }
+
+    void UpdateCrowns()
+    {
+        int maxWins = 0;
+        PlayerData leader = null;
+        bool tie = false;
+        foreach (PlayerData p in Players)
+        {
+            if (p.wins > maxWins)
+            {
+                maxWins = p.wins;
+                leader = p;
+                tie = false;
+            }
+            else if (p.wins == maxWins && maxWins > 0)
+            {
+                tie = true;
+            }
+        }
+
+        foreach (PlayerData p in Players)
+            p.player.SetCrownClientRpc(!tie && maxWins > 0 && p == leader);
     }
 }
 
