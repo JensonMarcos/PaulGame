@@ -25,15 +25,31 @@ public class VFXManager : NetworkBehaviour
     [SerializeField] float decalDuration = 5f;
     ObjectPool<GameObject>[] decalPools;
 
+    [Header("Projectiles")]
+    [SerializeField] GameObject[] projectiles;
+    [SerializeField] LayerMask projectileHitMask;
+    ObjectPool<GameObject>[] projectilePools;
+
+    [Header("Explosion")]
+    [SerializeField] GameObject explosionPrefab;
+    [SerializeField] float explosionDuration = 2f;
+    ObjectPool<GameObject> explosionPool;
+
     void Awake() {
         instance = this;
 
         bulletTrailPool = CreatePool(bulletTrailPrefab, 250, 2000);
         muzzleFlashPool = CreatePool(muzzleFlashPrefab, 25, 200);
+        explosionPool = CreatePool(explosionPrefab, 20, 100);
 
         decalPools = new ObjectPool<GameObject>[hitDecals.Length];
         for(int i = 0; i < hitDecals.Length; i++) {
             decalPools[i] = CreatePool(hitDecals[i], 500, 4000);
+        }
+
+        projectilePools = new ObjectPool<GameObject>[projectiles.Length];
+        for(int i = 0; i < projectiles.Length; i++) {
+            projectilePools[i] = CreatePool(projectiles[i], 20, 100);
         }
     }
 
@@ -111,6 +127,14 @@ public class VFXManager : NetworkBehaviour
         muzzleFlashPool.Release(_flash);
     }
 
+    IEnumerator SpawnExplosion(Vector3 position) {
+        GameObject explosion = explosionPool.Get();
+        explosion.transform.position = position;
+
+        yield return new WaitForSeconds(explosionDuration);
+        explosionPool.Release(explosion);
+    }
+
     #region Shoot FX
     public void ShootFX(Vector3 startPos, Vector3 endPos, Vector3 hitNormal, bool didHit, bool doTrail, bool doMuzzle, int decal) {
         LocalShootFX(startPos, endPos, hitNormal, didHit, doTrail, doMuzzle, decal);
@@ -146,6 +170,77 @@ public class VFXManager : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     public void DecalFXClientRpc(Vector3 pos, Vector3 hitNormal, int decal, RpcParams rpcParams = default) {
         LocalDecalFX(pos, hitNormal, decal);
+    }
+    #endregion
+
+    #region Muzzle Flash FX
+    public void MuzzleFlashFX(Vector3 startPos) {
+        StartCoroutine(SpawnMuzzleFlash(startPos));
+        MuzzleFlashFXServerRpc(startPos);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void MuzzleFlashFXServerRpc(Vector3 startPos, RpcParams rpcParams = default) {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        MuzzleFlashFXClientRpc(startPos, RpcTarget.Not(senderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void MuzzleFlashFXClientRpc(Vector3 startPos, RpcParams rpcParams = default) {
+        StartCoroutine(SpawnMuzzleFlash(startPos));
+    }
+    #endregion
+
+    #region Projectile FX
+    public void ProjectileFX(int id, Vector3 position, Vector3 direction, float speed, float gravity, float size, float lifetime) {
+        StartCoroutine(SpawnProjectile(id, position, direction, speed, gravity, size, lifetime));
+        ProjectileFXServerRpc(id, position, direction, speed, gravity, size, lifetime);
+    }
+
+    IEnumerator SpawnProjectile(int id, Vector3 position, Vector3 direction, float speed, float gravity, float size, float lifetime) {
+        GameObject obj = projectilePools[id].Get();
+        obj.transform.SetPositionAndRotation(position, Quaternion.LookRotation(direction));
+
+        Projectile projectile = obj.GetComponent<Projectile>();
+        projectile.Launch(direction, speed, gravity, size, lifetime, projectileHitMask);
+
+        while (projectile.IsAlive)
+            yield return null;
+
+        projectile.ResetProjectile();
+        if (obj != null) projectilePools[id].Release(obj);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void ProjectileFXServerRpc(int id, Vector3 position, Vector3 direction, float speed, float gravity, float size, float lifetime, RpcParams rpcParams = default) {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        ProjectileFXClientRpc(id, position, direction, speed, gravity, size, lifetime, RpcTarget.Not(senderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void ProjectileFXClientRpc(int id, Vector3 position, Vector3 direction, float speed, float gravity, float size, float lifetime, RpcParams rpcParams = default) {
+        StartCoroutine(SpawnProjectile(id, position, direction, speed, gravity, size, lifetime));
+    }
+    #endregion
+
+    #region Explosion FX
+    public void ExplosionFX(Vector3 position) {
+        StartCoroutine(SpawnExplosion(position));
+        ExplosionFXServerRpc(position);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void ExplosionFXServerRpc(Vector3 position, RpcParams rpcParams = default) {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        ExplosionFXClientRpc(position, RpcTarget.Not(senderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void ExplosionFXClientRpc(Vector3 position, RpcParams rpcParams = default) {
+        StartCoroutine(SpawnExplosion(position));
     }
     #endregion
 }

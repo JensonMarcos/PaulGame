@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -33,8 +34,11 @@ public class PlayerCombat : MonoBehaviour
 
     ItemClient prevItem;
     Player player;
+    Coroutine reloadCoroutine;
 
     readonly RaycastHit[] shootHitsBuffer = new RaycastHit[16];
+    readonly Collider[] explosionOverlapBuffer = new Collider[32];
+    readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
 
     void Awake()
     {
@@ -64,14 +68,18 @@ public class PlayerCombat : MonoBehaviour
         if(prevItem != _item)
         {
             Aiming = 0;
-            StopAllCoroutines();
+            if(reloadCoroutine != null)
+            {
+                StopCoroutine(reloadCoroutine);
+                reloadCoroutine = null;
+            }
             Reloading = 0;
         }
         prevItem = _item;
 
         if(wishReload && _item.Ammo < _item.data.ammoCap)
         {
-            StartCoroutine(Reload(_item));
+            reloadCoroutine = StartCoroutine(Reload(_item));
             return;
         }
 
@@ -102,7 +110,7 @@ public class PlayerCombat : MonoBehaviour
             if(!PlayerManager.instance.damageEnabled.Value) return;
 
             if(_item.Ammo <= 0) {
-                if(PlayerManager.instance.reloadEnabled) StartCoroutine(Reload(_item));
+                if(PlayerManager.instance.reloadEnabled) reloadCoroutine = StartCoroutine(Reload(_item));
                 return;
             }
 
@@ -143,7 +151,36 @@ public class PlayerCombat : MonoBehaviour
             float curretAccuracy = Mathf.Lerp(_data.accuracy, _data.ADSAccuracy, Aiming);
             accuracyOffset = new Vector3(Random.insideUnitSphere.x * curretAccuracy,  Random.insideUnitSphere.y * curretAccuracy, Random.insideUnitSphere.z * curretAccuracy);
         }
-        
+
+        if(_data.useProjectile)
+        {
+            Vector3 shootDir = (cam.forward + accuracyOffset).normalized;
+            Vector3 spawnPos = _item.muzzleTrans.position;
+            StartCoroutine(FireProjectile(
+                spawnPos,
+                shootDir,
+                _data.projectileSize,
+                _data.projectileSpeed,
+                _data.projectileGravity,
+                _data.projectileHitDamage,
+                _data.projectileExplosionRadius,
+                _data.projectileExplosionDamage,
+                _data.projectileExplosionSelfDamage,
+                _data.projectileLifetime,
+                _data.impactForcePlayer,
+                _data.impactForceObject,
+                _data.projectileHitSound));
+            VFXManager.instance.ProjectileFX(
+                _data.ProjectileIndex,
+                spawnPos,
+                shootDir,
+                _data.projectileSpeed,
+                _data.projectileGravity,
+                _data.projectileSize,
+                _data.projectileLifetime);
+            if(firstShot) VFXManager.instance.MuzzleFlashFX(spawnPos);
+            return;
+        }
         
         int hitCount = _data.shootRadius > 0
             ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, cam.forward + accuracyOffset, shootHitsBuffer, _data.range, shootLayer)
@@ -213,6 +250,127 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
+    IEnumerator FireProjectile(
+        Vector3 origin,
+        Vector3 direction,
+        float size,
+        float speed,
+        float gravity,
+        float onHitDamage,
+        float explosionRadius,
+        float explosionDamage,
+        float explosionSelfDamage,
+        float lifetime,
+        float impactForcePlayer,
+        float impactForceObject,
+        SoundData projectileHitSound)
+    {
+        Vector3 position = origin;
+        Vector3 velocity = direction * speed;
+        float age = 0f;
+
+        while (age < lifetime)
+        {
+            yield return new WaitForFixedUpdate();
+
+            float dt = Time.fixedDeltaTime;
+            age += dt;
+            velocity += Vector3.down * gravity * dt;
+
+            Vector3 displacement = velocity * dt;
+            float distance = displacement.magnitude;
+            if (distance <= 0f) continue;
+
+            Vector3 stepDir = displacement / distance;
+            int hitCount = Physics.SphereCastNonAlloc(position, size, stepDir, shootHitsBuffer, distance, shootLayer);
+
+            RaycastHit? bestHit = null;
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit hit = shootHitsBuffer[i];
+                if (hit.transform.root == transform.root) continue;
+                if (bestHit == null || hit.distance < bestHit.Value.distance)
+                    bestHit = hit;
+            }
+
+            if (bestHit.HasValue)
+            {
+                RaycastHit hit = bestHit.Value;
+                position = hit.point;
+
+                Transform hitRoot = hit.transform.root;
+                if (hitRoot.GetComponent<Player>() != null && hitRoot.TryGetComponent(out NetworkObject netObj))
+                {
+                    PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, onHitDamage, Vector3.zero, Vector3.zero);
+                }
+                else if (hitRoot.TryGetComponent(out ItemCrate hitCrate))
+                {
+                    hitCrate.BreakCrateServerRpc();
+                }
+
+                if (explosionRadius > 0)
+                {
+                    ExplosionDamage(position, explosionRadius, explosionDamage, explosionSelfDamage, impactForcePlayer, impactForceObject);
+                }
+
+                SoundManager.instance.PlayNetworkSound(projectileHitSound, position);
+                yield break;
+            }
+
+            position += displacement;
+        }
+    }
+
+    void ExplosionDamage(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject)
+    {
+        VFXManager.instance.ExplosionFX(center);
+
+        explosionHitNetIds.Clear();
+
+        int count = Physics.OverlapSphereNonAlloc(center, explosionRadius, explosionOverlapBuffer, shootLayer);
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = explosionOverlapBuffer[i];
+            Transform root = col.transform.root;
+            if (!root.TryGetComponent(out NetworkObject netObj)) continue;
+            if (explosionHitNetIds.Contains(netObj.NetworkObjectId)) continue;
+
+            Vector3 hitPoint = col.ClosestPoint(center);
+            Vector3 toHit = hitPoint - center;
+            float dist = toHit.magnitude;
+
+            //los check
+            if (Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer) && losHit.transform.root != root)
+                continue;
+
+            float falloff = 1f - Mathf.Pow(Mathf.Clamp01(dist / explosionRadius), 4);
+            if (falloff <= 0.0001f) continue;
+
+            explosionHitNetIds.Add(netObj.NetworkObjectId);
+
+            Vector3 blastDir = toHit / dist;
+
+            if (root.GetComponent<Player>() != null)
+            {
+                bool isSelf = root == transform.root;
+                float damage = (isSelf ? explosionSelfDamage : explosionDamage) * falloff;
+                
+                Vector3 playerForce = impactForcePlayer == 0f ? Vector3.zero : blastDir * impactForcePlayer * falloff;
+                Vector3 ragdollForce = impactForceObject == 0f ? Vector3.zero : blastDir * impactForceObject * falloff;
+
+                PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, damage, playerForce, ragdollForce);
+            }
+            else if (root.TryGetComponent(out ItemCrate crate))
+            {
+                crate.BreakCrateServerRpc();
+            }
+            else if (root.TryGetComponent(out NetworkProp prop) && impactForceObject != 0f)
+            {
+                prop.ApplyForceServerRpc(blastDir * (impactForceObject * falloff), hitPoint);
+            }
+        }
+    }
+
     IEnumerator DelayShoot(ItemClient _item, float _delay)
     {
         yield return new WaitForSeconds(_delay);
@@ -231,5 +389,6 @@ public class PlayerCombat : MonoBehaviour
 
         _item.Ammo = _item.data.ammoCap;
         Reloading = 0;
+        reloadCoroutine = null;
     }
 }

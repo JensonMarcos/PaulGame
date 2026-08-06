@@ -6,21 +6,19 @@ public class ItemCrate : NetworkBehaviour
 {
     [Header("Loot")]
     public ItemList itemList;
-    [SerializeField] int itemCount = 1;
-
-    readonly List<int> drops = new();
+    [SerializeField] int itemCount;
     bool broken;
+    GameManager gameManager;
+    public Room room;
 
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
 
-        if (itemList == null) itemList = GameManager.instance.itemList;
+        gameManager = GameManager.instance;
+        if (itemList == null) itemList = gameManager.itemList;
 
-        // Decide the loot up front so it is the same regardless of who breaks it.
-        drops.Clear();
-        for (int i = 0; i < itemCount; i++)
-            drops.Add(itemList.GetRandomItemId());
+        itemCount = (int)(Random.Range(1f, 2f) + PlayerManager.instance.Players.Count * 0.2f);
     }
 
     [Rpc(SendTo.Server)]
@@ -34,24 +32,27 @@ public class ItemCrate : NetworkBehaviour
         if (!IsServer || broken) return;
         broken = true;
 
-        Vector3 pos = transform.position;
-
-        foreach (int id in drops)
+        if (room == null || room.crateLootEnabled)
         {
-            GameObject prefab = itemList.GetItem(id);
-            if (prefab == null) continue;
-
-            if(GameManager.instance != null)
-                GameManager.instance.SpawnItem(prefab, pos);
-            else
+            for (int i=0; i<itemCount; i++)
             {
-                GameObject item = Instantiate(prefab, pos, Quaternion.identity);
-                item.GetComponent<NetworkObject>().Spawn(true);
+                int id = itemList.GetRandomItemId();
+
+                GameObject prefab = itemList.GetItem(id);
+                if (prefab == null) continue;
+
+                if(gameManager != null)
+                    gameManager.SpawnItem(prefab, transform.position);
+                else
+                {
+                    GameObject item = Instantiate(prefab, transform.position, Quaternion.identity);
+                    item.GetComponent<NetworkObject>().Spawn(true);
+                }
             }
         }
 
         if(GameManager.instance != null)
-            GameManager.instance.RemoveObject(gameObject);
+            gameManager.RemoveObject(gameObject);
         else
             GetComponent<NetworkObject>().Despawn(true);
     }

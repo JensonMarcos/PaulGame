@@ -30,14 +30,31 @@ public class Room : NetworkBehaviour
     public List<GameObject> playersInRoom;
 
     public GameMode GameMode;
+    public bool crateLootEnabled = true;
+
+    [SerializeField] GameObject itemCratePrefab;
+    [SerializeField] Transform itemCrateSpawns;
     
-    void Start() {
+    public void Initialize() {
         if(!IsServer) return;
+
+        crateLootEnabled = true;
+        
         foreach (SpawnObject spawnObject in objectsToSpawn) {
             if (spawnObject.prefab == null || spawnObject.point == null) continue;
             GameObject obj = Instantiate(spawnObject.prefab, spawnObject.point.position, spawnObject.point.rotation);
             obj.GetComponent<NetworkObject>().Spawn(true);
             GameManager.instance.worldObjects.Add(obj);
+        }
+
+        if(itemCrateSpawns != null) {
+            foreach (Transform spawnPoint in itemCrateSpawns.transform) {
+                GameObject obj = Instantiate(itemCratePrefab, spawnPoint.position, spawnPoint.rotation);
+                obj.GetComponent<NetworkObject>().Spawn(true);
+                ItemCrate crate = obj.GetComponent<ItemCrate>();
+                if (crate != null) crate.room = this;
+                GameManager.instance.worldObjects.Add(obj);
+            }
         }
     }
 

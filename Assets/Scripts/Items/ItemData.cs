@@ -15,14 +15,15 @@ public class ItemData : ScriptableObject
 {
     public ItemType type;
     public int slot;
+    public bool useProjectile;
 
     bool isGun => type is ItemType.Gun or ItemType.Sniper or ItemType.Shotgun;
     bool isSniper => type is ItemType.Sniper;
     bool isShotgun => type is ItemType.Shotgun;
     bool isMelee => type is ItemType.Melee;
+    bool isNotProjectile => !useProjectile;
 
     [Header("Basic Stats")]
-    public float damage;
     public Vector3 position;
     public float pullOutTime;
     public float fireRate;
@@ -31,8 +32,21 @@ public class ItemData : ScriptableObject
     [ShowIf("isGun")] public int ammoCap;
     [ShowIf("isGun")] public int ammoSpawn;
     public bool isAutomatic;
-    public float range;
-    public float shootRadius;
+
+    [ShowIf("isNotProjectile")] public float damage;
+    [ShowIf("isNotProjectile")] public float range;
+    [ShowIf("isNotProjectile")] public float shootRadius;
+
+    [ShowIf("useProjectile")] public int ProjectileIndex;
+    [ShowIf("useProjectile")] public float projectileSize;
+    [ShowIf("useProjectile")] public float projectileSpeed;
+    [ShowIf("useProjectile")] public float projectileGravity;
+    [ShowIf("useProjectile")] public float projectileHitDamage;
+    [ShowIf("useProjectile")] public float projectileExplosionRadius;
+    [ShowIf("useProjectile")] public float projectileExplosionDamage;
+    [ShowIf("useProjectile")] public float projectileExplosionSelfDamage;
+    [ShowIf("useProjectile")] public float projectileLifetime;
+    [ShowIf("useProjectile")] public SoundData projectileHitSound;
     
     [Header("Accuracy")]
     [ShowIf("isGun")] public float accuracy;

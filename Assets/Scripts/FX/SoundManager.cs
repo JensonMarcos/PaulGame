@@ -13,6 +13,7 @@ public struct SoundData : INetworkSerializable
     public float pitchDeviation;
     public float spatialBlend;
     public bool play2DLocal;
+    public float minDistance;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -22,6 +23,7 @@ public struct SoundData : INetworkSerializable
         serializer.SerializeValue(ref pitchDeviation);
         serializer.SerializeValue(ref spatialBlend);
         serializer.SerializeValue(ref play2DLocal);
+        serializer.SerializeValue(ref minDistance);
     }
 }
 

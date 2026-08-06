@@ -673,11 +673,8 @@ MonoBehaviour:
   gameModes:
   - name: Deathmatch
     roomPrefabs:
-    - {fileID: 8812538440075657376, guid: aea3cd4dc6fc9d942a39680a419a15f5, type: 3}
-    - {fileID: 8812538440075657376, guid: 0344eb5e8b47cd74c8a976bd32b3f62e, type: 3}
-    - {fileID: 8812538440075657376, guid: 0eee629a07b16c54286b16a4dfa8d138, type: 3}
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 1
     doDamage: 1
     doPunching: 1
@@ -709,7 +706,7 @@ MonoBehaviour:
   - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 0
     lastPlayerAliveWins: 1
     doDamage: 0
     doPunching: 1
@@ -2316,6 +2313,9 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
+  crateLootEnabled: 1
+  itemCratePrefab: {fileID: 0}
+  itemCrateSpawns: {fileID: 0}
 --- !u!114 &1453712075
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40174c96e64b8f44ea9689f296ddfee7, type: 3}
+  m_Name: Bazooka
+  m_EditorClassIdentifier: 
+  type: 0
+  slot: 0
+  useProjectile: 1
+  position: {x: 0.12, y: -0.2, z: 0.25}
+  pullOutTime: 0.8
+  fireRate: 1
+  attackDelay: 0
+  reloadSpeed: 3
+  ammoCap: 7
+  ammoSpawn: 10
+  isAutomatic: 0
+  damage: 50
+  range: 100
+  shootRadius: 0
+  ProjectileIndex: 0
+  projectileSize: 0.2
+  projectileSpeed: 60
+  projectileGravity: 6
+  projectileHitDamage: 50
+  projectileExplosionRadius: 5.5
+  projectileExplosionDamage: 50
+  projectileExplosionSelfDamage: 15
+  projectileLifetime: 5
+  projectileHitSound:
+    clipID: 4
+    loop: 0
+    volume: 0.85
+    pitchDeviation: 0.05
+    spatialBlend: 1
+    play2DLocal: 0
+    minDistance: 2.5
+  accuracy: 0
+  ADSAccuracy: 0
+  Recoil: {x: 20, y: 1, z: 1}
+  ADSRecoilMult: 1
+  snap: 10
+  returnSpeed: 3.5
+  adsSpeed: 0.6
+  adsZoom: 65
+  RightHandIK: 1
+  LeftHandIK: 1
+  backKick: 1
+  rotKick: 10
+  ADSAnimMult: 1
+  numberOfShots: 0
+  AmmoPos: {x: -0.105, y: 0.04, z: 0.01}
+  sightPos: {x: -0.057, y: 0.1, z: 0.3}
+  ADSAmmoPos: {x: -0.15, y: 0.115, z: 0.25}
+  WidTopBot: {x: 0.23, y: 0.55, z: 0.06}
+  impactForceObject: 70
+  impactForcePlayer: 17
+  backwardVelocity: 5
+  AttackSound:
+    clipID: 3
+    loop: 0
+    volume: 0.15
+    pitchDeviation: 0.05
+    spatialBlend: 1
+    play2DLocal: 1
+    minDistance: 1
+  DecalIndex: 0

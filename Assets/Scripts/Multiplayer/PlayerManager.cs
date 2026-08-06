@@ -112,7 +112,7 @@ public class PlayerManager : NetworkBehaviour
         PlayerData target = Players[Players.FindIndex(x => x.ClientId == targetid)];
         PlayerData sender = Players[Players.FindIndex(x => x.ClientId == senderId)];
 
-        if (damage != 1234f && sender.team >= 0 && sender.team == target.team) return;
+        if (damage != 1234f && senderId != targetid && sender.team >= 0 && sender.team == target.team) return;
 
         if(damageEnabled.Value || damage == 1234f) target.health -= damage;
 

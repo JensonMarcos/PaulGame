@@ -360,4 +360,15 @@ public class Player : NetworkBehaviour
         if(rightClick) item.RightClick();
         else item.LeftClick();
     }
+
+    // [Rpc(SendTo.Server)]
+    // public void SpawnProjectileServerRpc(Vector3 pos, Quaternion rot, RpcParams rpcParams = default)
+    // {
+    //     int index = IsOwner ? playerState.InventoryIndex : NetworkPlayerState.Value.InventoryIndex;
+    //     GameObject prefab = playerInventory.ClientInventory[index].data.projectilePrefab;
+    //     if(prefab == null) return;
+
+    //     NetworkObject netObj = Instantiate(prefab, pos, rot).GetComponent<NetworkObject>();
+    //     netObj.SpawnWithOwnership(OwnerClientId, true);
+    // }
 }

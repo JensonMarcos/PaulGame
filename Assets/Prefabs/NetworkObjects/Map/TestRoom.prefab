@@ -4118,52 +4118,13 @@ MonoBehaviour:
   moveSpawnPoint: {fileID: 8719811085594630188}
   doorEnter: {fileID: 4911735263454800526}
   doorExit: {fileID: 4419519594259218012}
-  objectsToSpawn:
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 7216231303035901446}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 8894068976097744335}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 2323291361882609477}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 6296557949276000412}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 7956344304637891466}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 3254971860576930134}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 4432180517392925162}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 3850210817320259384}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 2343526989822960655}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 3828992826451673166}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 474218521766968323}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 7972271420203046123}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 6650261017691772220}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 2923472461288747232}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 103648238280317015}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 7975142766426887292}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 6231105022553748688}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 4959464847892078420}
-  - prefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-    point: {fileID: 4833166321780792511}
+  objectsToSpawn: []
   playersInRoom: []
   GameMode:
     name: 
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
-    spawnItems: 0
     doDamage: 0
     doPunching: 0
     showTimer: 0
@@ -4172,6 +4133,11 @@ MonoBehaviour:
     animTimeMult: 0
     useTeams: 0
     numberOfTeams: 0
+    spawnInitialItem: 0
+    initialItemID: 0
+    numberOfInitialItems: 0
+  itemCratePrefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
+  itemCrateSpawns: {fileID: 4689655540308882898}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

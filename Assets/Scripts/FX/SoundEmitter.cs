@@ -16,6 +16,7 @@ public class SoundEmitter : MonoBehaviour
         audioSource.volume = soundData.volume;
         audioSource.pitch = 1 + soundData.pitchDeviation * Random.Range(-1f, 1f);
         audioSource.spatialBlend = soundData.spatialBlend;
+        audioSource.minDistance = soundData.minDistance;
     }
 
     public void Play(bool play2D)

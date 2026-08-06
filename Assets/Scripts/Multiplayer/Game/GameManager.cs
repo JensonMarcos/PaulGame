@@ -149,12 +149,13 @@ public class GameManager : NetworkBehaviour
             case GameState.MoveRoom:
                 playerManager.damageEnabled.Value = false;
                 playerManager.RespawnEveryone();
-                CleanObjects();
 
                 rooms.NextRoom();
 
-                rooms.previous.DoorClientRpc(doorState.exit); 
+                rooms.previous.DoorClientRpc(doorState.exit); //not nessecary besides starting room
                 rooms.current.DoorClientRpc(doorState.enter); 
+
+                rooms.current.Initialize();
 
                 timer = Time.time + moveTime;
 
@@ -189,6 +190,8 @@ public class GameManager : NetworkBehaviour
             case GameState.GameEnd:
                 playerManager.damageEnabled.Value = false;
                 playerManager.ClearItemServerRpc();
+                CleanObjects();
+                rooms.current.crateLootEnabled = false;
                 rooms.current.DoorClientRpc(doorState.exit); 
 
                 timer = Time.time + endGameTime;
