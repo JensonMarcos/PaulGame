@@ -802,9 +802,16 @@ MonoBehaviour:
   muzzleFlashPrefab: {fileID: 302656432113164353, guid: 338ea35511b6d764da7cea6c96d96dfa, type: 3}
   muzzleFlashDuration: 0.1
   hitDecals:
-  - {fileID: 2710676648699921312, guid: abe39eb683c27f245a7f072497564acc, type: 3}
-  - {fileID: 2710676648699921312, guid: 38efeca37f696f34f9ea4bafcb08a4fb, type: 3}
+  - {fileID: 7517607691318906875, guid: 7dd60cbc056d2094ba68db0d1d6bcf83, type: 3}
+  - {fileID: 8522698519836008684, guid: 5adbbd64c026adf4baf3310509ef8199, type: 3}
+  - {fileID: 8334304130152510981, guid: 6b2ab8c42eed92242a9273306c8a2333, type: 3}
   decalDuration: 5
+  projectiles: []
+  projectileHitMask:
+    serializedVersion: 2
+    m_Bits: 0
+  explosionPrefab: {fileID: 0}
+  explosionDuration: 2
 --- !u!1 &369320401
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   type: 3
   slot: 0
-  damage: 5
+  useProjectile: 0
   position: {x: 0, y: 0, z: 0}
   pullOutTime: 0.4
   fireRate: 3.5
@@ -23,8 +23,26 @@ MonoBehaviour:
   ammoCap: 0
   ammoSpawn: 0
   isAutomatic: 0
+  damage: 5
   range: 3
   shootRadius: 0.1
+  ProjectileIndex: 0
+  projectileSize: 0
+  projectileSpeed: 0
+  projectileGravity: 0
+  projectileHitDamage: 0
+  projectileExplosionRadius: 0
+  projectileExplosionDamage: 0
+  projectileExplosionSelfDamage: 0
+  projectileLifetime: 0
+  projectileHitSound:
+    clipID: 0
+    loop: 0
+    volume: 0
+    pitchDeviation: 0
+    spatialBlend: 0
+    play2DLocal: 0
+    minDistance: 0
   accuracy: 0
   ADSAccuracy: 0
   Recoil: {x: 0, y: 0, z: 0}
@@ -53,4 +71,5 @@ MonoBehaviour:
     pitchDeviation: 0
     spatialBlend: 0
     play2DLocal: 0
-  DecalIndex: 1
+    minDistance: 0
+  DecalIndex: 0

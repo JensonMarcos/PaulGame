@@ -26,6 +26,9 @@ public class PlayerCombat : MonoBehaviour
 
     [SerializeField] float upForceMult = 0.5f;
 
+    [SerializeField] int playerHitDecalIndex;
+    [SerializeField] int crateHitDecalIndex;
+
     bool wishAttack;
     bool wishAim;
     bool wishReload;
@@ -222,6 +225,8 @@ public class PlayerCombat : MonoBehaviour
             //print(hitObject.transform.name);
             Transform hitRoot = hitObject.transform.root;
 
+            int decalIndex = _data.DecalIndex;
+
             if (hitRoot.GetComponent<Player>()) //player damage
             {
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
@@ -229,7 +234,9 @@ public class PlayerCombat : MonoBehaviour
                 Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult;
                 Vector3 _propForce = cam.transform.forward * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
                 PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
-                
+
+                decalIndex = playerHitDecalIndex;
+
                 //hit indicator shit
                 // hitSound.pitch = Random.Range(0.95f, 1.05f);
                 // hitSound.PlayOneShot(hitSound.clip, 1f);
@@ -238,15 +245,17 @@ public class PlayerCombat : MonoBehaviour
             else if(hitRoot.TryGetComponent(out ItemCrate crate))
             {
                 crate.BreakCrateServerRpc();
+                decalIndex = crateHitDecalIndex;
             }
             else if(hitRoot.TryGetComponent(out NetworkProp prop))
             {
                 prop.ApplyForceServerRpc(cam.transform.forward * _data.impactForceObject, hitObject.point);
+                decalIndex = playerHitDecalIndex; //kinda temp
             }
 
 
-            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, _data.DecalIndex);
-            else VFXManager.instance.DecalFX(hitObject.point, hitObject.normal, _data.DecalIndex);
+            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, decalIndex);
+            else VFXManager.instance.DecalFX(hitObject.point, hitObject.normal, decalIndex);
         }
     }
 

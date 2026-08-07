@@ -94,9 +94,11 @@ public class VFXManager : NetworkBehaviour
 
         _decal.transform.SetPositionAndRotation(pos, rot);
 
-        Collider[] colliders = Physics.OverlapSphere(pos, 0.2f);
-        if(colliders.Length != 0) {
-            _decal.transform.SetParent(colliders[0].transform, true);
+        if(decal == 0) { //REALLY BAD HARDCODED
+            Collider[] colliders = Physics.OverlapSphere(pos, 0.2f);
+            if(colliders.Length != 0) {
+                _decal.transform.SetParent(colliders[0].transform, true);
+            }
         }
 
         yield return new WaitForSeconds(decalDuration);

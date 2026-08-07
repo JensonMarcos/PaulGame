@@ -1820,6 +1820,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1745
   upForceMult: 3
+  playerHitDecalIndex: 1
+  crateHitDecalIndex: 2
 --- !u!114 &8215228522949132519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7290,6 +7292,7 @@ MonoBehaviour:
   FovChangeSpeed: 20
   targetRot: {x: 0, y: 0, z: 0}
   offsetRot: {x: 0, y: 0, z: 0}
+  deathCamRotSpeed: 12
 --- !u!114 &5462980471730414848
 MonoBehaviour:
   m_ObjectHideFlags: 0

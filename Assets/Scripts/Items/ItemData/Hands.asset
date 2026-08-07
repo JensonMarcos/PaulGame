@@ -72,4 +72,4 @@ MonoBehaviour:
     spatialBlend: 0
     play2DLocal: 1
     minDistance: 1
-  DecalIndex: 1
+  DecalIndex: 0
