@@ -29,7 +29,7 @@ public class Item : NetworkBehaviour
         {
             if(PlayerManager.instance != null)
             {
-                Ammo.Value = PlayerManager.instance.reloadEnabled ? data.ammoCap : data.ammoSpawn;
+                Ammo.Value = PlayerManager.instance.reloadEnabled.Value ? data.ammoCap : data.ammoSpawn;
             } else
             {
                 Ammo.Value = data.ammoCap;
@@ -48,9 +48,13 @@ public class Item : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void ItemPickupServerRpc(NetworkObjectReference netObj)
+    public void ItemPickupServerRpc(NetworkObjectReference netObj, RpcParams rpcParams = default)
     {
-        if(HasOwner.Value) return;
+        if(HasOwner.Value)
+        {
+            PickupRejectedClientRpc(RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+            return;
+        }
         HasOwner.Value = true;
         //OwnerNetObj.Value = netObj;
         rb.isKinematic = true;
@@ -58,6 +62,18 @@ public class Item : NetworkBehaviour
 
         model.SetActive(false);
         itemCollider.enabled = false;
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void PickupRejectedClientRpc(RpcParams rpcParams = default)
+    {
+        var playerObj = NetworkManager.Singleton.LocalClient.PlayerObject;
+        if(playerObj == null) return;
+
+        var player = playerObj.GetComponent<Player>();
+        if(player == null || player.playerInventory == null) return;
+
+        player.playerInventory.RevertPickup(this);
     }
 
     [Rpc(SendTo.Server)]

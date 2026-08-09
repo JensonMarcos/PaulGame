@@ -211,6 +211,8 @@ public class PlayerInventory : NetworkBehaviour
 
     void PickupItem(Item item)
     {
+        if(item.HasOwner.Value) return;
+
         int slot = item.data.slot;
 
         if(Inventory[slot] != handsItem) Drop(slot);
@@ -237,6 +239,23 @@ public class PlayerInventory : NetworkBehaviour
         _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
         Select(InvIndex, _pullOutTime, _animate);
         SelectServerRpc(InvIndex, _pullOutTime, _animate);
+    }
+
+    public void RevertPickup(Item item)
+    {
+        for (int i = 0; i < Inventory.Length; i++)
+        {
+            if(Inventory[i] != item.gameObject) continue;
+
+            Inventory[i] = handsItem;
+            NetworkIDInventory[i] = 0UL;
+            SyncClientInventory();
+
+            float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            Select(InvIndex, _pullOutTime, true);
+            SelectServerRpc(InvIndex, _pullOutTime, true);
+            return;
+        }
     }
 
     void Drop(int i)

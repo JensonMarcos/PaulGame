@@ -14,7 +14,7 @@ public class PlayerManager : NetworkBehaviour
     public int playersAlive = 0;
 
     public NetworkVariable<bool> damageEnabled = new();
-    public bool reloadEnabled = true;
+    public NetworkVariable<bool> reloadEnabled = new(true);
 
     public override void OnNetworkSpawn() {
         // if(instance) {
@@ -51,7 +51,9 @@ public class PlayerManager : NetworkBehaviour
         foreach(PlayerData _player in Players) {
             if(_player.ClientId == id) return;
         }
-        GameObject player = Instantiate(playerPrefab);
+
+        Vector3 spawnPos = Vector3.right * (Players.Count * 1.5f); //kinda dumb but works good enough
+        GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
         PlayerData newPlayer = new PlayerData(player, id, 100f, GetPlayerName(id));
         Players.Add(newPlayer);

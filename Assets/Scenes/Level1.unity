@@ -806,11 +806,12 @@ MonoBehaviour:
   - {fileID: 8522698519836008684, guid: 5adbbd64c026adf4baf3310509ef8199, type: 3}
   - {fileID: 8334304130152510981, guid: 6b2ab8c42eed92242a9273306c8a2333, type: 3}
   decalDuration: 5
-  projectiles: []
+  projectiles:
+  - {fileID: 2598049339845909355, guid: f5664187a783b0142b9a65c2a58d8622, type: 3}
   projectileHitMask:
     serializedVersion: 2
-    m_Bits: 0
-  explosionPrefab: {fileID: 0}
+    m_Bits: 1233
+  explosionPrefab: {fileID: 823562978004765174, guid: 41043d9988f21994db6378e99f47de3c, type: 3}
   explosionDuration: 2
 --- !u!1 &369320401
 GameObject:

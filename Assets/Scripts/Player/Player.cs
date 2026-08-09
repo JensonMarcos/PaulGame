@@ -88,12 +88,9 @@ public class Player : NetworkBehaviour
         {
             GameManager.instance.GameTitle.OnValueChanged += playerUI.hud.OnTitleChanged;
         }
-            
 
         if(!IsOwner)
-        {
             playerCharacter.Motor.enabled = false;
-        }
     }
 
     public override void OnNetworkDespawn()
@@ -191,7 +188,7 @@ public class Player : NetworkBehaviour
         CombatInputs combatInputs = new CombatInputs {
             Attack = _auto ? inputs.Attack.IsPressed() : inputs.Attack.WasPressedThisFrame(),
             Aim = inputs.Aim.IsPressed(),
-            Reload = PlayerManager.instance.reloadEnabled ? inputs.Reload.WasPressedThisFrame() : false
+            Reload = PlayerManager.instance.reloadEnabled.Value ? inputs.Reload.WasPressedThisFrame() : false
         };
         playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
 
@@ -291,7 +288,8 @@ public class Player : NetworkBehaviour
 
     [Rpc(SendTo.ClientsAndHost)]
     public void TeleportClientRpc(Vector3 position) {
-        if(IsOwner) playerCharacter.SetPosition(position);
+        if (!IsOwner) return;
+        playerCharacter.SetPosition(position);
     }
 
     [Rpc(SendTo.ClientsAndHost)]

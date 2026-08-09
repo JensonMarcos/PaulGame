@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using KinematicCharacterController;
 using TMPro;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public struct CharacterInputs
@@ -36,6 +37,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     public Transform root;
 
     Player player;
+    NetworkTransform networkTransform;
 
     CharacterInputs characterInputs;
     Vector3 wishMovement;
@@ -131,6 +133,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         State.Stance = Stance.Stand;
         lastState = State;
         player = transform.root.GetComponent<Player>();
+        networkTransform = GetComponent<NetworkTransform>();
 
         uncrouchColliders = new Collider[8];
     }
@@ -593,10 +596,30 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     {
     }
 
+    public Vector3 GetValidPosition(Vector3 position, int attempts = 0)
+    {
+        if (attempts > 16) return position;
+
+        int hits = Motor.CharacterOverlap(position, transform.rotation, uncrouchColliders, LayerMask.GetMask("Player"), QueryTriggerInteraction.Ignore);
+        if (hits <= 0) return position;
+
+        Vector3 dir = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f) * Vector3.forward;
+        float dist = Motor.Capsule.radius * 2f + 0.25f;
+
+        return GetValidPosition(position + dir * dist, attempts + 1);
+    }
+
+    public bool CanCommitTransform => networkTransform != null && networkTransform.CanCommitToTransform;
+
     public void SetPosition(Vector3 position, bool killVelocity = true)
     {
-        Motor.SetPosition(position);
+        position = GetValidPosition(position);
+
+        Motor.SetPositionAndRotation(position, transform.rotation);
         if (killVelocity) Motor.BaseVelocity = Vector3.zero;
+
+        if (CanCommitTransform)
+            networkTransform.Teleport(position, transform.rotation, transform.localScale);
     }
 
     public void SetSpectator(bool _spectator)

@@ -125,19 +125,20 @@ public class GameManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        
-
         GameState = GameState.Lobby;
         rooms.AddRoom(startingRoom.GetComponent<Room>());
         GameTitle.Value = "Waiting to start";
-        CreateRoom();
     }
 
-    void LobbyStart()
+    void LobbyStart() //wtf
     {
+        if (PlayerManager.instance == null) return;
+
         playerManager = PlayerManager.instance;
         playerManager.damageEnabled.Value = false;
-        playerManager.reloadEnabled = false;
+        playerManager.reloadEnabled.Value = false;
+
+        CreateRoom();
     }
 
     void OnGameStateChange(GameState newState)
@@ -320,7 +321,7 @@ public class GameManager : NetworkBehaviour
         {
             GameObject obj = worldObjects[i];
             NetworkProp prop = obj.GetComponent<NetworkProp>();
-            if (obj.GetComponent<Item>() != null || (prop != null && prop.rb.transform.position.y < -10))
+            if (obj.GetComponent<Item>() != null || (prop != null && prop.rb.transform.position.y < -10) || (obj.GetComponent<ItemCrate>() != null && obj.transform.position.z < rooms.previous.transform.position.z - 10f))
             {
                 obj.GetComponent<NetworkObject>().Despawn(true);
                 worldObjects.RemoveAt(i);

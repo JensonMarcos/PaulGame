@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -24,8 +25,8 @@ public class EditorTester : NetworkBehaviour
     {
         if(!IsHost || (SteamManager.Instance != null)) return;
 
-        GameObject player = Instantiate(playerManagerGameObject);
-        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId, true);
+        GameObject playerManager = Instantiate(playerManagerGameObject);
+        playerManager.GetComponent<NetworkObject>().Spawn(true);
     }
     
 }

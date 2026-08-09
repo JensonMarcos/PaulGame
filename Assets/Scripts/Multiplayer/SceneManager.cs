@@ -27,9 +27,8 @@ public class SceneManager : NetworkBehaviour
     private void SceneLoaded(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
         if(IsHost && sceneName == "Level1") {
-            GameObject player = Instantiate(playerManagerGameObject);
-            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId, true);
-
+            GameObject playerManager = Instantiate(playerManagerGameObject);
+            playerManager.GetComponent<NetworkObject>().Spawn(true);
         }
     }
 }

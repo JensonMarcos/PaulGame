@@ -113,7 +113,7 @@ public class PlayerCombat : MonoBehaviour
             if(!PlayerManager.instance.damageEnabled.Value) return;
 
             if(_item.Ammo <= 0) {
-                if(PlayerManager.instance.reloadEnabled) reloadCoroutine = StartCoroutine(Reload(_item));
+                if(PlayerManager.instance.reloadEnabled.Value) reloadCoroutine = StartCoroutine(Reload(_item));
                 return;
             }
 
