@@ -148,17 +148,21 @@ public class PlayerCombat : MonoBehaviour
     {
         ItemData _data = _item.data;
         
-        Vector3 accuracyOffset = Vector3.zero;
+        Vector3 shootDir = cam.forward;
         if(_data.type != ItemType.Melee)
         {
             float curretAccuracy = Mathf.Lerp(_data.accuracy, _data.ADSAccuracy, Aiming);
-            accuracyOffset = new Vector3(Random.insideUnitSphere.x * curretAccuracy,  Random.insideUnitSphere.y * curretAccuracy, Random.insideUnitSphere.z * curretAccuracy);
+            shootDir = cam.forward + new Vector3(Random.insideUnitSphere.x * curretAccuracy,  Random.insideUnitSphere.y * curretAccuracy, Random.insideUnitSphere.z * curretAccuracy);
+
+            if(shootDir.sqrMagnitude > 0.0001f) shootDir.Normalize();
+            else shootDir = cam.forward;
         }
+
+        Vector3 spawnPos = _data.type != ItemType.Melee ? _item.muzzleTrans.position : cam.position;
 
         if(_data.useProjectile)
         {
-            Vector3 shootDir = (cam.forward + accuracyOffset).normalized;
-            Vector3 spawnPos = _item.muzzleTrans.position;
+
             StartCoroutine(FireProjectile(
                 spawnPos,
                 shootDir,
@@ -186,16 +190,16 @@ public class PlayerCombat : MonoBehaviour
         }
         
         int hitCount = _data.shootRadius > 0
-            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, cam.forward + accuracyOffset, shootHitsBuffer, _data.range, shootLayer)
-            : Physics.RaycastNonAlloc(cam.position, cam.forward + accuracyOffset, shootHitsBuffer, _data.range, shootLayer);
+            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, shootDir, shootHitsBuffer, _data.range, shootLayer)
+            : Physics.RaycastNonAlloc(cam.position, shootDir, shootHitsBuffer, _data.range, shootLayer);
 
         if(hitCount == 0)
         {
             //shoot Fx in air
             if(_data.type != ItemType.Melee)
             {
-                Vector3 targetPoint = cam.transform.position + (cam.transform.forward+accuracyOffset)*_data.range;
-                VFXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
+                VFXManager.instance.ShootFX(spawnPos, targetPoint, Vector3.zero, false, true, firstShot, 0);
             } 
             
         } else
@@ -214,8 +218,8 @@ public class PlayerCombat : MonoBehaviour
                 //shoot Fx in air
                 if(_data.type != ItemType.Melee)
                 {
-                    Vector3 targetPoint = cam.transform.position + (cam.transform.forward+accuracyOffset)*_data.range;
-                    VFXManager.instance.ShootFX(_item.muzzleTrans.position, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                    Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
+                    VFXManager.instance.ShootFX(spawnPos, targetPoint, Vector3.zero, false, true, firstShot, 0);
                 } 
                 return;
             }
@@ -231,8 +235,14 @@ public class PlayerCombat : MonoBehaviour
             {
                 float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
 
-                Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : cam.transform.forward * _data.impactForcePlayer + Vector3.up * upForceMult;
-                Vector3 _propForce = cam.transform.forward * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
+                Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : shootDir * _data.impactForcePlayer + Vector3.up * upForceMult;
+                Vector3 _propForce = shootDir * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
+                
+                if (_data.type is ItemType.Melee) {
+                    _force += character.State.Velocity;
+                    _propForce += character.State.Velocity;
+                } 
+
                 PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
 
                 decalIndex = playerHitDecalIndex;
@@ -249,12 +259,14 @@ public class PlayerCombat : MonoBehaviour
             }
             else if(hitRoot.TryGetComponent(out NetworkProp prop))
             {
-                prop.ApplyForceServerRpc(cam.transform.forward * _data.impactForceObject, hitObject.point);
+                Vector3 propImpulse = shootDir * _data.impactForceObject;
+                if (_data.type is ItemType.Melee) propImpulse += character.State.Velocity;
+                prop.ApplyForceServerRpc(propImpulse, hitObject.point);
                 decalIndex = playerHitDecalIndex; //kinda temp
             }
 
 
-            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(_item.muzzleTrans.position, hitObject.point, hitObject.normal, true, true, firstShot, decalIndex);
+            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(spawnPos, hitObject.point, hitObject.normal, true, true, firstShot, decalIndex);
             else VFXManager.instance.DecalFX(hitObject.point, hitObject.normal, decalIndex);
         }
     }

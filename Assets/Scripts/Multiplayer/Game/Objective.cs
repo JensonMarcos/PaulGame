@@ -42,6 +42,7 @@ public class Objective : NetworkBehaviour
 
         NetworkObject player = playerChar.transform.root.GetComponent<NetworkObject>();
         if (player == null) return;
+        if (!IsInCurrentRoom(player.gameObject)) return;
 
         //reward each client only once
         if (!claimedClients.Add(player.OwnerClientId)) return;
@@ -55,6 +56,12 @@ public class Objective : NetworkBehaviour
         return other.gameObject.layer == LayerMask.NameToLayer("Player");
     }
 
+    static bool IsInCurrentRoom(GameObject playerRoot)
+    {
+        Room current = GameManager.instance?.rooms.current;
+        return current != null && current.playersInRoom.Contains(playerRoot);
+    }
+
     void AddScore(Collider other, int amount)
     {
         PlayerCharacter playerChar = other.GetComponent<PlayerCharacter>();
@@ -62,6 +69,7 @@ public class Objective : NetworkBehaviour
 
         NetworkObject player = playerChar.transform.root.GetComponent<NetworkObject>();
         if (player == null) return;
+        if (!IsInCurrentRoom(player.gameObject)) return;
 
         AddScore(player.OwnerClientId, amount);
     }

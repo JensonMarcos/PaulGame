@@ -22,18 +22,22 @@ public struct GameMode
     public GameObject[] roomPrefabs;
     public float gameModeWeight;
 
+    [System.NonSerialized] public float realWeight;
+
     [Space]
     [Header("GameMode Settings")]
     public bool lastPlayerAliveWins;
+    public bool firstToScoreWins;    
+    public bool highestScoreWins;
     public bool doDamage;
     public bool doPunching;
+    public bool showCrowns;
+    public bool respawnOnDeath;
 
     [Space]
     [Header("Timer")]
     public bool showTimer;
     public float gameTime;
-    public bool highestScoreWins;
-    public float animTimeMult;
 
     [Space]
     [Header("Teams")]
@@ -104,6 +108,7 @@ public class GameManager : NetworkBehaviour
     [Header("GameMode")]
     public GameMode[] gameModes;
     public GameMode currentGameMode;
+    [SerializeField] float unpickedWeightBonus;
 
     GameMode lastGameMode;
     GameObject lastRoomPrefab;
@@ -115,6 +120,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] float startGameTime;
     [SerializeField] float endGameTime;
     float timer;
+    float doorCloseKillTime;
+    bool pendingDoorCloseKill;
 
     void Awake()
     {
@@ -138,6 +145,13 @@ public class GameManager : NetworkBehaviour
         playerManager.damageEnabled.Value = false;
         playerManager.reloadEnabled.Value = false;
 
+        for (int i = 0; i < gameModes.Length; i++)
+        {
+            GameMode mode = gameModes[i];
+            mode.realWeight = mode.gameModeWeight;
+            gameModes[i] = mode;
+        }
+
         CreateRoom();
     }
 
@@ -153,9 +167,6 @@ public class GameManager : NetworkBehaviour
 
                 rooms.NextRoom();
 
-                rooms.previous.DoorClientRpc(doorState.exit); //not nessecary besides starting room
-                rooms.current.DoorClientRpc(doorState.enter); 
-
                 rooms.current.Initialize();
 
                 timer = Time.time + moveTime;
@@ -169,29 +180,31 @@ public class GameManager : NetworkBehaviour
             case GameState.GameStart:
                 playerManager.damageEnabled.Value = false;
 
+                rooms.current.DoorClientRpc(doorState.enter);
                 rooms.previous.DoorClientRpc(doorState.closed);
-                rooms.current.DoorClientRpc(doorState.closed); 
 
                 GameTitle.Value = currentGameMode.name.Replace("_", " ");
 
                 timer = Time.time + startGameTime;
                 break;
             case GameState.InGame:
+                rooms.current.DoorClientRpc(doorState.closed);
+
+                pendingDoorCloseKill = true;
+                doorCloseKillTime = Time.time + GetDoorCloseDuration(rooms.current);
+
                 for (int i = 0; i < playerManager.Players.Count; i++)
-                {
                     playerManager.Players[i].score = 0;
-                    if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
-                    {
-                        playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero, Vector3.zero);
-                        playerManager.TeleportServerRpc(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
-                    }
-                }
+
                 StartRoom();
                 break;
             case GameState.GameEnd:
                 playerManager.damageEnabled.Value = false;
                 playerManager.ClearItemServerRpc();
+                if(currentGameMode.showCrowns) playerManager.UpdateCrowns(false);
+
                 CleanObjects();
+
                 rooms.current.crateLootEnabled = false;
                 rooms.current.DoorClientRpc(doorState.exit); 
 
@@ -218,7 +231,7 @@ public class GameManager : NetworkBehaviour
             case GameState.Lobby:
                 break;
             case GameState.MoveRoom:
-                if (Time.time >= timer)
+                if (Time.time >= timer || rooms.previous.playersInRoom.Count == 0)
                 {
                     GameState = GameState.GameStart;
                 }
@@ -232,10 +245,35 @@ public class GameManager : NetworkBehaviour
 
                 break;
             case GameState.InGame:
+                if (pendingDoorCloseKill && Time.time >= doorCloseKillTime)
+                {
+                    pendingDoorCloseKill = false;
+                    for (int i = 0; i < playerManager.Players.Count; i++)
+                    {
+                        if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
+                        {
+                            playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero, Vector3.zero);
+                            GameTeleport(playerManager.Players[i].ClientId);
+                        }
+                    }
+
+                    if (playerManager.playersAlive == 0)
+                    {
+                        GameTitle.Value = "Bruh";
+                        GameState = GameState.GameEnd;
+                        break;
+                    }
+                }
+
                 int displayTime = (int)(timer - Time.time);
                 if(currentGameMode.showTimer || displayTime <= 10) 
                 {
                     if(GameTitle.Value != displayTime.ToString()) GameTitle.Value = displayTime.ToString();
+                }
+
+                if(currentGameMode.showCrowns)
+                {
+                    playerManager.UpdateCrowns(true);
                 }
 
                 if(Time.time >= timer)
@@ -285,6 +323,19 @@ public class GameManager : NetworkBehaviour
                     GameState = GameState.GameEnd;
                 }
 
+                if(currentGameMode.firstToScoreWins)
+                {
+                    foreach (PlayerData player in playerManager.Players)
+                    {
+                        if(player.score > 1f)
+                        {
+                            GameTitle.Value = player.name + " won";
+                            GameState = GameState.GameEnd;
+                            break;
+                        }
+                    }
+                }
+
                 break;
             case GameState.GameEnd:
                 if (Time.time >= timer)
@@ -297,6 +348,35 @@ public class GameManager : NetworkBehaviour
                 // Handle game over state
                 break;
         }
+    }
+
+
+    public void GameTeleport(ulong playerId)
+    {
+        Vector3 pos;
+        switch (GameState)
+        {
+            case GameState.MoveRoom:
+                pos = rooms.previous.moveSpawnPoint.position;
+                break;
+            case GameState.GameEnd:
+                pos = rooms.current.moveSpawnPoint.position;
+                break;
+            case GameState.GameStart:
+                
+                int i = playerManager.Players.FindIndex(x => x.ClientId == playerId);
+                if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
+                    pos = rooms.previous.moveSpawnPoint.position; //idk prolly
+                else
+                    pos = rooms.current.respawnPoint.position;
+                
+                break;
+            case GameState.InGame:
+            default:
+                pos = rooms.current.respawnPoint.position;
+                break;
+        }
+        PlayerManager.instance.TeleportServerRpc(playerId, pos);
     }
 
     public void SpawnItem(GameObject prefab, Vector3 pos)
@@ -339,24 +419,35 @@ public class GameManager : NetworkBehaviour
     void CreateRoom()
     {
         GameMode roomGameMode = new GameMode();
+        int chosenIndex = 0;
 
         float totalweight = 0;
-        foreach(var mode in gameModes)
-        {
-            totalweight += mode.gameModeWeight;
-        }
+        for (int i = 0; i < gameModes.Length; i++)
+            totalweight += gameModes[i].realWeight;
         
         float randomWeight = Random.Range(0f, totalweight);
         float cumulativeWeight = 0f;
 
-        foreach(var mode in gameModes)
+        for (int i = 0; i < gameModes.Length; i++)
         {
-            cumulativeWeight += mode.gameModeWeight;
-            if(randomWeight <= cumulativeWeight)
+            cumulativeWeight += gameModes[i].realWeight;
+            if (randomWeight <= cumulativeWeight)
             {
-                roomGameMode = mode;
+                roomGameMode = gameModes[i];
+                chosenIndex = i;
                 break;
             }
+        }
+
+        //set dynamic weights
+        for (int i = 0; i < gameModes.Length; i++)
+        {
+            GameMode mode = gameModes[i];
+            if (i == chosenIndex)
+                mode.realWeight = Mathf.Max(0f, mode.gameModeWeight - unpickedWeightBonus);
+            else
+                mode.realWeight += unpickedWeightBonus;
+            gameModes[i] = mode;
         }
 
         GameObject roomPrefab = roomGameMode.roomPrefabs[Random.Range(0, roomGameMode.roomPrefabs.Length)];
@@ -376,6 +467,18 @@ public class GameManager : NetworkBehaviour
         lastGameMode = roomGameMode;
         lastRoomPrefab = roomPrefab;
         hasLastRoom = true;
+    }
+
+    float GetDoorCloseDuration(Room room)
+    {
+        if (room.doorEnter != null && room.doorEnter.runtimeAnimatorController != null)
+        {
+            foreach (AnimationClip clip in room.doorEnter.runtimeAnimatorController.animationClips)
+            {
+                if (clip.name == "DoorClose") return clip.length;
+            }
+        }
+        return 1f;
     }
 
     void StartRoom()

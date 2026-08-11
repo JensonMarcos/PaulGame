@@ -674,14 +674,16 @@ MonoBehaviour:
   - name: Deathmatch
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 5
     lastPlayerAliveWins: 1
+    firstToScoreWins: 0
+    highestScoreWins: 0
     doDamage: 1
     doPunching: 1
+    showCrowns: 0
+    respawnOnDeath: 0
     showTimer: 0
     gameTime: 30
-    highestScoreWins: 0
-    animTimeMult: 1
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
@@ -690,30 +692,34 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 0
+    firstToScoreWins: 0
+    highestScoreWins: 1
     doDamage: 0
     doPunching: 1
+    showCrowns: 1
+    respawnOnDeath: 0
     showTimer: 1
     gameTime: 20
-    highestScoreWins: 1
-    animTimeMult: 1
     useTeams: 0
     numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
+    spawnInitialItem: 1
+    initialItemID: 100
+    numberOfInitialItems: 1000
   - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 1
+    firstToScoreWins: 0
+    highestScoreWins: 0
     doDamage: 0
     doPunching: 1
+    showCrowns: 0
+    respawnOnDeath: 0
     showTimer: 0
     gameTime: 30
-    highestScoreWins: 0
-    animTimeMult: 2
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 1
@@ -722,14 +728,16 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 0
-    doDamage: 0
+    firstToScoreWins: 1
+    highestScoreWins: 0
+    doDamage: 1
     doPunching: 1
+    showCrowns: 0
+    respawnOnDeath: 1
     showTimer: 0
-    gameTime: 30
-    highestScoreWins: 1
-    animTimeMult: 2
+    gameTime: 60
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
@@ -740,20 +748,23 @@ MonoBehaviour:
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
+    firstToScoreWins: 0
+    highestScoreWins: 0
     doDamage: 0
     doPunching: 0
+    showCrowns: 0
+    respawnOnDeath: 0
     showTimer: 0
     gameTime: 0
-    highestScoreWins: 0
-    animTimeMult: 0
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-  moveTime: 8
-  startGameTime: 3
-  endGameTime: 2
+  unpickedWeightBonus: 1
+  moveTime: 10
+  startGameTime: 3.5
+  endGameTime: 2.5
 --- !u!4 &320267739
 Transform:
   m_ObjectHideFlags: 0
@@ -798,7 +809,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FXManager
   ShowTopMostFoldoutHeaderGroup: 1
   bulletTrailPrefab: {fileID: 8033789990124155721, guid: 5e4652b463480ff4aaad40406c8adeea, type: 3}
-  trailSpeed: 600
+  trailSpeed: 700
   muzzleFlashPrefab: {fileID: 302656432113164353, guid: 338ea35511b6d764da7cea6c96d96dfa, type: 3}
   muzzleFlashDuration: 0.1
   hitDecals:
@@ -2258,6 +2269,7 @@ GameObject:
   - component: {fileID: 1453712075}
   - component: {fileID: 1453712074}
   - component: {fileID: 1453712076}
+  - component: {fileID: 1453712077}
   m_Layer: 0
   m_Name: StartingRoom
   m_TagString: Untagged
@@ -2310,12 +2322,14 @@ MonoBehaviour:
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
+    firstToScoreWins: 0
+    highestScoreWins: 0
     doDamage: 0
     doPunching: 0
+    showCrowns: 0
+    respawnOnDeath: 0
     showTimer: 0
     gameTime: 0
-    highestScoreWins: 0
-    animTimeMult: 1
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
@@ -2371,6 +2385,27 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!65 &1453712077
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453712072}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 42, y: 20, z: 42}
+  m_Center: {x: 0, y: 5, z: 30}
 --- !u!1 &1459132901
 GameObject:
   m_ObjectHideFlags: 0

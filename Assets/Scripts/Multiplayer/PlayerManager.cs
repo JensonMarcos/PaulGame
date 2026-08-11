@@ -149,7 +149,8 @@ public class PlayerManager : NetworkBehaviour
 
             if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
 
-            PlayerData killer = sender;
+            // 1234 = world damage: only credit lastAttackedBy, never the RPC sender (host)
+            PlayerData killer = null;
             if (damage == 1234f)
             {
                 if (target.lastAttackedBy.HasValue && Time.time - target.lastAttackedTime < 20f) //idk lowkey arbitrary value
@@ -158,8 +159,12 @@ public class PlayerManager : NetworkBehaviour
                     if (_index >= 0) killer = Players[_index];
                 }
             }
+            else
+            {
+                killer = sender;
+            }
 
-            if (killer != target)
+            if (killer != null && killer != target)
             {
                 killer.kills++;
                 killer.score += 100;
@@ -169,25 +174,34 @@ public class PlayerManager : NetworkBehaviour
 
             foreach(PlayerData _player in Players) {
                 _player.player.ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
-                _player.player.ScoreboardUpdateClientRpc(killer.ClientId, killer.wins, killer.kills, killer.deaths);
+                if (killer != null)
+                    _player.player.ScoreboardUpdateClientRpc(killer.ClientId, killer.wins, killer.kills, killer.deaths);
 
-                _player.player.AddKillfeedClientRpc($"{killer.name}  >  {target.name}", _player.ClientId == killer.ClientId || _player.ClientId == target.ClientId);
+                string feed = killer != null && killer != target
+                    ? $"{killer.name}  >  {target.name}"
+                    : $"{target.name} died";
+                bool highlight = _player.ClientId == target.ClientId || (killer != null && _player.ClientId == killer.ClientId);
+                _player.player.AddKillfeedClientRpc(feed, highlight);
             }
-        }
 
-        playersAlive = Players.Count(x => x.isDead == false);
+            if (GameManager.instance != null && GameManager.instance.currentGameMode.respawnOnDeath && GameManager.instance.rooms.current.playersInRoom.Contains(target.playerGameObject)) {
+                Revive(Players.FindIndex(x => x.ClientId == targetid));
+                GameManager.instance.GameTeleport(targetid);
+            }
+
+            playersAlive = Players.Count(x => x.isDead == false);
+        }
 
         print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {target.health}");
     }
 
     [Rpc(SendTo.Server)]
-    public void RespawnServerRpc(ulong playerid, RpcParams rpcParams = default){
+    public void DEBUGRespawnServerRpc(ulong playerid, RpcParams rpcParams = default){
         int id = Players.FindIndex(x => x.ClientId == playerid);
         Revive(id);
 
-        //individual respawn during a round -> send them to the room's respawn point
-        if(GameManager.instance != null && GameManager.instance.rooms.current != null)
-            Players[id].player.TeleportClientRpc(GameManager.instance.rooms.current.respawnPoint.position);
+        if(GameManager.instance != null)
+            GameManager.instance.GameTeleport(playerid);
 
         playersAlive = Players.Count(x => x.isDead == false);
     }
@@ -241,30 +255,24 @@ public class PlayerManager : NetworkBehaviour
         foreach(PlayerData _player in Players) {
             _player.player.ScoreboardUpdateClientRpc(targetPlayer.ClientId, targetPlayer.wins, targetPlayer.kills, targetPlayer.deaths);
         }
-        UpdateCrowns();
     }
 
-    void UpdateCrowns()
+    public void UpdateCrowns(bool active)
     {
-        int maxWins = 0;
+        int maxScore = 0;
         PlayerData leader = null;
-        bool tie = false;
+
         foreach (PlayerData p in Players)
         {
-            if (p.wins > maxWins)
+            if (p.score > maxScore)
             {
-                maxWins = p.wins;
+                maxScore = p.score;
                 leader = p;
-                tie = false;
-            }
-            else if (p.wins == maxWins && maxWins > 0)
-            {
-                tie = true;
             }
         }
 
         foreach (PlayerData p in Players)
-            p.player.SetCrownClientRpc(!tie && maxWins > 0 && p == leader);
+            p.player.SetCrownClientRpc(active && maxScore > 0 && p == leader);
     }
 }
 

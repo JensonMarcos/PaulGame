@@ -17,8 +17,6 @@ public class ItemCrate : NetworkBehaviour
 
         gameManager = GameManager.instance;
         if (itemList == null) itemList = gameManager.itemList;
-
-        itemCount = (int)(Random.Range(1f, 2f) + PlayerManager.instance.Players.Count * 0.2f);
     }
 
     [Rpc(SendTo.Server)]
@@ -31,6 +29,8 @@ public class ItemCrate : NetworkBehaviour
     {
         if (!IsServer || broken) return;
         broken = true;
+
+        itemCount = (int)(Random.Range(1f, 2f) + PlayerManager.instance.Players.Count * 0.2f);
 
         if (room == null || room.crateLootEnabled)
         {

@@ -1978,7 +1978,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 12, y: 3, z: 12}
+  m_LocalScale: {x: 10, y: 3, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7680327634931518166}
@@ -2399,8 +2399,8 @@ Transform:
   m_GameObject: {fileID: 6657401609189293007}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.5, z: 30}
-  m_LocalScale: {x: 10, y: 3, z: 10}
+  m_LocalPosition: {x: 0, y: 4, z: 30}
+  m_LocalScale: {x: 7, y: 4, z: 7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8617070619084925712}
@@ -3185,7 +3185,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 10, y: 4, z: 10}
+  m_LocalScale: {x: 7, y: 4, z: 7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7680327634931518166}
@@ -3321,7 +3321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2240065786
+  GlobalObjectIdHash: 2133371467
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3359,7 +3359,6 @@ MonoBehaviour:
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
-    spawnItems: 0
     doDamage: 0
     doPunching: 0
     showTimer: 0
@@ -3368,6 +3367,12 @@ MonoBehaviour:
     animTimeMult: 0
     useTeams: 0
     numberOfTeams: 0
+    spawnInitialItem: 0
+    initialItemID: 0
+    numberOfInitialItems: 0
+  crateLootEnabled: 1
+  itemCratePrefab: {fileID: 0}
+  itemCrateSpawns: {fileID: 0}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -25,7 +25,7 @@ MonoBehaviour:
   isAutomatic: 0
   damage: 3.5
   range: 100
-  shootRadius: 0
+  shootRadius: 0.01
   ProjectileIndex: 0
   projectileSize: 0
   projectileSpeed: 0
@@ -43,8 +43,8 @@ MonoBehaviour:
     spatialBlend: 0
     play2DLocal: 0
     minDistance: 0
-  accuracy: 0.1
-  ADSAccuracy: 0.05
+  accuracy: 0.06
+  ADSAccuracy: 0.04
   Recoil: {x: 2, y: 2, z: 0.1}
   ADSRecoilMult: 1
   snap: 6

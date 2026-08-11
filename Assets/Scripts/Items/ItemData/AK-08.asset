@@ -25,7 +25,7 @@ MonoBehaviour:
   isAutomatic: 1
   damage: 20
   range: 100
-  shootRadius: 0
+  shootRadius: 0.02
   ProjectileIndex: 0
   projectileSize: 0
   projectileSpeed: 0

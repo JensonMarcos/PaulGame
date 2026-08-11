@@ -17,11 +17,11 @@ MonoBehaviour:
   useProjectile: 1
   position: {x: 0.12, y: -0.2, z: 0.25}
   pullOutTime: 0.8
-  fireRate: 1
+  fireRate: 1.5
   attackDelay: 0
   reloadSpeed: 3
-  ammoCap: 7
-  ammoSpawn: 10
+  ammoCap: 6
+  ammoSpawn: 8
   isAutomatic: 0
   damage: 50
   range: 100
@@ -30,9 +30,9 @@ MonoBehaviour:
   projectileSize: 0.2
   projectileSpeed: 60
   projectileGravity: 6
-  projectileHitDamage: 50
+  projectileHitDamage: 32
   projectileExplosionRadius: 5.5
-  projectileExplosionDamage: 50
+  projectileExplosionDamage: 40
   projectileExplosionSelfDamage: 15
   projectileLifetime: 5
   projectileHitSound:

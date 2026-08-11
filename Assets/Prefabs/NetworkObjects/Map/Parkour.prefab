@@ -6445,7 +6445,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1207316834
+  GlobalObjectIdHash: 3568925871
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -6483,15 +6483,21 @@ MonoBehaviour:
     roomPrefabs: []
     gameModeWeight: 0
     lastPlayerAliveWins: 0
-    spawnItems: 0
+    firstToScoreWins: 0
+    highestScoreWins: 0
     doDamage: 0
     doPunching: 0
+    showCrowns: 0
     showTimer: 0
     gameTime: 0
-    highestScoreWins: 0
-    animTimeMult: 0
     useTeams: 0
     numberOfTeams: 0
+    spawnInitialItem: 0
+    initialItemID: 0
+    numberOfInitialItems: 0
+  crateLootEnabled: 1
+  itemCratePrefab: {fileID: 0}
+  itemCrateSpawns: {fileID: 0}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

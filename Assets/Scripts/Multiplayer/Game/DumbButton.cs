@@ -8,6 +8,7 @@ public class DumbButton : MonoBehaviour
     {
         if(GameManager.instance == null || !GameManager.instance.IsServer) return;
         if(!pressed && transform.localPosition.z > 0.1f) {
+            GameManager.instance.rooms.current.DoorClientRpc(doorState.exit);
             GameManager.instance.GameState = GameState.MoveRoom;
             pressed = true;
             this.enabled = false;

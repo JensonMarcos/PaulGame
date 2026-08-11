@@ -1616,7 +1616,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FXManager
   ShowTopMostFoldoutHeaderGroup: 1
   bulletTrailPrefab: {fileID: 8033789990124155721, guid: 5e4652b463480ff4aaad40406c8adeea, type: 3}
-  trailSpeed: 600
+  trailSpeed: 700
   muzzleFlashPrefab: {fileID: 302656432113164353, guid: 338ea35511b6d764da7cea6c96d96dfa, type: 3}
   muzzleFlashDuration: 0.1
   hitDecals:

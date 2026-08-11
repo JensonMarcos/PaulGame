@@ -68,9 +68,18 @@ public class Room : NetworkBehaviour
                 doorExit.Play("DoorOpen");
                 break;
             case doorState.closed:
-                doorEnter.Play("DoorClose");
+                if (IsPlaying(doorEnter, "DoorOpen")) doorEnter.Play("DoorClose");
+                if (IsPlaying(doorExit, "DoorOpen")) doorExit.Play("DoorClose");
                 break;
         }
+    }
+
+    static bool IsPlaying(Animator animator, string clipName)
+    {
+        if (animator == null) return false;
+
+        AnimatorClipInfo[] clips = animator.GetCurrentAnimatorClipInfo(0);
+        return clips.Length > 0 && clips[0].clip != null && clips[0].clip.name == clipName;
     }
 
     void OnTriggerEnter(Collider other)

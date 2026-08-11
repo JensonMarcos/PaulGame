@@ -23,9 +23,9 @@ MonoBehaviour:
   ammoCap: 17
   ammoSpawn: 34
   isAutomatic: 0
-  damage: 10
+  damage: 15
   range: 100
-  shootRadius: 0
+  shootRadius: 0.02
   ProjectileIndex: 0
   projectileSize: 0
   projectileSpeed: 0
