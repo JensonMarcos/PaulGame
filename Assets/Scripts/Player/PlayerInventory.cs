@@ -297,7 +297,6 @@ public class PlayerInventory : NetworkBehaviour
         {
             if(Inventory[i] == handsItem) continue;
             if(itemId != -1 && GameManager.instance.itemList.GetItemId(Inventory[i]) != itemId) continue;
-            Inventory[i].GetComponent<Item>().ItemClearServerRpc();
             Inventory[i] = handsItem;
             NetworkIDInventory[i] = 0UL;
         }

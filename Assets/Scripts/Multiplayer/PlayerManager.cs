@@ -228,29 +228,25 @@ public class PlayerManager : NetworkBehaviour
         playersAlive = Players.Count(x => x.isDead == false);
     }
 
-    [Rpc(SendTo.Server)]
-    public void TeleportServerRpc(ulong playerid, Vector3 position, RpcParams rpcParams = default){
+    public void Teleport(ulong playerid, Vector3 position){
         int id = Players.FindIndex(x => x.ClientId == playerid);
         Players[id].player.TeleportClientRpc(position);
     }
 
-    [Rpc(SendTo.Server)]
-    public void ClearItemServerRpc(int itemId = -1, RpcParams rpcParams = default){ //prolly switch this to clearing a specific player not all 
+    public void ClearItem(int itemId = -1){ //prolly switch this to clearing a specific player not all
         for(int i = 0; i < Players.Count; i++) {
             Players[i].player.ClearItemClientRpc(itemId);
         }
     }
 
-    [Rpc(SendTo.Server)]
-    public void GiveItemServerRpc(int itemId, ulong playerId, RpcParams rpcParams = default)
+    public void GiveItem(int itemId, ulong playerId)
     {
         NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
         int id = Players.FindIndex(x => x.ClientId == playerId);
         Players[id].player.GiveItemClientRpc(netObj.NetworkObjectId);
     }
 
-    [Rpc(SendTo.Server)]
-    public void UpdatePlayerScoreboardServerRpc(ulong playerId, RpcParams rpcParams = default) {
+    public void UpdatePlayerScoreboard(ulong playerId) {
         PlayerData targetPlayer = Players.Find(x => x.ClientId == playerId);
         foreach(PlayerData _player in Players) {
             _player.player.ScoreboardUpdateClientRpc(targetPlayer.ClientId, targetPlayer.wins, targetPlayer.kills, targetPlayer.deaths);

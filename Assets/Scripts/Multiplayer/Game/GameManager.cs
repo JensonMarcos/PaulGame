@@ -200,7 +200,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.GameEnd:
                 playerManager.damageEnabled.Value = false;
-                playerManager.ClearItemServerRpc();
+                playerManager.ClearItem();
                 if(currentGameMode.showCrowns) playerManager.UpdateCrowns(false);
 
                 CleanObjects();
@@ -291,7 +291,7 @@ public class GameManager : NetworkBehaviour
                             if (player.score > winner.score) winner = player;
                         }
                         winner.wins++;
-                        playerManager.UpdatePlayerScoreboardServerRpc(winner.ClientId);
+                        playerManager.UpdatePlayerScoreboard(winner.ClientId);
                         GameTitle.Value = winner.name + " won";
 
                     } else
@@ -313,7 +313,7 @@ public class GameManager : NetworkBehaviour
                     if(winner != null)
                     {
                         winner.wins++;
-                        playerManager.UpdatePlayerScoreboardServerRpc(winner.ClientId);
+                        playerManager.UpdatePlayerScoreboard(winner.ClientId);
                         GameTitle.Value = winner.name + " won";
                     } else
                     {
@@ -376,7 +376,7 @@ public class GameManager : NetworkBehaviour
                 pos = rooms.current.respawnPoint.position;
                 break;
         }
-        PlayerManager.instance.TeleportServerRpc(playerId, pos);
+        PlayerManager.instance.Teleport(playerId, pos);
     }
 
     public void SpawnItem(GameObject prefab, Vector3 pos)
@@ -513,7 +513,7 @@ public class GameManager : NetworkBehaviour
 
             for(int i = 0; i < _count; i++)
             {
-                playerManager.GiveItemServerRpc(currentGameMode.initialItemID, _shuffledIds[i]);
+                playerManager.GiveItem(currentGameMode.initialItemID, _shuffledIds[i]);
             }
         }
     }

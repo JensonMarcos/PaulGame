@@ -35,7 +35,11 @@ public class Ragdoll : NetworkBehaviour
 
         Physics.SyncTransforms();
 
-        foreach (var body in GetComponentsInChildren<Rigidbody>(true))
+        if(IsServer) hips.linearVelocity = velocity;
+
+        foreach (var body in hips.GetComponentsInChildren<Rigidbody>(true)) {
+            if(body.isKinematic) continue;
             body.linearVelocity = velocity;
+        }
     }
 }
