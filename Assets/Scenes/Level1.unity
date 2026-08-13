@@ -674,7 +674,7 @@ MonoBehaviour:
   - name: Deathmatch
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 5
+    gameModeWeight: 0
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -682,8 +682,9 @@ MonoBehaviour:
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 0
+    scoreOnKill: 100
     showTimer: 0
-    gameTime: 30
+    gameTime: 60
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
@@ -692,7 +693,7 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 0
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1
@@ -700,6 +701,7 @@ MonoBehaviour:
     doPunching: 1
     showCrowns: 1
     respawnOnDeath: 0
+    scoreOnKill: 0
     showTimer: 1
     gameTime: 20
     useTeams: 0
@@ -710,7 +712,7 @@ MonoBehaviour:
   - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 0
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -718,6 +720,7 @@ MonoBehaviour:
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 0
+    scoreOnKill: 0
     showTimer: 0
     gameTime: 30
     useTeams: 0
@@ -728,7 +731,7 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 1
+    gameModeWeight: 2
     lastPlayerAliveWins: 0
     firstToScoreWins: 1
     highestScoreWins: 0
@@ -736,6 +739,7 @@ MonoBehaviour:
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 1
+    scoreOnKill: 0
     showTimer: 0
     gameTime: 60
     useTeams: 0
@@ -754,6 +758,7 @@ MonoBehaviour:
     doPunching: 0
     showCrowns: 0
     respawnOnDeath: 0
+    scoreOnKill: 0
     showTimer: 0
     gameTime: 0
     useTeams: 0
@@ -764,7 +769,7 @@ MonoBehaviour:
   unpickedWeightBonus: 1
   moveTime: 10
   startGameTime: 3.5
-  endGameTime: 2.5
+  endGameTime: 3
 --- !u!4 &320267739
 Transform:
   m_ObjectHideFlags: 0
@@ -2327,6 +2332,7 @@ MonoBehaviour:
     doPunching: 0
     showCrowns: 0
     respawnOnDeath: 0
+    scoreOnKill: 0
     showTimer: 0
     gameTime: 0
     useTeams: 0

@@ -26,6 +26,7 @@ public class PlayerManager : NetworkBehaviour
         if(!IsServer) return;
         
         NetworkManager.OnClientConnectedCallback += OnClientConnectedCallback;
+        NetworkManager.OnClientDisconnectCallback += OnClientDisconnectedCallback;
 
         List<ulong>clients = new List<ulong>(NetworkManager.Singleton.ConnectedClientsIds);
         print(clients.Count);
@@ -39,12 +40,39 @@ public class PlayerManager : NetworkBehaviour
     public override void OnNetworkDespawn() {
         if(!IsServer) return;
         NetworkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
+        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnectedCallback;
     }
 
     void OnClientConnectedCallback(ulong id)
     {
         if(!IsServer) return;
         SpawnPlayer(id);
+    }
+
+    void OnClientDisconnectedCallback(ulong id)
+    {
+        if(!IsServer) return;
+
+        int index = Players.FindIndex(x => x.ClientId == id);
+        if(index < 0) return;
+
+        PlayerData disconnectedPlayer = Players[index];
+        ClearItem(id);
+
+        if(GameManager.instance != null) {
+            GameManager.instance.rooms.previous?.RemoveFromRoom(disconnectedPlayer.playerGameObject);
+            GameManager.instance.rooms.current?.RemoveFromRoom(disconnectedPlayer.playerGameObject);
+        }
+
+        Players.RemoveAt(index);
+        playersAlive = Players.Count(x => !x.isDead);
+
+        foreach(PlayerData player in Players)
+        {
+            if(player.lastAttackedBy == id) player.lastAttackedBy = null;
+            if(player.player != null && player.player.NetworkObject.IsSpawned)
+                player.player.AddOrRemoveScoreboardItemClientRpc(false, id, "", 0, 0, 0);
+        }
     }
 
     void SpawnPlayer(ulong id) {
@@ -111,8 +139,9 @@ public class PlayerManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, Vector3 propForce, RpcParams rpcParams = default) {
         ulong senderId = rpcParams.Receive.SenderClientId;
-        PlayerData target = Players[Players.FindIndex(x => x.ClientId == targetid)];
-        PlayerData sender = Players[Players.FindIndex(x => x.ClientId == senderId)];
+        PlayerData target = Players.Find(x => x.ClientId == targetid);
+        PlayerData sender = Players.Find(x => x.ClientId == senderId);
+        if(target == null || sender == null) return;
 
         if (damage != 1234f && senderId != targetid && sender.team >= 0 && sender.team == target.team) return;
 
@@ -167,7 +196,7 @@ public class PlayerManager : NetworkBehaviour
             if (killer != null && killer != target)
             {
                 killer.kills++;
-                killer.score += 100;
+                killer.score += GameManager.instance.currentGameMode.scoreOnKill;
             }
 
             target.lastAttackedBy = null;
@@ -198,6 +227,7 @@ public class PlayerManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void DEBUGRespawnServerRpc(ulong playerid, RpcParams rpcParams = default){
         int id = Players.FindIndex(x => x.ClientId == playerid);
+        if(id < 0) return;
         Revive(id);
 
         if(GameManager.instance != null)
@@ -230,24 +260,50 @@ public class PlayerManager : NetworkBehaviour
 
     public void Teleport(ulong playerid, Vector3 position){
         int id = Players.FindIndex(x => x.ClientId == playerid);
+        if(id < 0) return;
         Players[id].player.TeleportClientRpc(position);
     }
 
-    public void ClearItem(int itemId = -1){ //prolly switch this to clearing a specific player not all
-        for(int i = 0; i < Players.Count; i++) {
-            Players[i].player.ClearItemClientRpc(itemId);
+    public void ClearItem(ulong playerId, int itemId = -1)
+    {
+        int index = Players.FindIndex(x => x.ClientId == playerId);
+        if(index < 0) return;
+
+        Player player = Players[index].player;
+
+        PlayerInventory inventory = player.playerInventory;
+        if(inventory != null && inventory.NetworkIDInventory != null)
+        {
+            for(int i = 0; i < inventory.NetworkIDInventory.Count; i++)
+            {
+                ulong netId = inventory.NetworkIDInventory[i];
+
+                if(netId == 0UL) continue;
+                if(!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out NetworkObject netObj)) continue;
+
+                if(GameManager.instance != null)
+                    GameManager.instance.worldObjects.Remove(netObj.gameObject);
+
+                if(netObj.IsSpawned)
+                    netObj.Despawn(true);
+            }
         }
+
+        if(player.NetworkObject != null && player.NetworkObject.IsSpawned)
+            player.ClearItemClientRpc(itemId);
     }
 
     public void GiveItem(int itemId, ulong playerId)
     {
-        NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
         int id = Players.FindIndex(x => x.ClientId == playerId);
+        if(id < 0) return;
+        NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
         Players[id].player.GiveItemClientRpc(netObj.NetworkObjectId);
     }
 
     public void UpdatePlayerScoreboard(ulong playerId) {
         PlayerData targetPlayer = Players.Find(x => x.ClientId == playerId);
+        if(targetPlayer == null) return;
         foreach(PlayerData _player in Players) {
             _player.player.ScoreboardUpdateClientRpc(targetPlayer.ClientId, targetPlayer.wins, targetPlayer.kills, targetPlayer.deaths);
         }

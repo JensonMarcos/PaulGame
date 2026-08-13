@@ -33,6 +33,7 @@ public struct GameMode
     public bool doPunching;
     public bool showCrowns;
     public bool respawnOnDeath;
+    public int scoreOnKill;
 
     [Space]
     [Header("Timer")]
@@ -165,6 +166,13 @@ public class GameManager : NetworkBehaviour
                 playerManager.damageEnabled.Value = false;
                 playerManager.RespawnEveryone();
 
+                for (int i = 0; i < playerManager.Players.Count; i++) //move people behind
+                {
+                    if(rooms.current.moveSpawnPoint == null) continue;
+                    if (playerManager.Players[i].player.playerCharacter.Motor.transform.position.z < rooms.current.moveSpawnPoint.position.z - 4f)
+                        playerManager.Teleport(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
+                }
+
                 rooms.NextRoom();
 
                 rooms.current.Initialize();
@@ -178,7 +186,8 @@ public class GameManager : NetworkBehaviour
                 CreateRoom(); //create next room
                 break;
             case GameState.GameStart:
-                playerManager.damageEnabled.Value = false;
+                //playerManager.damageEnabled.Value = false;
+                if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
 
                 rooms.current.DoorClientRpc(doorState.enter);
                 rooms.previous.DoorClientRpc(doorState.closed);
@@ -199,11 +208,12 @@ public class GameManager : NetworkBehaviour
                 StartRoom();
                 break;
             case GameState.GameEnd:
-                playerManager.damageEnabled.Value = false;
-                playerManager.ClearItem();
-                if(currentGameMode.showCrowns) playerManager.UpdateCrowns(false);
-
                 CleanObjects();
+            
+                playerManager.damageEnabled.Value = false;
+                for (int i = 0; i < playerManager.Players.Count; i++)
+                    playerManager.ClearItem(playerManager.Players[i].ClientId);
+                if(currentGameMode.showCrowns) playerManager.UpdateCrowns(false);
 
                 rooms.current.crateLootEnabled = false;
                 rooms.current.DoorClientRpc(doorState.exit); 
@@ -353,6 +363,9 @@ public class GameManager : NetworkBehaviour
 
     public void GameTeleport(ulong playerId)
     {
+        int playerIndex = playerManager.Players.FindIndex(x => x.ClientId == playerId);
+        if(playerIndex < 0) return;
+
         Vector3 pos;
         switch (GameState)
         {
@@ -364,8 +377,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.GameStart:
                 
-                int i = playerManager.Players.FindIndex(x => x.ClientId == playerId);
-                if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
+                if (!rooms.current.playersInRoom.Contains(playerManager.Players[playerIndex].playerGameObject))
                     pos = rooms.previous.moveSpawnPoint.position; //idk prolly
                 else
                     pos = rooms.current.respawnPoint.position;
@@ -443,6 +455,7 @@ public class GameManager : NetworkBehaviour
         for (int i = 0; i < gameModes.Length; i++)
         {
             GameMode mode = gameModes[i];
+            if(mode.gameModeWeight == 0f) continue;
             if (i == chosenIndex)
                 mode.realWeight = Mathf.Max(0f, mode.gameModeWeight - unpickedWeightBonus);
             else
@@ -482,25 +495,13 @@ public class GameManager : NetworkBehaviour
     }
 
     void StartRoom()
-    {
-        // if(currentGameMode.spawnItems)//spawn items in the room
-        // {
-        //     float _radius = 10f;
-        //     for (int i = 0; i < (int)(playerManager.Players.Count * 1.5f) + 4; i++)
-        //     {
-        //         Vector2 ranCircle = Random.insideUnitCircle * _radius;
-        //         Vector3 pos = rooms.current.moveSpawnPoint.position + new Vector3(ranCircle.x, 0f, ranCircle.y);
-        //         pos.y = 10f;
-        //         SpawnItem(itemList.GetItem(itemList.GetRandomItemId()), pos);
-        //     }
-        // }
-        
+    {        
         if (currentGameMode.useTeams)
             playerManager.AssignTeamsRandomly(currentGameMode.numberOfTeams);
         else
             playerManager.AssignTeamsFFA();
 
-        if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
+        //if(currentGameMode.doDamage) playerManager.damageEnabled.Value = true;
 
         GameTitle.Value = "";
         timer = Time.time + currentGameMode.gameTime;

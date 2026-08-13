@@ -96,9 +96,13 @@ public class Room : NetworkBehaviour
     {
         GameObject player = other.transform.root.gameObject;
         if(player.CompareTag("Player") && player.GetComponent<NetworkObject>()) {
-            if(playersInRoom.Contains(player)) {
-                playersInRoom.Remove(player);
-            }
+            RemoveFromRoom(player);
+        }
+    }
+
+    public void RemoveFromRoom(GameObject player) {
+        if(playersInRoom.Contains(player)) {
+            playersInRoom.Remove(player);
         }
     }
 
