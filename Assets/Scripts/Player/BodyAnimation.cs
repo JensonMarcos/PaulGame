@@ -55,18 +55,19 @@ public class BodyAnimation : MonoBehaviour
         BodyAnimator.SetFloat(IdleStateHash, Mathf.Lerp(BodyAnimator.GetFloat(IdleStateHash), IdleState, 10 * Time.deltaTime));
     }
 
+    float weight;
+    Vector3 newRot;
+    
     public void UpdateRigs(float headAim, float overallWeight)
     {   
         upperBodyBone.transform.rotation *= Quaternion.Euler(0, UpperBodyTilt, 0);
 
         foreach (var rig in aimRig)
         {
-            var weight = Mathf.Lerp(0, Mathf.Lerp(rig.weight, rig.weightWhileAiming, headAim), overallWeight);
+            weight = Mathf.Lerp(0, Mathf.Lerp(rig.weight, rig.weightWhileAiming, headAim), overallWeight);
+            newRot = Quaternion.Lerp(rig.bone.transform.rotation, cam.rotation, weight).eulerAngles;
 
-            var newRot = Quaternion.Lerp(rig.bone.transform.rotation, cam.rotation, weight).eulerAngles;
-            var oldRot = rig.bone.transform.eulerAngles;
-
-            rig.bone.transform.rotation = Quaternion.Euler(rig.x ? newRot.x : oldRot.x, rig.y ? newRot.y : oldRot.y, rig.z ? newRot.z : oldRot.z);
+            rig.bone.transform.rotation = Quaternion.Euler(rig.x ? newRot.x : rig.bone.transform.eulerAngles.x, rig.y ? newRot.y : rig.bone.transform.eulerAngles.y, rig.z ? newRot.z : rig.bone.transform.eulerAngles.z);
         }
 
         //RHand.IK.Weight = LHand.IK.Weight = HandIKWeight;

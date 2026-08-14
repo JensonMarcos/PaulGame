@@ -413,6 +413,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   objectiveType: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 8
   scorePerTick: 1
   firstEntryScore: 100
   entryScoreStep: 25
@@ -6445,7 +6448,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3568925871
+  GlobalObjectIdHash: 1207316834
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -6488,6 +6491,8 @@ MonoBehaviour:
     doDamage: 0
     doPunching: 0
     showCrowns: 0
+    respawnOnDeath: 0
+    scoreOnKill: 0
     showTimer: 0
     gameTime: 0
     useTeams: 0

@@ -299,7 +299,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5fd1b1f9e2f96b241a7bac9e4c9ed558, type: 2}
-    TickRate: 64
+    TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -317,11 +317,11 @@ MonoBehaviour:
     NetworkTopology: 0
     UseCMBService: 0
     AutoSpawnPlayerPrefabClientSide: 1
-    NetworkMessageMetrics: 1
-    NetworkProfilingMetrics: 1
+    NetworkMessageMetrics: 0
+    NetworkProfilingMetrics: 0
     OldPrefabList: []
   RunInBackground: 1
-  LogLevel: 0
+  LogLevel: 2
 --- !u!4 &236116003
 Transform:
   m_ObjectHideFlags: 0

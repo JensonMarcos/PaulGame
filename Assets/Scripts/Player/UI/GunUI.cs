@@ -14,6 +14,8 @@ public class GunUI : MonoBehaviour
     // [SerializeField] int reloadWindowSize = 3;
 
     Vector3 targetAmmoPos;
+    int lastAmmo = -100;
+    Color lastAmmoColor;
 
     public void Initialize(bool isOwner) {
         if(!isOwner) {
@@ -52,24 +54,33 @@ public class GunUI : MonoBehaviour
         ammo.transform.localPosition = Vector3.Lerp(ammo.transform.localPosition, targetAmmoPos, speed * Time.deltaTime);
         ammo.transform.localEulerAngles = new Vector3(Mathf.Lerp(ammo.transform.localEulerAngles.x, aiming ? 0f : 15f, speed * Time.deltaTime), 0f, 0f);
 
-        //update ammo text
         if(!PlayerManager.instance.damageEnabled.Value)
         {
-            ammoText.text = "X";
-            ammoText.color = Color.red;
+            SetAmmo(-1, Color.red);
             return;
         }
 
         if(reloading > 0) {
-            int incrementAmmo = (int)(_data.ammoCap * (reloading/0.90f));
-
-            ammoText.text = incrementAmmo.ToString();
-            ammoText.color = Color.red;
-
-            if(reloading > 0.925f) ammoText.text = " ";
+            if(reloading > 0.925f)
+                SetAmmo(-2, Color.red);
+            else
+                SetAmmo((int)(_data.ammoCap * (reloading/0.90f)), Color.red);
         } else {
-            ammoText.text = _item.Ammo.ToString();
-            ammoText.color = (_item.Ammo < _item.data.ammoCap * 0.25) ? Color.red : Color.white;
+            SetAmmo(_item.Ammo, (_item.Ammo < _item.data.ammoCap * 0.25) ? Color.red : Color.white);
+        }
+    }
+
+    void SetAmmo(int ammo, Color color)
+    {
+        if(ammo != lastAmmo)
+        {
+            lastAmmo = ammo;
+            ammoText.text = ammo == -1 ? "X" : ammo == -2 ? " " : ammo.ToString();
+        }
+        if(color != lastAmmoColor)
+        {
+            lastAmmoColor = color;
+            ammoText.color = color;
         }
     }
 }

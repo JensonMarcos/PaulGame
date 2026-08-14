@@ -14,39 +14,50 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
     public Vector3 Velocity;
 
     [Header("Combat")]
-    //inventory stuff
     public int InventoryIndex;
     public float Aiming;
     public bool ReadyPull;
     public float Reloading;
 
-    // [Header("Animation")]
-    // public bool Melee;
-
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref Grounded);
         serializer.SerializeValue(ref Stance);
-        serializer.SerializeValue(ref Velocity);
 
-        serializer.SerializeValue(ref InventoryIndex);
-        serializer.SerializeValue(ref Aiming);
+        byte inventoryIndex = (byte)InventoryIndex;
+        byte aiming = Compress01(Aiming);
+        byte reloading = Compress01(Reloading);
+        serializer.SerializeValue(ref inventoryIndex);
+        serializer.SerializeValue(ref aiming);
         serializer.SerializeValue(ref ReadyPull);
-        serializer.SerializeValue(ref Reloading);
+        serializer.SerializeValue(ref reloading);
 
-        //serializer.SerializeValue(ref Melee);
+        if (serializer.IsReader)
+        {
+            InventoryIndex = inventoryIndex;
+            Aiming = Decompress01(aiming);
+            Reloading = Decompress01(reloading);
+        }
     }
 
     public bool Equals(PlayerState other)
     {
         return Grounded == other.Grounded
             && Stance == other.Stance
-            && Velocity.Equals(other.Velocity)
             && InventoryIndex == other.InventoryIndex
-            && Aiming == other.Aiming
+            && Compress01(Aiming) == Compress01(other.Aiming)
             && ReadyPull == other.ReadyPull
-            && Reloading == other.Reloading;
-            //&& Melee == other.Melee;
+            && Compress01(Reloading) == Compress01(other.Reloading);
+    }
+
+    static byte Compress01(float value)
+    {
+        return (byte)Mathf.RoundToInt(Mathf.Clamp01(value) * 255f);
+    }
+
+    static float Decompress01(byte value)
+    {
+        return value / 255f;
     }
 }
 
@@ -72,6 +83,7 @@ public class Player : NetworkBehaviour
     bool isDead;
     Transform deathCamTarget;
     Coroutine deathCamRoutine;
+    Vector3 lastRemotePosition;
   
     public override void OnNetworkSpawn()
     {
@@ -91,6 +103,8 @@ public class Player : NetworkBehaviour
 
         if(!IsOwner)
             playerCharacter.Motor.enabled = false;
+
+        lastRemotePosition = playerCharacter.transform.position;
     }
 
     public override void OnNetworkDespawn()
@@ -103,7 +117,14 @@ public class Player : NetworkBehaviour
 
     void Update()
     {
-        if(!IsOwner && !isDead) playerState = NetworkPlayerState.Value;
+        if(!IsOwner && !isDead)
+        {
+            playerState = NetworkPlayerState.Value;
+            Vector3 pos = playerCharacter.transform.position;
+            if (Time.deltaTime > 0f)
+                playerState.Velocity = (pos - lastRemotePosition) / Time.deltaTime;
+            lastRemotePosition = pos;
+        }
 
         if(IsOwner)
         {
@@ -128,6 +149,7 @@ public class Player : NetworkBehaviour
     {
         //single state refresh per frame, after the character motor has moved
         if(IsOwner) UpdateState();
+        else if(!isDead) playerCharacter.SetYawFromCamera(playerCamera.transform.rotation);
 
         int i = playerState.InventoryIndex;
 
@@ -211,9 +233,8 @@ public class Player : NetworkBehaviour
         // playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void UpdateHealthClientRpc(float health) {
-        if(!IsOwner) return;
         playerUI.hud.UpdateHealth(health);
     }
 
@@ -272,6 +293,7 @@ public class Player : NetworkBehaviour
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
 
         if(!IsOwner) {
+            lastRemotePosition = playerCharacter.transform.position;
             playerCharacter.root.gameObject.SetActive(true);
             return;
         } 
@@ -281,27 +303,24 @@ public class Player : NetworkBehaviour
         playerUI.hud.SetDead(false);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void RecieveForceClientRpc(Vector3 force) {
         playerCharacter.AddForce(force);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void TeleportClientRpc(Vector3 position) {
-        if (!IsOwner) return;
         playerCharacter.SetPosition(position);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void AddOrRemoveScoreboardItemClientRpc(bool add, ulong playerId, string playerName, int wins, int kills, int deaths) {
-        if(!IsOwner) return;
         if(add) playerUI.scoreboard.AddItem(playerId, playerName, wins, kills, deaths);
         else playerUI.scoreboard.RemoveItem(playerId);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void ScoreboardUpdateClientRpc(ulong playerId, int wins, int kills, int deaths) {
-        if(!IsOwner) return;
         playerUI.scoreboard.UpdateItem(playerId, wins, kills, deaths);
     }
 
@@ -310,21 +329,18 @@ public class Player : NetworkBehaviour
         playerUI.SetCrown(enabled && !IsOwner);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void AddKillfeedClientRpc(string text, bool clientIncluded) {
-        if(!IsOwner) return;
         playerUI.killfeed.AddKillfeedItem(text, clientIncluded);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void ClearItemClientRpc(int itemId = -1) {
-        if(!IsOwner) return;
         playerInventory.ClearItem(itemId);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Owner)]
     public void GiveItemClientRpc(ulong itemNetworkId) {
-        if(!IsOwner) return;
         playerInventory.GiveItem(itemNetworkId);
     }
 

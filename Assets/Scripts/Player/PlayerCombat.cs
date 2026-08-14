@@ -10,7 +10,56 @@ public struct CombatInputs
     public bool Reload;
 }
 
-public class PlayerCombat : MonoBehaviour
+public struct ShotPellet : INetworkSerializable
+{
+    public Vector3 end;
+    public Vector3 normal;
+    public bool hit;
+    public bool trail;
+    public int decal;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref end);
+        serializer.SerializeValue(ref normal);
+        serializer.SerializeValue(ref hit);
+        serializer.SerializeValue(ref trail);
+        serializer.SerializeValue(ref decal);
+    }
+}
+
+public struct ShotFx : INetworkSerializable
+{
+    public Vector3 muzzle;
+    public Vector3 recoil;
+    public float backKick;
+    public float rotKick;
+    public bool playRecoil;
+    public bool doMuzzle;
+    public ShotPellet[] pellets;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref muzzle);
+        serializer.SerializeValue(ref recoil);
+        serializer.SerializeValue(ref backKick);
+        serializer.SerializeValue(ref rotKick);
+        serializer.SerializeValue(ref playRecoil);
+        serializer.SerializeValue(ref doMuzzle);
+
+        int count = pellets == null ? 0 : pellets.Length;
+        serializer.SerializeValue(ref count);
+        if (serializer.IsReader) pellets = new ShotPellet[count];
+        for (int i = 0; i < count; i++)
+        {
+            ShotPellet pellet = pellets[i];
+            pellet.NetworkSerialize(serializer);
+            pellets[i] = pellet;
+        }
+    }
+}
+
+public class PlayerCombat : NetworkBehaviour
 {
     public float Aiming;
 
@@ -42,6 +91,7 @@ public class PlayerCombat : MonoBehaviour
     readonly RaycastHit[] shootHitsBuffer = new RaycastHit[16];
     readonly Collider[] explosionOverlapBuffer = new Collider[32];
     readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
+    readonly List<ShotPellet> shotPellets = new List<ShotPellet>(16);
 
     void Awake()
     {
@@ -117,26 +167,27 @@ public class PlayerCombat : MonoBehaviour
                 return;
             }
 
-            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
-
             _item.Ammo--;
 
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
-            if(_data.type is ItemType.Shotgun) {
-                for (int i = 0; i < _data.numberOfShots; i++)
-                {
-                    Shoot(_item, i == 0);
-                }
-            } else {
-                Shoot(_item, true);
-            }
+            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
 
             Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
             float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
             float _rotKick = -_data.rotKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
-            animations.Shoot(_recoil, _backKick, _rotKick);
-            animations.ShootServerRpc(_recoil, _backKick, _rotKick);
+
+            shotPellets.Clear();
+            if(_data.type is ItemType.Shotgun) {
+                for (int i = 0; i < _data.numberOfShots; i++)
+                    Shoot(_item);
+            } else {
+                Shoot(_item);
+            }
+
+            ShotFx fx = BuildShotFx(_item, _recoil, _backKick, _rotKick, true, !_data.useProjectile);
+            PlayShotFx(fx);
+            SendShotServerRpc(fx);
 
             if(_data.backwardVelocity != 0 && !grounded) {
                 character.AddForce(-cam.forward * _data.backwardVelocity);
@@ -144,7 +195,7 @@ public class PlayerCombat : MonoBehaviour
         }
     }
     
-    void Shoot(ItemClient _item, bool firstShot)
+    void Shoot(ItemClient _item)
     {
         ItemData _data = _item.data;
         
@@ -162,7 +213,6 @@ public class PlayerCombat : MonoBehaviour
 
         if(_data.useProjectile)
         {
-
             StartCoroutine(FireProjectile(
                 spawnPos,
                 shootDir,
@@ -185,7 +235,7 @@ public class PlayerCombat : MonoBehaviour
                 _data.projectileGravity,
                 _data.projectileSize,
                 _data.projectileLifetime);
-            if(firstShot) VFXManager.instance.MuzzleFlashFX(spawnPos);
+            VFXManager.instance.MuzzleFlashFX(spawnPos);
             return;
         }
         
@@ -195,11 +245,10 @@ public class PlayerCombat : MonoBehaviour
 
         if(hitCount == 0)
         {
-            //shoot Fx in air
             if(_data.type != ItemType.Melee)
             {
                 Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
-                VFXManager.instance.ShootFX(spawnPos, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                shotPellets.Add(new ShotPellet { end = targetPoint, normal = Vector3.zero, hit = false, trail = true, decal = 0 });
             } 
             
         } else
@@ -215,18 +264,16 @@ public class PlayerCombat : MonoBehaviour
 
             if(hitObject.transform.root == transform) //wtf
             {
-                //shoot Fx in air
                 if(_data.type != ItemType.Melee)
                 {
                     Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
-                    VFXManager.instance.ShootFX(spawnPos, targetPoint, Vector3.zero, false, true, firstShot, 0);
+                    shotPellets.Add(new ShotPellet { end = targetPoint, normal = Vector3.zero, hit = false, trail = true, decal = 0 });
                 } 
                 return;
             }
 
             //Actualy hit something
 
-            //print(hitObject.transform.name);
             Transform hitRoot = hitObject.transform.root;
 
             int decalIndex = _data.DecalIndex;
@@ -246,11 +293,6 @@ public class PlayerCombat : MonoBehaviour
                 PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
 
                 decalIndex = playerHitDecalIndex;
-
-                //hit indicator shit
-                // hitSound.pitch = Random.Range(0.95f, 1.05f);
-                // hitSound.PlayOneShot(hitSound.clip, 1f);
-                // HUD.HUDHit(hitObject.transform.tag == "Head");
             } 
             else if(hitRoot.TryGetComponent(out ItemCrate crate))
             {
@@ -265,9 +307,13 @@ public class PlayerCombat : MonoBehaviour
                 decalIndex = playerHitDecalIndex; //kinda temp
             }
 
-
-            if(_data.type != ItemType.Melee) VFXManager.instance.ShootFX(spawnPos, hitObject.point, hitObject.normal, true, true, firstShot, decalIndex);
-            else VFXManager.instance.DecalFX(hitObject.point, hitObject.normal, decalIndex);
+            shotPellets.Add(new ShotPellet {
+                end = hitObject.point,
+                normal = hitObject.normal,
+                hit = true,
+                trail = _data.type != ItemType.Melee,
+                decal = decalIndex
+            });
         }
     }
 
@@ -344,7 +390,7 @@ public class PlayerCombat : MonoBehaviour
 
     void ExplosionDamage(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject)
     {
-        VFXManager.instance.ExplosionFX(center);
+        VFXManager.instance.PlayExplosion(center);
 
         explosionHitNetIds.Clear();
 
@@ -395,7 +441,54 @@ public class PlayerCombat : MonoBehaviour
     IEnumerator DelayShoot(ItemClient _item, float _delay)
     {
         yield return new WaitForSeconds(_delay);
-        Shoot(_item, false);
+        shotPellets.Clear();
+        Shoot(_item);
+        ShotFx fx = BuildShotFx(_item, Vector3.zero, 0f, 0f, false, false);
+        PlayShotFx(fx);
+        SendShotServerRpc(fx);
+    }
+
+    ShotFx BuildShotFx(ItemClient item, Vector3 recoil, float backKick, float rotKick, bool playRecoil, bool doMuzzle)
+    {
+        ItemData data = item.data;
+        Vector3 muzzle = data.type != ItemType.Melee ? item.muzzleTrans.position : cam.position;
+        return new ShotFx {
+            muzzle = muzzle,
+            recoil = recoil,
+            backKick = backKick,
+            rotKick = rotKick,
+            playRecoil = playRecoil,
+            doMuzzle = doMuzzle,
+            pellets = shotPellets.ToArray()
+        };
+    }
+
+    void PlayShotFx(ShotFx fx)
+    {
+        if (fx.playRecoil)
+            animations.Shoot(fx.recoil, fx.backKick, fx.rotKick);
+
+        if (fx.pellets == null) return;
+
+        for (int i = 0; i < fx.pellets.Length; i++)
+        {
+            ShotPellet pellet = fx.pellets[i];
+            if (fx.doMuzzle && i == 0) VFXManager.instance.PlayMuzzleFlash(fx.muzzle);
+            if (pellet.trail) VFXManager.instance.PlayTrail(fx.muzzle, pellet.end);
+            if (pellet.hit) VFXManager.instance.PlayDecal(pellet.end, pellet.normal, pellet.decal);
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    void SendShotServerRpc(ShotFx fx, RpcParams rpcParams = default)
+    {
+        SendShotClientRpc(fx, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void SendShotClientRpc(ShotFx fx, RpcParams rpcParams = default)
+    {
+        PlayShotFx(fx);
     }
 
 

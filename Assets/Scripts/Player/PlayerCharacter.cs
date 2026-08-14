@@ -179,6 +179,12 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         if (forward != Vector3.zero) currentRotation = Quaternion.LookRotation(forward, Motor.CharacterUp);
     }
 
+    public void SetYawFromCamera(Quaternion cameraRotation)
+    {
+        var forward = Vector3.ProjectOnPlane(cameraRotation * Vector3.forward, Motor.CharacterUp);
+        if (forward != Vector3.zero) transform.rotation = Quaternion.LookRotation(forward, Motor.CharacterUp);
+    }
+
     /// <summary>
     /// (Called by KinematicCharacterMotor during its update cycle)
     /// This is where you tell your character what its velocity should be right now. 
@@ -422,7 +428,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         }
 
 
-        speedText.text = $"Speed: {Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp).magnitude:0.00} m/s, State: {State.Stance}";
+        //speedText.text = $"Speed: {Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp).magnitude:0.00} m/s, State: {State.Stance}";
     }
 
 

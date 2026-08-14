@@ -123,6 +123,7 @@ public class GameManager : NetworkBehaviour
     float timer;
     float doorCloseKillTime;
     bool pendingDoorCloseKill;
+    int previousDisplayTime;
 
     void Awake()
     {
@@ -262,7 +263,7 @@ public class GameManager : NetworkBehaviour
                     {
                         if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                         {
-                            playerManager.DealDamageServerRpc(playerManager.Players[i].ClientId, 1234f, Vector3.zero, Vector3.zero);
+                            playerManager.WorldDamage(playerManager.Players[i].ClientId, 1000f);
                             GameTeleport(playerManager.Players[i].ClientId);
                         }
                     }
@@ -278,7 +279,11 @@ public class GameManager : NetworkBehaviour
                 int displayTime = (int)(timer - Time.time);
                 if(currentGameMode.showTimer || displayTime <= 10) 
                 {
-                    if(GameTitle.Value != displayTime.ToString()) GameTitle.Value = displayTime.ToString();
+                    if(previousDisplayTime != displayTime)
+                    {
+                        previousDisplayTime = displayTime;
+                        GameTitle.Value = displayTime.ToString();
+                    }
                 }
 
                 if(currentGameMode.showCrowns)

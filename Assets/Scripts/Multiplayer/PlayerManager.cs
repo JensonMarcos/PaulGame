@@ -143,85 +143,89 @@ public class PlayerManager : NetworkBehaviour
         PlayerData sender = Players.Find(x => x.ClientId == senderId);
         if(target == null || sender == null) return;
 
-        if (damage != 1234f && senderId != targetid && sender.team >= 0 && sender.team == target.team) return;
+        if (senderId != targetid && sender.team >= 0 && sender.team == target.team) return;
 
-        if(damageEnabled.Value || damage == 1234f) target.health -= damage;
+        if(damageEnabled.Value) target.health -= damage;
 
-        // track last attacker for world-kill credit (ignore the 1234 world-damage special case)
-        if (damage != 1234f)
-        {
-            target.lastAttackedBy = senderId;
-            target.lastAttackedTime = Time.time;
-        }
+        target.lastAttackedBy = senderId;
+        target.lastAttackedTime = Time.time;
 
-        if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.currentGameMode.doPunching)) {
+        if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.GameState == GameState.Lobby || GameManager.instance.currentGameMode.doPunching)) {
             target.player.RecieveForceClientRpc(force);
         }
 
         target.player.UpdateHealthClientRpc(target.health);
 
-        if(target.health <= 0 && !target.isDead) { //player dies
-            target.isDead = true;
-
-            target.deaths++;
-
-            Vector3 pos = target.player.playerCharacter.transform.position;
-            Quaternion rot = target.player.playerCharacter.transform.rotation;
-            Vector3 vel = target.player.playerState.Velocity + propForce;
-
-            GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
-            NetworkObject ragdollNet = ragdoll.GetComponent<NetworkObject>();
-            ragdollNet.Spawn();
-            ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
-
-            target.player.DieClientRpc(ragdollNet.NetworkObjectId);
-
-            if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
-
-            // 1234 = world damage: only credit lastAttackedBy, never the RPC sender (host)
-            PlayerData killer = null;
-            if (damage == 1234f)
-            {
-                if (target.lastAttackedBy.HasValue && Time.time - target.lastAttackedTime < 20f) //idk lowkey arbitrary value
-                {
-                    int _index = Players.FindIndex(x => x.ClientId == target.lastAttackedBy.Value);
-                    if (_index >= 0) killer = Players[_index];
-                }
-            }
-            else
-            {
-                killer = sender;
-            }
-
-            if (killer != null && killer != target)
-            {
-                killer.kills++;
-                killer.score += GameManager.instance.currentGameMode.scoreOnKill;
-            }
-
-            target.lastAttackedBy = null;
-
-            foreach(PlayerData _player in Players) {
-                _player.player.ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
-                if (killer != null)
-                    _player.player.ScoreboardUpdateClientRpc(killer.ClientId, killer.wins, killer.kills, killer.deaths);
-
-                string feed = killer != null && killer != target
-                    ? $"{killer.name}  >  {target.name}"
-                    : $"{target.name} died";
-                bool highlight = _player.ClientId == target.ClientId || (killer != null && _player.ClientId == killer.ClientId);
-                _player.player.AddKillfeedClientRpc(feed, highlight);
-            }
-
-            if (GameManager.instance != null && GameManager.instance.currentGameMode.respawnOnDeath && GameManager.instance.rooms.current.playersInRoom.Contains(target.playerGameObject)) {
-                Revive(Players.FindIndex(x => x.ClientId == targetid));
-                GameManager.instance.GameTeleport(targetid);
-            }
-
-            playersAlive = Players.Count(x => x.isDead == false);
-        }
+        if(target.health <= 0 && !target.isDead)
+            Kill(target, sender, propForce);
 
         print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {target.health}");
+    }
+
+    public void WorldDamage(ulong targetid, float damage)
+    {
+        PlayerData target = Players.Find(x => x.ClientId == targetid);
+        if(target == null) return;
+
+        target.health -= damage;
+        target.player.UpdateHealthClientRpc(target.health);
+
+        if(target.health > 0 || target.isDead) return;
+
+        PlayerData killer = null;
+        if (target.lastAttackedBy.HasValue && Time.time - target.lastAttackedTime < 20f)
+        {
+            int index = Players.FindIndex(x => x.ClientId == target.lastAttackedBy.Value);
+            if (index >= 0) killer = Players[index];
+        }
+
+        Kill(target, killer, Vector3.zero);
+    }
+
+    void Kill(PlayerData target, PlayerData killer, Vector3 propForce)
+    {
+        target.isDead = true;
+        target.deaths++;
+
+        Vector3 pos = target.player.playerCharacter.transform.position;
+        Quaternion rot = target.player.playerCharacter.transform.rotation;
+        Vector3 vel = target.player.playerState.Velocity + propForce;
+
+        GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
+        NetworkObject ragdollNet = ragdoll.GetComponent<NetworkObject>();
+        ragdollNet.Spawn();
+        ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
+
+        target.player.DieClientRpc(ragdollNet.NetworkObjectId);
+
+        if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
+
+        if (killer != null && killer != target)
+        {
+            killer.kills++;
+            if(GameManager.instance != null) killer.score += GameManager.instance.currentGameMode.scoreOnKill;
+        }
+
+        target.lastAttackedBy = null;
+
+        foreach(PlayerData _player in Players) {
+            _player.player.ScoreboardUpdateClientRpc(target.ClientId, target.wins, target.kills, target.deaths);
+            if (killer != null)
+                _player.player.ScoreboardUpdateClientRpc(killer.ClientId, killer.wins, killer.kills, killer.deaths);
+
+            string feed = killer != null && killer != target
+                ? $"{killer.name}  >  {target.name}"
+                : $"{target.name} died";
+            bool highlight = _player.ClientId == target.ClientId || (killer != null && _player.ClientId == killer.ClientId);
+            _player.player.AddKillfeedClientRpc(feed, highlight);
+        }
+
+        if (GameManager.instance != null && GameManager.instance.currentGameMode.respawnOnDeath && GameManager.instance.rooms.current.playersInRoom.Contains(target.playerGameObject)) {
+            Revive(Players.FindIndex(x => x.ClientId == target.ClientId));
+            GameManager.instance.GameTeleport(target.ClientId);
+        }
+
+        playersAlive = Players.Count(x => x.isDead == false);
     }
 
     [Rpc(SendTo.Server)]
@@ -309,6 +313,9 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
+    ulong lastCrownLeader = ulong.MaxValue;
+    bool lastCrownActive;
+
     public void UpdateCrowns(bool active)
     {
         int maxScore = 0;
@@ -323,8 +330,15 @@ public class PlayerManager : NetworkBehaviour
             }
         }
 
+        bool show = active && maxScore > 0 && leader != null;
+        ulong leaderId = show ? leader.ClientId : ulong.MaxValue;
+        if (show == lastCrownActive && leaderId == lastCrownLeader) return;
+
+        lastCrownActive = show;
+        lastCrownLeader = leaderId;
+
         foreach (PlayerData p in Players)
-            p.player.SetCrownClientRpc(active && maxScore > 0 && p == leader);
+            p.player.SetCrownClientRpc(show && p == leader);
     }
 }
 

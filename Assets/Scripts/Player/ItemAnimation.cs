@@ -17,11 +17,11 @@ public class ItemAnimation : MonoBehaviour
     [SerializeField] float rotateSpeed, aimSpeedMult;
 
 
-    public void UpdatePosition(Vector3 target)
+    public void UpdatePosition(Vector3 target, bool isOwner)
     {
         targetOffset = target;
 
-        if (Physics.SphereCast(transform.position, checkRadius, transform.forward, out RaycastHit hit, moveDistance, groundMask.value))
+        if (isOwner && Physics.SphereCast(transform.position, checkRadius, transform.forward, out RaycastHit hit, moveDistance, groundMask.value))
         {
             Debug.DrawRay(transform.position, hit.point - transform.position, Color.red);
 
@@ -33,13 +33,13 @@ public class ItemAnimation : MonoBehaviour
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetOffset, moveSpeed * Time.deltaTime);
     }
 
-    public void UpdateRotation(bool aim, float aimingValue, float weight)
+    public void UpdateRotation(bool aim, float aimingValue, float weight, bool isOwner)
     {
         Quaternion targetRot;
         if (aim)
         {
             Vector3 aimTarget = cam.position + cam.forward * 100f;
-            if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, 100f, groundMask.value))
+            if (isOwner && Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, 100f, groundMask.value))
             {
                 aimTarget = Vector3.Lerp(hit.point, aimTarget, Mathf.Pow(aimingValue, 2));
             }

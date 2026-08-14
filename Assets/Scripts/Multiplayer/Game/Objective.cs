@@ -21,6 +21,12 @@ public class Objective : NetworkBehaviour
     [SerializeField] int minEntryScore = 10;
 
     readonly HashSet<ulong> claimedClients = new HashSet<ulong>();
+    int playerLayer;
+
+    void Awake()
+    {
+        playerLayer = LayerMask.NameToLayer("Player");
+    }
 
     void OnTriggerStay(Collider other)
     {
@@ -51,12 +57,12 @@ public class Objective : NetworkBehaviour
         AddScore(player.OwnerClientId, reward);
     }
 
-    static bool IsPlayer(Collider other)
+    bool IsPlayer(Collider other)
     {
-        return other.gameObject.layer == LayerMask.NameToLayer("Player");
+        return other.gameObject.layer == playerLayer;
     }
 
-    static bool IsInCurrentRoom(GameObject playerRoot)
+    bool IsInCurrentRoom(GameObject playerRoot)
     {
         Room current = GameManager.instance?.rooms.current;
         return current != null && current.playersInRoom.Contains(playerRoot);

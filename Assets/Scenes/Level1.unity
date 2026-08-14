@@ -693,7 +693,7 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 2
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1

@@ -11,6 +11,7 @@ public class PlayerAnimations : NetworkBehaviour
     public PlayerCamera cam;
 
     [SerializeField] PlayerCharacter character;
+    float reloading;
 
     public void Initialize()
     {
@@ -29,7 +30,6 @@ public class PlayerAnimations : NetworkBehaviour
         var _slide = _state.Stance is Stance.Slide? 1f : 0f;
         var _idleState = _item.type == ItemType.Melee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
 
-        //Logic for the walking animation, bacically normalizing but kinda weird
         var _vel = character.transform.InverseTransformDirection(_state.Velocity);
 
         var _horizontal = 0f;
@@ -46,6 +46,8 @@ public class PlayerAnimations : NetworkBehaviour
         };
 
         if(!_state.Grounded) _targetSpeed = _state.Velocity.magnitude * 2f;
+
+        _targetSpeed *= 0.8f; //dont ask why
 
         if(_targetSpeed != 0f)
         {
@@ -66,7 +68,8 @@ public class PlayerAnimations : NetworkBehaviour
     {
         body.UpdateRigs(_state.Aiming, 1f); //make this lerp
 
-        hands.UpdateTransform(camTarget, _state.Reloading);
+        reloading = _state.Reloading > 0f ? Mathf.Lerp(reloading, _state.Reloading, 30f * Time.deltaTime) : 0f; //MY CODE IS SHIT
+        hands.UpdateTransform(camTarget, reloading);
 
         bool _doIKRight = _item.data.RightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
         bool _doIKLeft = _item.data.LeftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
@@ -85,8 +88,8 @@ public class PlayerAnimations : NetworkBehaviour
             aimPos = item.transform.localPosition + aimPos;
         }
 
-        item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming));
-        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && _item.data.type != ItemType.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(_state.Reloading * Mathf.PI), 10));
+        item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming), IsOwner);
+        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && _item.data.type != ItemType.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
 
         //fingers.UpdateFingers();
     }
@@ -128,25 +131,11 @@ public class PlayerAnimations : NetworkBehaviour
     }
     #endregion
 
-    #region Shoot
-    [Rpc(SendTo.Server)]
-    public void ShootServerRpc(Vector3 _recoil, float _backKick, float _rotKick, RpcParams rpcParams = default)
-    {
-        ShootClientRpc(_recoil, _backKick, _rotKick, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
-    }
-
-    [Rpc(SendTo.SpecifiedInParams)]
-    public void ShootClientRpc(Vector3 _recoil, float _backKick, float _rotKick, RpcParams rpcParams = default)
-    {
-        Shoot(_recoil, _backKick, _rotKick);
-    }
-
     public void Shoot(Vector3 _recoil, float _backKick, float _rotKick)
     {
         cam.AddRotation(_recoil.x, _recoil.y, _recoil.z, 1);
         item.AddTransform(new Vector3(0, 0, _backKick), Quaternion.Euler(_rotKick, 0, 0));
     }
-    #endregion
 
     #region HandPush
     [Rpc(SendTo.Server)]

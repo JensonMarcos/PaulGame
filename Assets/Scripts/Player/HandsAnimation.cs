@@ -57,8 +57,10 @@ public class HandsAnimation : MonoBehaviour
             LHand.hand.rotation = _lHand.rotation;
         }
 
-        RHand.IK.ResolveIK();
-        LHand.IK.ResolveIK();
+        if (RHandIKWeight > 0.001f)
+            RHand.IK.ResolveIK();
+        if (LHandIKWeight > 0.001f)
+            LHand.IK.ResolveIK();
     }
 
     public void UpdateTransform(Transform _target, float _reloading)
