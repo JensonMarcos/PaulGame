@@ -21,7 +21,7 @@ MonoBehaviour:
   attackDelay: 0
   reloadSpeed: 3
   ammoCap: 6
-  ammoSpawn: 8
+  ammoSpawn: 6
   isAutomatic: 0
   damage: 50
   range: 100
@@ -30,9 +30,9 @@ MonoBehaviour:
   projectileSize: 0.2
   projectileSpeed: 60
   projectileGravity: 6
-  projectileHitDamage: 32
+  projectileHitDamage: 33
   projectileExplosionRadius: 5.5
-  projectileExplosionDamage: 40
+  projectileExplosionDamage: 33
   projectileExplosionSelfDamage: 15
   projectileLifetime: 5
   projectileHitSound:
@@ -61,9 +61,9 @@ MonoBehaviour:
   sightPos: {x: -0.057, y: 0.1, z: 0.3}
   ADSAmmoPos: {x: -0.15, y: 0.115, z: 0.25}
   WidTopBot: {x: 0.23, y: 0.55, z: 0.06}
-  impactForceObject: 70
-  impactForcePlayer: 17
-  backwardVelocity: 5
+  impactForceObject: 50
+  impactForcePlayer: 10
+  backwardVelocity: 3
   AttackSound:
     clipID: 3
     loop: 0

@@ -35,6 +35,8 @@ public class Ragdoll : NetworkBehaviour
 
         Physics.SyncTransforms();
 
+        if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z)) return;
+
         if(IsServer) hips.linearVelocity = velocity;
 
         foreach (var body in hips.GetComponentsInChildren<Rigidbody>(true)) {

@@ -78,6 +78,8 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] int playerHitDecalIndex;
     [SerializeField] int crateHitDecalIndex;
 
+    [SerializeField] SoundData hitSound;
+
     bool wishAttack;
     bool wishAim;
     bool wishReload;
@@ -292,6 +294,8 @@ public class PlayerCombat : NetworkBehaviour
 
                 PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
 
+                SoundManager.instance.PlaySound(hitSound, cam.position, true);
+
                 decalIndex = playerHitDecalIndex;
             } 
             else if(hitRoot.TryGetComponent(out ItemCrate crate))
@@ -369,6 +373,8 @@ public class PlayerCombat : NetworkBehaviour
                 if (hitRoot.GetComponent<Player>() != null && hitRoot.TryGetComponent(out NetworkObject netObj))
                 {
                     PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, onHitDamage, Vector3.zero, Vector3.zero);
+
+                    SoundManager.instance.PlaySound(hitSound, cam.position, true);
                 }
                 else if (hitRoot.TryGetComponent(out ItemCrate hitCrate))
                 {
@@ -426,6 +432,8 @@ public class PlayerCombat : NetworkBehaviour
                 Vector3 ragdollForce = impactForceObject == 0f ? Vector3.zero : blastDir * impactForceObject * falloff;
 
                 PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, damage, playerForce, ragdollForce);
+
+                SoundManager.instance.PlaySound(hitSound, cam.position, true);
             }
             else if (root.TryGetComponent(out ItemCrate crate))
             {

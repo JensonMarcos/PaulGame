@@ -674,7 +674,7 @@ MonoBehaviour:
   - name: Deathmatch
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 6
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -693,7 +693,7 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 2
+    gameModeWeight: 1
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1
@@ -712,7 +712,7 @@ MonoBehaviour:
   - name: Sumo
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 1
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -731,7 +731,7 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 2
+    gameModeWeight: 1
     lastPlayerAliveWins: 0
     firstToScoreWins: 1
     highestScoreWins: 0

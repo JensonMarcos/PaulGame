@@ -20,8 +20,8 @@ MonoBehaviour:
   fireRate: 8.5
   attackDelay: 0
   reloadSpeed: 2
-  ammoCap: 25
-  ammoSpawn: 50
+  ammoCap: 30
+  ammoSpawn: 30
   isAutomatic: 1
   damage: 20
   range: 100

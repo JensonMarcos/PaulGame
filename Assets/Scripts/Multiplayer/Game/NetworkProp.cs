@@ -15,6 +15,7 @@ public class NetworkProp : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void ApplyForceServerRpc(Vector3 force, Vector3 position)
     {
+        if (float.IsNaN(force.x) || float.IsNaN(force.y) || float.IsNaN(force.z)) return;
         rb.AddForceAtPosition(force, position, ForceMode.Impulse);
     }
 }

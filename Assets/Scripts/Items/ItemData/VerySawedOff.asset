@@ -17,13 +17,13 @@ MonoBehaviour:
   useProjectile: 0
   position: {x: 0.14, y: -0.27, z: 0.22}
   pullOutTime: 0.3
-  fireRate: 7
+  fireRate: 3
   attackDelay: 0
   reloadSpeed: 1.5
-  ammoCap: 2
+  ammoCap: 5
   ammoSpawn: 10
   isAutomatic: 0
-  damage: 3.5
+  damage: 4
   range: 100
   shootRadius: 0.01
   ProjectileIndex: 0

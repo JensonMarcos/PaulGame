@@ -1823,6 +1823,14 @@ MonoBehaviour:
   upForceMult: 3
   playerHitDecalIndex: 1
   crateHitDecalIndex: 2
+  hitSound:
+    clipID: 5
+    loop: 0
+    volume: 0.4
+    pitchDeviation: 0.05
+    spatialBlend: 0
+    play2DLocal: 0
+    minDistance: 1
 --- !u!114 &8215228522949132519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3639,14 +3647,15 @@ MonoBehaviour:
   spectatorLayerMask:
     serializedVersion: 2
     m_Bits: 1
-  walkSpeed: 8
+  walkSpeed: 6.25
   walkAcceleration: 12
-  sprintSpeed: 12.5
+  sprintSpeed: 10
   sprintAcceleration: 15
   airAcceleration: 0.5
-  lurchForce: 4
+  airDeceleration: 20
+  lurchForce: 3.5
   lurchThreshold: 0.4
-  crouchSpeed: 4
+  crouchSpeed: 3.5
   crouchAcceleration: 8
   standHeight: 1.8
   crouchHeight: 1.3
@@ -3655,11 +3664,12 @@ MonoBehaviour:
   jumpSpeed: 8
   coyoteTime: 0.1
   gravity: -30
-  slideStartSpeed: 15
-  slideEndSpeed: 8
-  slideThresholdSpeed: 9
+  slideStartSpeed: 12
+  slideEndSpeed: 6.25
+  slideThresholdSpeed: 8
   slideFriction: 0.6
   slideAcceleration: 0.5
+  slideDeceleration: 20
   wallJumpSpeed: 8
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1

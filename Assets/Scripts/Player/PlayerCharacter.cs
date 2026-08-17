@@ -73,6 +73,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     //[SerializeField] float airSpeed;
     //[SerializeField] float airSpeedCap;
     [SerializeField] float airAcceleration;
+    [SerializeField] float airDeceleration;
     [SerializeField] float lurchForce;
     [SerializeField] float lurchThreshold;
 
@@ -97,6 +98,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float slideThresholdSpeed;
     [SerializeField] float slideFriction;
     [SerializeField] float slideAcceleration;
+    [SerializeField] float slideDeceleration;
 
     [Space]
     [Header("Wall Jump")]
@@ -278,7 +280,19 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                     var currentSpeed = Vector3.Dot(currentVelocity, groundedMovement);
                     var addSpeed = slideAcceleration - currentSpeed;
 
-                    if (addSpeed > 0f) currentVelocity += groundedMovement * addSpeed;
+                    if (addSpeed > 0f)
+                    {
+                        var accelSpeed = addSpeed;
+                        var slideSpeed = currentVelocity.magnitude;
+                        if (currentSpeed < 0f && slideSpeed > 0.01f)
+                        {
+                            var oppose = Mathf.Clamp01(-Vector3.Dot(currentVelocity / slideSpeed, groundedMovement.normalized));
+                            oppose *= oppose;
+                            accelSpeed = Mathf.Lerp(addSpeed, Mathf.Min(addSpeed, slideDeceleration * deltaTime), oppose);
+                        }
+
+                        currentVelocity += groundedMovement * accelSpeed;
+                    }
                 }
                 
                 if (currentVelocity.magnitude < slideEndSpeed) State.Stance = Stance.Crouch;
@@ -295,20 +309,22 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 if(lurchTimer < lurchThreshold && !movedLastFrame)
                 {
                     lurchTimer += lurchThreshold;
-
+                    
+                    float yvel = Vector3.Dot(currentVelocity, Motor.CharacterUp);
                     var velBefore = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
-                    // if(velBefore.magnitude < lurchForce) velBefore = velBefore.normalized * lurchForce;
                     var addForce = wishMovement * lurchForce;
-                    // if((velBefore + addForce).magnitude > velBefore.magnitude && velBefore.magnitude > lurchForce)
-                    // {
-                    //     addForce = (velBefore + addForce).normalized * velBefore.magnitude - velBefore;
-                        
-                    // }
-                    // currentVelocity += addForce;
-                    if(velBefore.magnitude < lurchForce) 
-                        currentVelocity = Vector3.ClampMagnitude(currentVelocity + addForce, lurchForce);
+                    var planarSpeed = velBefore.magnitude;
+                    if (planarSpeed > 0.01f)
+                    {
+                        var velDir = velBefore / planarSpeed;
+                        var along = Vector3.Dot(addForce, velDir);
+                        if (along < 0f)
+                            addForce -= velDir * along * Mathf.Clamp01(planarSpeed / lurchForce);
+                    }
+                    if(planarSpeed < lurchForce) 
+                        currentVelocity = Vector3.ClampMagnitude(velBefore + addForce, lurchForce) + Motor.CharacterUp * yvel;
                     else
-                        currentVelocity = Vector3.ClampMagnitude(currentVelocity + addForce, velBefore.magnitude);
+                        currentVelocity = Vector3.ClampMagnitude(velBefore + addForce, planarSpeed) + Motor.CharacterUp * yvel;
                 }
 
 
@@ -346,11 +362,17 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
                 if (addSpeed > 0f)
                 {
-                    // var accelSpeed = Mathf.Min(airAcceleration * wishSpeed * deltaTime, addSpeed);
-                    // currentVelocity += wishDir * accelSpeed;
+                    var accelSpeed = addSpeed;
+                    var planarSpeed = planarVel.magnitude;
+                    if (currentSpeed < 0f && planarSpeed > 0.01f)
+                    {
+                        // 0 at 90°, 1 at 180°. Squared so typical air-strafe angles keep the instant bite.
+                        var oppose = Mathf.Clamp01(-Vector3.Dot(planarVel / planarSpeed, wishMovement.normalized));
+                        oppose *= oppose;
+                        accelSpeed = Mathf.Lerp(addSpeed, Mathf.Min(addSpeed, airDeceleration * deltaTime), oppose);
+                    }
 
-                    //lowkey feels better just adding the full speed
-                    currentVelocity += wishMovement * addSpeed;
+                    currentVelocity += wishMovement * accelSpeed;
                 }
 
             }
@@ -636,6 +658,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     public void AddForce(Vector3 force)
     {
+        if (float.IsNaN(force.x) || float.IsNaN(force.y) || float.IsNaN(force.z)) return;
         Motor.ForceUnground();
         Motor.BaseVelocity += force;
     }

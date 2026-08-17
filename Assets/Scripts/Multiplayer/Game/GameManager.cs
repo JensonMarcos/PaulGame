@@ -170,7 +170,7 @@ public class GameManager : NetworkBehaviour
                 for (int i = 0; i < playerManager.Players.Count; i++) //move people behind
                 {
                     if(rooms.current.moveSpawnPoint == null) continue;
-                    if (playerManager.Players[i].player.playerCharacter.Motor.transform.position.z < rooms.current.moveSpawnPoint.position.z - 4f)
+                    if (playerManager.Players[i].player.playerCharacter.Motor.transform.position.z < rooms.current.moveSpawnPoint.position.z - 10f)
                         playerManager.Teleport(playerManager.Players[i].ClientId, rooms.current.moveSpawnPoint.position);
                 }
 
