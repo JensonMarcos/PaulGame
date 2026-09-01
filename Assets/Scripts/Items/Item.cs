@@ -11,9 +11,13 @@ public class Item : NetworkBehaviour
 
     public bool hovered;
     [SerializeField] GameObject model;
+
+    float throwHitThreshold = 2f; //hardcoded values YES!!!
+    float throwHitDamage = 1f;
     Collider itemCollider;
     Rigidbody rb;
     Outline outline;
+    ulong lastOwnerId = ulong.MaxValue;
 
     public override void OnNetworkSpawn()
     {
@@ -77,7 +81,7 @@ public class Item : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void ItemDropServerRpc(Vector3 pos, Quaternion rot, Vector3 vel, int ammo)
+    public void ItemDropServerRpc(Vector3 pos, Quaternion rot, Vector3 vel, int ammo, RpcParams rpcParams = default)
     {
         if(!HasOwner.Value) return;
 
@@ -90,6 +94,7 @@ public class Item : NetworkBehaviour
         rb.linearVelocity = vel;
 
         HasOwner.Value = false;
+        lastOwnerId = rpcParams.Receive.SenderClientId;
 
         Ammo.Value = ammo;
 
@@ -97,6 +102,32 @@ public class Item : NetworkBehaviour
         itemCollider.enabled = true;
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!IsServer || HasOwner.Value) return;
+        if (lastOwnerId == ulong.MaxValue) return;
+        if (rb.linearVelocity.magnitude < throwHitThreshold) return;
+
+        Player player = collision.collider.GetComponentInParent<Player>();
+        if (player == null || player.OwnerClientId == lastOwnerId) return;
+
+        PlayerInventory inv = player.playerInventory;
+
+        bool hasItem = false;
+        for (int i = 0; i < inv.NetworkIDInventory.Count; i++)
+        {
+            if (inv.NetworkIDInventory[i] != 0UL)
+            {
+                hasItem = true;
+                break;
+            }
+        }
+        if (!hasItem) return;
+
+        ulong attackerId = lastOwnerId;
+        lastOwnerId = ulong.MaxValue;
+        PlayerManager.instance.DealDamage(player.OwnerClientId, attackerId, throwHitDamage, Vector3.zero, Vector3.zero);
+    }
 
     [Rpc(SendTo.Server)]
     public void ItemClearServerRpc()

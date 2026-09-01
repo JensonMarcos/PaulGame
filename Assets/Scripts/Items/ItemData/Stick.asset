@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   type: 3
   slot: 0
+  cantDrop: 1
   useProjectile: 0
   position: {x: 0, y: 0, z: 0}
   pullOutTime: 0.4

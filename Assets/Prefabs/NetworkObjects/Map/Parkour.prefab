@@ -413,9 +413,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   objectiveType: 1
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 8
   scorePerTick: 1
   firstEntryScore: 100
   entryScoreStep: 25
@@ -882,7 +879,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Killzone
   ShowTopMostFoldoutHeaderGroup: 1
-  mode: 2
+  mode: 0
 --- !u!1 &576732906313623689
 GameObject:
   m_ObjectHideFlags: 0
@@ -6522,8 +6519,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 42, y: 20, z: 160}
-  m_Center: {x: 0, y: 5, z: 90}
+  m_Size: {x: 42, y: 24.906214, z: 162}
+  m_Center: {x: 0, y: 0.5488329, z: 90}
 --- !u!1 &9060103230041053579
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,7 @@ public class ItemData : ScriptableObject
 {
     public ItemType type;
     public int slot;
+    public bool cantDrop;
     public bool useProjectile;
 
     bool isGun => type is ItemType.Gun or ItemType.Sniper or ItemType.Shotgun;

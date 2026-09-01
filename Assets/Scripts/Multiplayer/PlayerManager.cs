@@ -138,7 +138,10 @@ public class PlayerManager : NetworkBehaviour
 
     [Rpc(SendTo.Server)]
     public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, Vector3 propForce, RpcParams rpcParams = default) {
-        ulong senderId = rpcParams.Receive.SenderClientId;
+        DealDamage(targetid, rpcParams.Receive.SenderClientId, damage, force, propForce);
+    }
+
+    public void DealDamage(ulong targetid, ulong senderId, float damage, Vector3 force, Vector3 propForce) {
         PlayerData target = Players.Find(x => x.ClientId == targetid);
         PlayerData sender = Players.Find(x => x.ClientId == senderId);
         if(target == null || sender == null) return;

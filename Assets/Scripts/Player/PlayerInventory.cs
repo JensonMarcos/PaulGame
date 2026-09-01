@@ -44,7 +44,7 @@ public class PlayerInventory : NetworkBehaviour
 
     [Header("Auto Pickup")]
     [SerializeField] Transform character;
-    [SerializeField] float autoPickupRadius = 1f;
+    [SerializeField] float autoPickupRadius = 0.8f;
     [SerializeField] int autoPickupInterval = 4;
     [SerializeField] float dropPickupCooldown = 1f;
     int autoPickupTick;
@@ -193,7 +193,10 @@ public class PlayerInventory : NetworkBehaviour
 
     void AutoPickUp()
     {
+        if(System.Array.IndexOf(Inventory, handsItem) == -1) return; //check if inventory is full
+
         int count = Physics.OverlapSphereNonAlloc(character.position, autoPickupRadius, autoPickupBuffer, itemLayer, QueryTriggerInteraction.Collide);
+        if(count == 0) count = Physics.OverlapSphereNonAlloc(character.position + character.up, autoPickupRadius, autoPickupBuffer, pickupColliderLayer, QueryTriggerInteraction.Collide);
 
         for (int i = 0; i < count; i++)
         {
@@ -215,7 +218,12 @@ public class PlayerInventory : NetworkBehaviour
 
         int slot = item.data.slot;
 
-        if(Inventory[slot] != handsItem) Drop(slot);
+        if(Inventory[slot] != handsItem)
+        {
+            Item current = Inventory[slot].GetComponent<Item>();
+            if(current != null && current.data.cantDrop) return;
+            Drop(slot);
+        }
 
         item.ItemPickupServerRpc(transform.root.GetComponent<NetworkObject>());
 
@@ -258,12 +266,15 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    void Drop(int i)
+    void Drop(int i, bool force = false)
     {
-        lastDropped = Inventory[i].GetComponent<Item>();
+        Item item = Inventory[i].GetComponent<Item>();
+        if(!force && item != null && item.data.cantDrop) return;
+
+        lastDropped = item;
         lastDropTime = Time.time;
 
-        Inventory[i].GetComponent<Item>().ItemDropServerRpc(transform.position, transform.rotation, velocity + cam.forward * throwForce, ClientInventory[i].Ammo);
+        item.ItemDropServerRpc(transform.position, transform.rotation, velocity + cam.forward * throwForce, ClientInventory[i].Ammo);
         Inventory[i] = handsItem;
         NetworkIDInventory[i] = 0UL;
         SyncClientInventory();
@@ -279,7 +290,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             if(Inventory[i] != handsItem)
             {
-                Drop(i);
+                Drop(i, true);
             }
         }
     }

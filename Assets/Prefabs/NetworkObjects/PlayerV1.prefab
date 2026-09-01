@@ -3700,7 +3700,7 @@ CapsuleCollider:
   m_Radius: 0.3
   m_Height: 1.8
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &6879331919013833267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3716,7 +3716,7 @@ MonoBehaviour:
   Capsule: {fileID: 7773675455286079409}
   CapsuleRadius: 0.3
   CapsuleHeight: 1.8
-  CapsuleYOffset: 1
+  CapsuleYOffset: 0.9
   CapsulePhysicsMaterial: {fileID: 0}
   GroundDetectionExtraDistance: 0
   MaxStableSlopeAngle: 46
