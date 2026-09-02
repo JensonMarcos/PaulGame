@@ -78,7 +78,7 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] int playerHitDecalIndex;
     [SerializeField] int crateHitDecalIndex;
 
-    [SerializeField] SoundData hitSound;
+    [SerializeField] string hitSound = "hitmarker";
 
     bool wishAttack;
     bool wishAim;
@@ -157,7 +157,7 @@ public class PlayerCombat : NetworkBehaviour
 
             StartCoroutine(DelayShoot(_item, _data.attackDelay));
 
-            SoundManager.instance.PlayNetworkSound(_data.AttackSound, cam.position);
+            SoundManager.Play(_data.AttackSound, cam.position);
         }
 
         if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
@@ -173,7 +173,7 @@ public class PlayerCombat : NetworkBehaviour
 
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
-            SoundManager.instance.PlayNetworkSound(_data.AttackSound, _item.muzzleTrans.position);
+            SoundManager.Play(_data.AttackSound, _item.muzzleTrans.position);
 
             Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
             float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
@@ -294,7 +294,7 @@ public class PlayerCombat : NetworkBehaviour
 
                 PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
 
-                SoundManager.instance.PlaySound(hitSound, cam.position, true);
+                SoundManager.Play(hitSound);
 
                 decalIndex = playerHitDecalIndex;
 
@@ -336,7 +336,7 @@ public class PlayerCombat : NetworkBehaviour
         float lifetime,
         float impactForcePlayer,
         float impactForceObject,
-        SoundData projectileHitSound)
+        string projectileHitSound)
     {
         Vector3 position = origin;
         Vector3 velocity = direction * speed;
@@ -376,7 +376,7 @@ public class PlayerCombat : NetworkBehaviour
                 {
                     PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, onHitDamage, Vector3.zero, Vector3.zero);
 
-                    SoundManager.instance.PlaySound(hitSound, cam.position, true);
+                    SoundManager.Play(hitSound);
                 }
                 else if (hitRoot.TryGetComponent(out ItemCrate hitCrate))
                 {
@@ -388,7 +388,7 @@ public class PlayerCombat : NetworkBehaviour
                     ExplosionDamage(position, explosionRadius, explosionDamage, explosionSelfDamage, impactForcePlayer, impactForceObject);
                 }
 
-                SoundManager.instance.PlayNetworkSound(projectileHitSound, position);
+                SoundManager.Play(projectileHitSound, position);
                 yield break;
             }
 
@@ -435,7 +435,7 @@ public class PlayerCombat : NetworkBehaviour
 
                 PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, damage, playerForce, ragdollForce);
 
-                SoundManager.instance.PlaySound(hitSound, cam.position, true);
+                SoundManager.Play(hitSound);
             }
             else if (root.TryGetComponent(out ItemCrate crate))
             {

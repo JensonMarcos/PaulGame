@@ -46,12 +46,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DontHoldTheC4
   c4ItemId: 101
   checkInterval: 20
-  explosionSound:
-    clipID: 4
-    loop: 0
-    volume: 0.85
-    pitchDeviation: 0.05
-    spatialBlend: 1
-    play2DLocal: 0
-    minDistance: 2.5
+  explosionSound: explosion
   ragdollForce: 50

@@ -4,45 +4,48 @@ using UnityEngine;
 public class SoundEmitter : MonoBehaviour
 {
     [SerializeField] AudioSource audioSource;
-    Coroutine playingCoroutine;
 
-    public void Initialize(SoundData soundData, Vector3 position, Transform parent = null)
+    Transform follow;
+    Coroutine lifetime;
+
+    public void Play(SoundEntry entry, byte variant, Vector3 position, Transform follow, bool play2D)
     {
+        this.follow = follow;
         transform.position = position;
-        if(parent != null) transform.SetParent(parent);
 
-        audioSource.clip = SoundManager.instance.SoundList.Clips[soundData.clipID];
-        audioSource.loop = soundData.loop;
-        audioSource.volume = soundData.volume;
-        audioSource.pitch = 1 + soundData.pitchDeviation * Random.Range(-1f, 1f);
-        audioSource.spatialBlend = soundData.spatialBlend;
-        audioSource.minDistance = soundData.minDistance;
-    }
-
-    public void Play(bool play2D)
-    {
-        if(playingCoroutine != null) StopCoroutine(playingCoroutine);
-
-        if(play2D) audioSource.spatialBlend = 0f;
+        audioSource.clip = entry.clips[variant];
+        audioSource.outputAudioMixerGroup = entry.group;
+        audioSource.loop = entry.loop;
+        audioSource.volume = entry.volume;
+        audioSource.pitch = entry.pitch + entry.pitchDeviation * Random.Range(-1f, 1f);
+        audioSource.spatialBlend = play2D ? 0f : 1f;
+        audioSource.minDistance = entry.minDistance;
+        audioSource.maxDistance = entry.maxDistance;
         audioSource.Play();
-        playingCoroutine = StartCoroutine(WaitForSoundToEnd());
+
+        if (lifetime != null) StopCoroutine(lifetime);
+        lifetime = entry.loop ? null : StartCoroutine(ReleaseWhenFinished());
     }
 
     public void Stop()
     {
-        if(playingCoroutine != null)
-        {
-            StopCoroutine(playingCoroutine);
-            playingCoroutine = null;
-        } 
+        if (!gameObject.activeSelf) return;
 
+        if (lifetime != null) StopCoroutine(lifetime);
+        lifetime = null;
         audioSource.Stop();
-        SoundManager.instance.ReturnToPool(this);
+        SoundManager.instance.Release(this);
     }
 
-    IEnumerator WaitForSoundToEnd()
+    void LateUpdate()
+    {
+        if (follow != null) transform.position = follow.position;
+    }
+
+    IEnumerator ReleaseWhenFinished()
     {
         yield return new WaitWhile(() => audioSource.isPlaying);
-        SoundManager.instance.ReturnToPool(this);
+        lifetime = null;
+        SoundManager.instance.Release(this);
     }
 }

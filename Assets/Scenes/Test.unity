@@ -1636,8 +1636,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
   ShowTopMostFoldoutHeaderGroup: 1
-  soundEmitterPrefab: {fileID: 6032024220949397087, guid: 86a7320c618076a409b852926146172b, type: 3}
-  SoundList: {fileID: 11400000, guid: 3631de39d97300c44a8619387c92b590, type: 2}
+  library: {fileID: 11400000, guid: 80c26d9c06c7474cab7f3ce0cf0cf9a8, type: 2}
+  emitterPrefab: {fileID: 6032024220949397087, guid: 86a7320c618076a409b852926146172b, type: 3}
+  mixer: {fileID: 24100000, guid: e1e996888bd74454a0a7d66382c3353a, type: 2}
 --- !u!1 &332008364
 GameObject:
   m_ObjectHideFlags: 0

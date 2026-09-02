@@ -16,7 +16,7 @@ public class DontHoldTheC4 : GamemodeScript
     [Header("Settings")]
     [SerializeField] int c4ItemId;
     [SerializeField] float checkInterval = 10f;
-    [SerializeField] SoundData explosionSound;
+    [SerializeField] string explosionSound = "explosion";
     [SerializeField] float ragdollForce = 75f;
 
     float nextCheckTime;
@@ -52,7 +52,7 @@ public class DontHoldTheC4 : GamemodeScript
 
                 Vector3 explosionPos = player.player.playerCharacter.transform.position;
                 VFXManager.instance.PlayExplosion(explosionPos);
-                SoundManager.instance.PlayNetworkSound(explosionSound, explosionPos);
+                SoundManager.Play(explosionSound, explosionPos);
 
                 Vector3 ragdollForceVector = -player.player.playerCharacter.transform.forward * ragdollForce;
 

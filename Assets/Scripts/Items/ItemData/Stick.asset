@@ -36,14 +36,7 @@ MonoBehaviour:
   projectileExplosionDamage: 0
   projectileExplosionSelfDamage: 0
   projectileLifetime: 0
-  projectileHitSound:
-    clipID: 0
-    loop: 0
-    volume: 0
-    pitchDeviation: 0
-    spatialBlend: 0
-    play2DLocal: 0
-    minDistance: 0
+  projectileHitSound: 
   accuracy: 0
   ADSAccuracy: 0
   Recoil: {x: 0, y: 0, z: 0}
@@ -65,12 +58,5 @@ MonoBehaviour:
   impactForceObject: 100
   impactForcePlayer: 20
   backwardVelocity: 0
-  AttackSound:
-    clipID: 0
-    loop: 0
-    volume: 0
-    pitchDeviation: 0
-    spatialBlend: 0
-    play2DLocal: 1
-    minDistance: 0
+  AttackSound: 
   DecalIndex: 0

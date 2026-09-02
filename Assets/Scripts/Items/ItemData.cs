@@ -47,7 +47,7 @@ public class ItemData : ScriptableObject
     [ShowIf("useProjectile")] public float projectileExplosionDamage;
     [ShowIf("useProjectile")] public float projectileExplosionSelfDamage;
     [ShowIf("useProjectile")] public float projectileLifetime;
-    [ShowIf("useProjectile")] public SoundData projectileHitSound;
+    [ShowIf("useProjectile")] public string projectileHitSound;
     
     [Header("Accuracy")]
     [ShowIf("isGun")] public float accuracy;
@@ -88,6 +88,6 @@ public class ItemData : ScriptableObject
     public float backwardVelocity;
 
     [Header("FX")]
-    public SoundData AttackSound;
+    public string AttackSound;
     public int DecalIndex;
 }

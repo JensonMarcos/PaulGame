@@ -35,14 +35,7 @@ MonoBehaviour:
   projectileExplosionDamage: 0
   projectileExplosionSelfDamage: 0
   projectileLifetime: 0
-  projectileHitSound:
-    clipID: 0
-    loop: 0
-    volume: 0
-    pitchDeviation: 0
-    spatialBlend: 0
-    play2DLocal: 0
-    minDistance: 0
+  projectileHitSound: 
   accuracy: 0.01
   ADSAccuracy: 0
   Recoil: {x: 8, y: 1, z: 0.5}
@@ -64,12 +57,5 @@ MonoBehaviour:
   impactForceObject: 50
   impactForcePlayer: 0
   backwardVelocity: 0
-  AttackSound:
-    clipID: 3
-    loop: 0
-    volume: 0.2
-    pitchDeviation: 0.05
-    spatialBlend: 1
-    play2DLocal: 1
-    minDistance: 1
+  AttackSound: gun_deagle
   DecalIndex: 0

@@ -35,14 +35,7 @@ MonoBehaviour:
   projectileExplosionDamage: 33
   projectileExplosionSelfDamage: 15
   projectileLifetime: 5
-  projectileHitSound:
-    clipID: 4
-    loop: 0
-    volume: 0.85
-    pitchDeviation: 0.05
-    spatialBlend: 1
-    play2DLocal: 0
-    minDistance: 2.5
+  projectileHitSound: explosion
   accuracy: 0
   ADSAccuracy: 0
   Recoil: {x: 20, y: 1, z: 1}
@@ -64,12 +57,5 @@ MonoBehaviour:
   impactForceObject: 50
   impactForcePlayer: 10
   backwardVelocity: 3
-  AttackSound:
-    clipID: 3
-    loop: 0
-    volume: 0.15
-    pitchDeviation: 0.05
-    spatialBlend: 1
-    play2DLocal: 1
-    minDistance: 1
+  AttackSound: gun_bazooka
   DecalIndex: 0
