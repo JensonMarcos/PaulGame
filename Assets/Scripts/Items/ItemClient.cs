@@ -4,6 +4,7 @@ public interface IItemAction
 {
     void OnLeftClick();
     void OnRightClick();
+    void OnHit(ulong targetid);
 }
 
 [System.Serializable]
@@ -33,6 +34,12 @@ public class ItemClient : MonoBehaviour
     {
         if(action == null) return;
         action.OnRightClick();
+    }
+
+    public void OnHit(ulong targetid)
+    {
+        if(action == null) return;
+        action.OnHit(targetid);
     }
 }
 

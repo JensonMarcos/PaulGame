@@ -4047,7 +4047,7 @@ GameObject:
   - component: {fileID: 4485126393181774743}
   - component: {fileID: 8271549658875094816}
   m_Layer: 2
-  m_Name: TestRoom
+  m_Name: DeathmatchTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -71,6 +71,6 @@ MonoBehaviour:
     volume: 0
     pitchDeviation: 0
     spatialBlend: 0
-    play2DLocal: 0
+    play2DLocal: 1
     minDistance: 0
   DecalIndex: 0

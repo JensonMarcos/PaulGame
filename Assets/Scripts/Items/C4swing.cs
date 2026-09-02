@@ -2,7 +2,7 @@ using System.Collections;
 //using Unity.Netcode;
 using UnityEngine;
 
-public class Swing : MonoBehaviour, IItemAction
+public class C4swing : MonoBehaviour, IItemAction
 {
     [SerializeField] HandData RHand, LHand;
 
@@ -51,6 +51,11 @@ public class Swing : MonoBehaviour, IItemAction
 
     public void OnHit(ulong targetid)
     {
+        if(GameManager.instance == null) return;
+        int itemId = GameManager.instance.itemList.GetItemId(GetComponent<ItemClient>().data);
+        if(itemId == -1) return;
+
+        PlayerManager.instance.SwapItemServerRpc(targetid, itemId);
     }
 
     IEnumerator SwingAnimation(HandData hand, float tiltMult)

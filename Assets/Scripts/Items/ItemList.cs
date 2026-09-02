@@ -30,6 +30,11 @@ public class ItemList : ScriptableObject
     public int GetItemId(GameObject itemInstance)
     {
         ItemData data = itemInstance.GetComponent<Item>().data;
+        return GetItemId(data);
+    }
+
+    public int GetItemId(ItemData data)
+    {
         for(int i = 0; i < itemPool.Length; i++) {
             if(itemPool[i].item.GetComponent<Item>().data == data) return itemPool[i].id;
         }

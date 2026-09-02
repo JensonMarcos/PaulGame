@@ -50,6 +50,10 @@ public struct GameMode
     public bool spawnInitialItem;
     public int initialItemID;
     public int numberOfInitialItems;
+
+    [Space]
+    [Header("Script")]
+    public GameObject gamemodeScript; //prefab with a GamemodeScript on its root, instantiated when the gamemode starts
 }
 
 [System.Serializable]
@@ -114,6 +118,8 @@ public class GameManager : NetworkBehaviour
     GameMode lastGameMode;
     GameObject lastRoomPrefab;
     bool hasLastRoom;
+
+    GamemodeScript activeGamemodeScript;
 
     [Space]
     [Header("Timers")]
@@ -204,11 +210,22 @@ public class GameManager : NetworkBehaviour
                 doorCloseKillTime = Time.time + GetDoorCloseDuration(rooms.current);
 
                 for (int i = 0; i < playerManager.Players.Count; i++)
+                {
                     playerManager.Players[i].score = 0;
+
+                    //kill players in prev room (not corridor though)
+                    if (rooms.previous.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
+                    {
+                        playerManager.WorldDamage(playerManager.Players[i].ClientId, 1000f, Vector3.zero);
+                        GameTeleport(playerManager.Players[i].ClientId);
+                    }
+                }
 
                 StartRoom();
                 break;
             case GameState.GameEnd:
+                EndGamemodeScript();
+
                 CleanObjects();
             
                 playerManager.damageEnabled.Value = false;
@@ -256,6 +273,9 @@ public class GameManager : NetworkBehaviour
 
                 break;
             case GameState.InGame:
+                if (activeGamemodeScript != null) activeGamemodeScript.OnGameModeFixedUpdate();
+
+                //kill players in corridor or if in previous room somehow bet
                 if (pendingDoorCloseKill && Time.time >= doorCloseKillTime)
                 {
                     pendingDoorCloseKill = false;
@@ -263,7 +283,7 @@ public class GameManager : NetworkBehaviour
                     {
                         if (!rooms.current.playersInRoom.Contains(playerManager.Players[i].playerGameObject))
                         {
-                            playerManager.WorldDamage(playerManager.Players[i].ClientId, 1000f);
+                            playerManager.WorldDamage(playerManager.Players[i].ClientId, 1000f, Vector3.zero);
                             GameTeleport(playerManager.Players[i].ClientId);
                         }
                     }
@@ -487,6 +507,27 @@ public class GameManager : NetworkBehaviour
         hasLastRoom = true;
     }
 
+    void StartGamemodeScript()
+    {
+        EndGamemodeScript(); //safety, should already be null
+
+        if (currentGameMode.gamemodeScript == null) return;
+
+        GamemodeScript script = currentGameMode.gamemodeScript.GetComponent<GamemodeScript>();
+
+        activeGamemodeScript = Instantiate(script);
+        activeGamemodeScript.OnGameModeStart();
+    }
+
+    void EndGamemodeScript()
+    {
+        if (activeGamemodeScript == null) return;
+
+        activeGamemodeScript.OnGameModeEnd();
+        Destroy(activeGamemodeScript.gameObject);
+        activeGamemodeScript = null;
+    }
+
     float GetDoorCloseDuration(Room room)
     {
         if (room.doorEnter != null && room.doorEnter.runtimeAnimatorController != null)
@@ -510,6 +551,8 @@ public class GameManager : NetworkBehaviour
 
         GameTitle.Value = "";
         timer = Time.time + currentGameMode.gameTime;
+
+        StartGamemodeScript();
 
         //items
         if(currentGameMode.spawnInitialItem)

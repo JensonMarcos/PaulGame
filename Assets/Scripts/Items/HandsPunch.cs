@@ -58,6 +58,10 @@ public class HandsPunch : MonoBehaviour, IItemAction
         
     }
 
+    public void OnHit(ulong targetid)
+    {
+    }
+
     // [Rpc(SendTo.Server)]
     // public void PunchServerRpc(bool _handedness)
     // {

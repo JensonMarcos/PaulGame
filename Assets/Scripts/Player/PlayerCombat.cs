@@ -297,7 +297,9 @@ public class PlayerCombat : NetworkBehaviour
                 SoundManager.instance.PlaySound(hitSound, cam.position, true);
 
                 decalIndex = playerHitDecalIndex;
-            } 
+
+                _item.OnHit(hitRoot.GetComponent<NetworkObject>().OwnerClientId);
+            }
             else if(hitRoot.TryGetComponent(out ItemCrate crate))
             {
                 crate.BreakCrateServerRpc();

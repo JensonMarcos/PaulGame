@@ -137,11 +137,11 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, Vector3 propForce, RpcParams rpcParams = default) {
-        DealDamage(targetid, rpcParams.Receive.SenderClientId, damage, force, propForce);
+    public void DealDamageServerRpc(ulong targetid, float damage, Vector3 force, Vector3 ragdollForce, RpcParams rpcParams = default) {
+        DealDamage(targetid, rpcParams.Receive.SenderClientId, damage, force, ragdollForce);
     }
 
-    public void DealDamage(ulong targetid, ulong senderId, float damage, Vector3 force, Vector3 propForce) {
+    public void DealDamage(ulong targetid, ulong senderId, float damage, Vector3 force, Vector3 ragdollForce) {
         PlayerData target = Players.Find(x => x.ClientId == targetid);
         PlayerData sender = Players.Find(x => x.ClientId == senderId);
         if(target == null || sender == null) return;
@@ -160,12 +160,12 @@ public class PlayerManager : NetworkBehaviour
         target.player.UpdateHealthClientRpc(target.health);
 
         if(target.health <= 0 && !target.isDead)
-            Kill(target, sender, propForce);
+            Kill(target, sender, ragdollForce);
 
         print($"Player {targetid} took {damage} damage from Player {senderId}. Health now: {target.health}");
     }
 
-    public void WorldDamage(ulong targetid, float damage)
+    public void WorldDamage(ulong targetid, float damage, Vector3 ragdollForce)
     {
         PlayerData target = Players.Find(x => x.ClientId == targetid);
         if(target == null) return;
@@ -182,17 +182,17 @@ public class PlayerManager : NetworkBehaviour
             if (index >= 0) killer = Players[index];
         }
 
-        Kill(target, killer, Vector3.zero);
+        Kill(target, killer, ragdollForce);
     }
 
-    void Kill(PlayerData target, PlayerData killer, Vector3 propForce)
+    void Kill(PlayerData target, PlayerData killer, Vector3 ragdollForce)
     {
         target.isDead = true;
         target.deaths++;
 
         Vector3 pos = target.player.playerCharacter.transform.position;
         Quaternion rot = target.player.playerCharacter.transform.rotation;
-        Vector3 vel = target.player.playerState.Velocity + propForce;
+        Vector3 vel = target.player.playerState.Velocity + ragdollForce;
 
         GameObject ragdoll = Instantiate(ragdollPrefab, pos, rot);
         NetworkObject ragdollNet = ragdoll.GetComponent<NetworkObject>();
@@ -306,6 +306,16 @@ public class PlayerManager : NetworkBehaviour
         if(id < 0) return;
         NetworkObject netObj = GameManager.instance.SpawnItem(itemId);
         Players[id].player.GiveItemClientRpc(netObj.NetworkObjectId);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SwapItemServerRpc(ulong targetId, int itemId, RpcParams rpcParams = default)
+    {
+        ulong senderId = rpcParams.Receive.SenderClientId;
+        if(senderId == targetId) return;
+
+        ClearItem(senderId, itemId);
+        GiveItem(itemId, targetId);
     }
 
     public void UpdatePlayerScoreboard(ulong playerId) {

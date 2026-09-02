@@ -14,18 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   type: 3
   slot: 0
+  cantDrop: 1
   useProjectile: 0
   position: {x: 0.2, y: -0.2, z: 0.32}
   pullOutTime: 0.5
   fireRate: 4
-  attackDelay: 0
+  attackDelay: 0.06
   reloadSpeed: 0
   ammoCap: 0
   ammoSpawn: 0
   isAutomatic: 0
   damage: 0
-  range: 0
-  shootRadius: 0
+  range: 3.35
+  shootRadius: 0.15
   ProjectileIndex: 0
   projectileSize: 0
   projectileSpeed: 0
@@ -52,7 +53,7 @@ MonoBehaviour:
   adsSpeed: 0
   adsZoom: 0
   RightHandIK: 1
-  LeftHandIK: 0
+  LeftHandIK: 1
   backKick: -0.2
   rotKick: 0
   ADSAnimMult: 0
@@ -61,8 +62,8 @@ MonoBehaviour:
   sightPos: {x: 0, y: 0, z: 0}
   ADSAmmoPos: {x: 0, y: 0, z: 0}
   WidTopBot: {x: 0, y: 0, z: 0}
-  impactForceObject: 0
-  impactForcePlayer: 0
+  impactForceObject: 50
+  impactForcePlayer: 10
   backwardVelocity: 0
   AttackSound:
     clipID: 0
