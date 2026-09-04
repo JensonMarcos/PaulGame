@@ -265,10 +265,35 @@ public class PlayerManager : NetworkBehaviour
         playersAlive = Players.Count(x => x.isDead == false);
     }
 
+    //prevent telporting to same pos as anther player at same time
+    readonly List<(Vector3 pos, float time)> recentTeleports = new List<(Vector3, float)>();
+    const float teleportClearance = 1.5f;
+
     public void Teleport(ulong playerid, Vector3 position){
         int id = Players.FindIndex(x => x.ClientId == playerid);
         if(id < 0) return;
+
+        recentTeleports.RemoveAll(t => Time.time - t.time > 1f);
+
+        Vector3 anchor = position;
+        for (int i = 1; i <= 16 && !IsClear(id, position); i++)
+            position = anchor + Quaternion.Euler(0f, i * 137.5f, 0f) * Vector3.forward * (teleportClearance * (1f + i * 0.25f));
+
+        recentTeleports.Add((position, Time.time));
         Players[id].player.TeleportClientRpc(position);
+    }
+
+    bool IsClear(int id, Vector3 position)
+    {
+        foreach (var t in recentTeleports)
+            if (Vector3.Distance(t.pos, position) < teleportClearance) return false;
+
+        for (int i = 0; i < Players.Count; i++)
+        {
+            if (i == id || Players[i].player == null) continue;
+            if (Vector3.Distance(Players[i].player.playerCharacter.transform.position, position) < teleportClearance) return false;
+        }
+        return true;
     }
 
     public void ClearItem(ulong playerId, int itemId = -1)

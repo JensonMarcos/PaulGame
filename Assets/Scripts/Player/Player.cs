@@ -63,6 +63,10 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
 
 public class Player : NetworkBehaviour
 {
+    // Capsules of players this machine doesn't own, for locally simulated props to ignore.
+    public static readonly List<Collider> RemoteColliders = new List<Collider>();
+    public static event System.Action<Collider> RemoteColliderAdded;
+
     NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
         writePerm: NetworkVariableWritePermission.Owner,
         readPerm: NetworkVariableReadPermission.Everyone
@@ -102,17 +106,31 @@ public class Player : NetworkBehaviour
         }
 
         if(!IsOwner)
+        {
             playerCharacter.Motor.enabled = false;
+            RegisterRemoteCollider();
+        }
 
         lastRemotePosition = playerCharacter.transform.position;
     }
 
     public override void OnNetworkDespawn()
     {
-        if(IsOwner && GameManager.instance != null) 
+        if(IsOwner && GameManager.instance != null)
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
-        
+
+        if(!IsOwner) RemoteColliders.Remove(playerCharacter.Motor.Capsule);
+
         playerInputs.Dispose();
+    }
+
+    void RegisterRemoteCollider()
+    {
+        Collider capsule = playerCharacter.Motor.Capsule;
+        if(capsule == null || RemoteColliders.Contains(capsule)) return;
+
+        RemoteColliders.Add(capsule);
+        RemoteColliderAdded?.Invoke(capsule);
     }
 
     void Update()

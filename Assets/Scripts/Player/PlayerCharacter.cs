@@ -128,6 +128,15 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     [SerializeField] TMP_Text speedText;
 
+    [Space]
+    [Header("Prop Kicking")]
+    [SerializeField] float kickForce = 1f;
+    [SerializeField] float minKickSpeed = 1f;
+    [SerializeField] float kickInterval = 0.1f;
+
+    PredictedProp lastKickedProp;
+    float lastKickTime;
+
     public void Initialize()
     {
         Motor.CharacterController = this;
@@ -616,8 +625,21 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     {
     }
 
+    //idfk, also vibecoded for the soccerball but works
     public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition, Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)
     {
+        if (player == null || !player.IsOwner || player.IsServer) return;
+        if (hitCollider.attachedRigidbody == null) return;
+        if (!hitCollider.attachedRigidbody.TryGetComponent(out PredictedProp prop)) return;
+
+        float approachSpeed = Vector3.Dot(State.Velocity, -hitNormal);
+        if (approachSpeed < minKickSpeed) return;
+
+        if (prop == lastKickedProp && Time.time - lastKickTime < kickInterval) return;
+        lastKickedProp = prop;
+        lastKickTime = Time.time;
+
+        prop.ApplyForceServerRpc(-hitNormal * approachSpeed * kickForce, hitPoint);
     }
 
     public void OnDiscreteCollisionDetected(Collider hitCollider)
@@ -628,7 +650,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     {
         if (attempts > 16) return position;
 
-        int hits = Motor.CharacterOverlap(position, transform.rotation, uncrouchColliders, LayerMask.GetMask("Player"), QueryTriggerInteraction.Ignore);
+        int hits = Motor.CharacterOverlap(position, transform.rotation, uncrouchColliders, LayerMask.GetMask("Player", "Ghost"), QueryTriggerInteraction.Ignore);
         if (hits <= 0) return position;
 
         Vector3 dir = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f) * Vector3.forward;

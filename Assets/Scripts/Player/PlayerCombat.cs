@@ -309,7 +309,7 @@ public class PlayerCombat : NetworkBehaviour
             {
                 Vector3 propImpulse = shootDir * _data.impactForceObject;
                 if (_data.type is ItemType.Melee) propImpulse += character.State.Velocity;
-                prop.ApplyForceServerRpc(propImpulse, hitObject.point);
+                prop.ApplyForce(propImpulse, hitObject.point);
                 decalIndex = playerHitDecalIndex; //kinda temp
             }
 
@@ -443,7 +443,7 @@ public class PlayerCombat : NetworkBehaviour
             }
             else if (root.TryGetComponent(out NetworkProp prop) && impactForceObject != 0f)
             {
-                prop.ApplyForceServerRpc(blastDir * (impactForceObject * falloff), hitPoint);
+                prop.ApplyForce(blastDir * (impactForceObject * falloff), hitPoint);
             }
         }
     }
