@@ -34,6 +34,8 @@ public class Room : NetworkBehaviour
 
     [SerializeField] GameObject itemCratePrefab;
     [SerializeField] Transform itemCrateSpawns;
+
+    public GamemodeScript gamemodeScript;
     
     public void Initialize() {
         if(!IsServer) return;

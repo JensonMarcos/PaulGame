@@ -39,7 +39,7 @@ public class HUD : MonoBehaviour
         if(!isDead) hpText.text = "100";
     }
 
-    public void OnTitleChanged(FixedString32Bytes previous, FixedString32Bytes current)
+    public void OnTitleChanged(FixedString128Bytes previous, FixedString128Bytes current)
     {
         gameTitle.text = current.ToString();
     }

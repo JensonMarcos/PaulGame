@@ -15,6 +15,13 @@ public enum GameState
     GameOver
 }
 
+public enum TimerDisplay
+{
+    None,      
+    Always,
+    LastTenSeconds
+}
+
 [System.Serializable]
 public struct GameMode
 {
@@ -27,8 +34,9 @@ public struct GameMode
     [Space]
     [Header("GameMode Settings")]
     public bool lastPlayerAliveWins;
-    public bool firstToScoreWins;    
+    public bool firstToScoreWins;
     public bool highestScoreWins;
+    public bool allowMultipleWinners;
     public bool doDamage;
     public bool doPunching;
     public bool showCrowns;
@@ -37,7 +45,7 @@ public struct GameMode
 
     [Space]
     [Header("Timer")]
-    public bool showTimer;
+    public TimerDisplay showTimer;
     public float gameTime;
 
     [Space]
@@ -50,10 +58,6 @@ public struct GameMode
     public bool spawnInitialItem;
     public int initialItemID;
     public int numberOfInitialItems;
-
-    [Space]
-    [Header("Script")]
-    public GameObject gamemodeScript; //prefab with a GamemodeScript on its root, instantiated when the gamemode starts
 }
 
 [System.Serializable]
@@ -84,7 +88,7 @@ public class GameManager : NetworkBehaviour
     public static GameManager instance;
     PlayerManager playerManager;
 
-    public NetworkVariable<FixedString32Bytes> GameTitle = new NetworkVariable<FixedString32Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<FixedString128Bytes> GameTitle = new NetworkVariable<FixedString128Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     GameState _gameState;
     public GameState GameState
@@ -130,6 +134,8 @@ public class GameManager : NetworkBehaviour
     float doorCloseKillTime;
     bool pendingDoorCloseKill;
     int previousDisplayTime;
+
+    public float TimeLeft => timer - Time.time; //for gamemode scripts that show their own timer
 
     void Awake()
     {
@@ -297,7 +303,7 @@ public class GameManager : NetworkBehaviour
                 }
 
                 int displayTime = (int)(timer - Time.time);
-                if(currentGameMode.showTimer || displayTime <= 10) 
+                if(currentGameMode.showTimer == TimerDisplay.Always || (currentGameMode.showTimer == TimerDisplay.LastTenSeconds && displayTime <= 10))
                 {
                     if(previousDisplayTime != displayTime)
                     {
@@ -315,20 +321,7 @@ public class GameManager : NetworkBehaviour
                 {
                     if(currentGameMode.highestScoreWins)
                     {
-                        PlayerData winner = null;
-                        foreach (PlayerData player in playerManager.Players)
-                        {
-                            if (winner == null)
-                            {
-                                winner = player;
-                                continue;
-                            }
-                            if (player.score > winner.score) winner = player;
-                        }
-                        winner.wins++;
-                        playerManager.UpdatePlayerScoreboard(winner.ClientId);
-                        GameTitle.Value = winner.name + " won";
-
+                        DeclareWinners(playerManager.Players, currentGameMode.allowMultipleWinners);
                     } else
                     {
                         GameTitle.Value = "Nobody won";
@@ -385,6 +378,47 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+
+    void DeclareWinners(List<PlayerData> players, bool allowMultipleWinners)
+    {
+        if (players.Count == 0)
+        {
+            GameTitle.Value = "Nobody won";
+            return;
+        }
+
+        int topScore = players.Max(p => p.score);
+        if (topScore <= 0)
+        {
+            GameTitle.Value = "Nobody won";
+            return;
+        }
+
+        List<PlayerData> winners = allowMultipleWinners
+            ? players.Where(p => p.score == topScore).ToList()
+            : new List<PlayerData> { players.First(p => p.score == topScore) };
+
+        foreach (PlayerData winner in winners)
+        {
+            winner.wins++;
+            playerManager.UpdatePlayerScoreboard(winner.ClientId);
+        }
+
+        //GameTitle is a FixedString128Bytes so only fit as many names as we can, rest becomes "..."
+        string title = "";
+        for (int i = 0; i < winners.Count; i++)
+        {
+            string next = (title.Length == 0 ? "" : ", ") + winners[i].name;
+            if (System.Text.Encoding.UTF8.GetByteCount(title + next + "... won") > 127)
+            {
+                title += "...";
+                break;
+            }
+            title += next;
+        }
+
+        GameTitle.Value = title + " won";
+    }
 
     public void GameTeleport(ulong playerId)
     {
@@ -509,13 +543,15 @@ public class GameManager : NetworkBehaviour
 
     void StartGamemodeScript()
     {
-        EndGamemodeScript(); //safety, should already be null
+        EndGamemodeScript(); //incase
 
-        if (currentGameMode.gamemodeScript == null) return;
+        if (rooms.current.gamemodeScript == null)
+        {
+            if(activeGamemodeScript != null) activeGamemodeScript = null;
+            return;
+        }
 
-        GamemodeScript script = currentGameMode.gamemodeScript.GetComponent<GamemodeScript>();
-
-        activeGamemodeScript = Instantiate(script);
+        activeGamemodeScript = rooms.current.gamemodeScript;
         activeGamemodeScript.OnGameModeStart();
     }
 
@@ -524,7 +560,6 @@ public class GameManager : NetworkBehaviour
         if (activeGamemodeScript == null) return;
 
         activeGamemodeScript.OnGameModeEnd();
-        Destroy(activeGamemodeScript.gameObject);
         activeGamemodeScript = null;
     }
 

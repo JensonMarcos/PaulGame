@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 3
   slot: 0
+  cantDrop: 0
   useProjectile: 0
   position: {x: 0, y: 0, z: 0}
   pullOutTime: 0.3
@@ -24,8 +25,8 @@ MonoBehaviour:
   ammoSpawn: 0
   isAutomatic: 0
   damage: 5
-  range: 2.5
-  shootRadius: 0.1
+  range: 2.25
+  shootRadius: 0.25
   ProjectileIndex: 0
   projectileSize: 0
   projectileSpeed: 0

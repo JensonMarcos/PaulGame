@@ -6500,6 +6500,7 @@ MonoBehaviour:
   crateLootEnabled: 1
   itemCratePrefab: {fileID: 0}
   itemCrateSpawns: {fileID: 0}
+  gamemodeScript: {fileID: 0}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

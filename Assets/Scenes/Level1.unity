@@ -649,20 +649,122 @@ MonoBehaviour:
           byte0013: 0
           byte0014: 0
           byte0015: 0
-        byte0016: 0
-        byte0017: 0
-        byte0018: 0
-        byte0019: 0
-        byte0020: 0
-        byte0021: 0
-        byte0022: 0
-        byte0023: 0
-        byte0024: 0
-        byte0025: 0
-        byte0026: 0
-        byte0027: 0
-        byte0028: 0
-        byte0029: 0
+        offset0016:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0032:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0048:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0064:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0080:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0096:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        byte0112: 0
+        byte0113: 0
+        byte0114: 0
+        byte0115: 0
+        byte0116: 0
+        byte0117: 0
+        byte0118: 0
+        byte0119: 0
+        byte0120: 0
+        byte0121: 0
+        byte0122: 0
+        byte0123: 0
+        byte0124: 0
+        byte0125: 0
   worldObjects: []
   itemList: {fileID: 11400000, guid: 6ea5b60b0df2d9c43916724e6745d235, type: 2}
   startingRoom: {fileID: 1453712072}
@@ -678,19 +780,19 @@ MonoBehaviour:
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 1
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 0
     scoreOnKill: 100
-    showTimer: 0
+    showTimer: 2
     gameTime: 60
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
@@ -698,6 +800,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 1
     showCrowns: 1
@@ -710,7 +813,6 @@ MonoBehaviour:
     spawnInitialItem: 1
     initialItemID: 100
     numberOfInitialItems: 1000
-    gamemodeScript: {fileID: 0}
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
@@ -718,19 +820,19 @@ MonoBehaviour:
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 0
     scoreOnKill: 0
-    showTimer: 0
+    showTimer: 2
     gameTime: 30
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 1
     initialItemID: 100
     numberOfInitialItems: 1000
-    gamemodeScript: {fileID: 0}
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
@@ -738,19 +840,19 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     firstToScoreWins: 1
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 1
     doPunching: 1
     showCrowns: 0
     respawnOnDeath: 1
     scoreOnKill: 0
-    showTimer: 0
+    showTimer: 2
     gameTime: 60
     useTeams: 0
     numberOfTeams: 0
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   - name: Don't Hold the C4
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
@@ -758,6 +860,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 1
     showCrowns: 0
@@ -770,18 +873,18 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 1050405352974105762, guid: 821ec09c2be68834cbd59451cd39db04, type: 3}
   - name: Soccer
     roomPrefabs:
-    - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
-    gameModeWeight: 2
+    - {fileID: 8812538440075657376, guid: 2a335ccc1ed12ae448343dc3e389627f, type: 3}
+    gameModeWeight: 4
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1
+    allowMultipleWinners: 1
     doDamage: 0
     doPunching: 1
     showCrowns: 0
-    respawnOnDeath: 0
+    respawnOnDeath: 1
     scoreOnKill: 0
     showTimer: 0
     gameTime: 90
@@ -790,7 +893,6 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   currentGameMode:
     name: 
     roomPrefabs: []
@@ -798,6 +900,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 0
     showCrowns: 0
@@ -810,7 +913,6 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   unpickedWeightBonus: 1
   moveTime: 10
   startGameTime: 3.5
@@ -2235,6 +2337,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 0
     showCrowns: 0
@@ -2247,10 +2350,10 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   crateLootEnabled: 1
   itemCratePrefab: {fileID: 0}
   itemCrateSpawns: {fileID: 0}
+  gamemodeScript: {fileID: 0}
 --- !u!114 &1453712075
 MonoBehaviour:
   m_ObjectHideFlags: 0

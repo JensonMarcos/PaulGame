@@ -2426,8 +2426,9 @@ GameObject:
   - component: {fileID: 888913911772537590}
   - component: {fileID: 4485126393181774743}
   - component: {fileID: 8271549658875094816}
+  - component: {fileID: 1049200128674656812}
   m_Layer: 2
-  m_Name: C4Map
+  m_Name: C4Test
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2466,7 +2467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1957911767
+  GlobalObjectIdHash: 3831009988
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2518,10 +2519,10 @@ MonoBehaviour:
     spawnInitialItem: 0
     initialItemID: 0
     numberOfInitialItems: 0
-    gamemodeScript: {fileID: 0}
   crateLootEnabled: 1
   itemCratePrefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
   itemCrateSpawns: {fileID: 0}
+  gamemodeScript: {fileID: 1049200128674656812}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2543,6 +2544,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 42, y: 20, z: 42}
   m_Center: {x: 0, y: 5, z: 30}
+--- !u!114 &1049200128674656812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8812538440075657376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed4f361bf589d844a8f09d711e060333, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontHoldTheC4
+  c4ItemId: 101
+  checkInterval: 20
+  explosionSound: explosion
+  ragdollForce: 50
 --- !u!1 &8941909587142703709
 GameObject:
   m_ObjectHideFlags: 0
