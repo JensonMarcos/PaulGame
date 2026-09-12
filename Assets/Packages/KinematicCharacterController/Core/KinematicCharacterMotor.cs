@@ -40,7 +40,7 @@ namespace KinematicCharacterController
         public bool MustUnground;
         public float MustUngroundTime;
         public bool LastMovementIterationFoundAnyGround;
-        public CharacterTransientGroundingReport GroundingStatus;
+        [NonSerialized] public CharacterTransientGroundingReport GroundingStatus;
 
         public Rigidbody AttachedRigidbody;
         public Vector3 AttachedRigidbodyVelocity;

@@ -278,10 +278,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 2559175693
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
+  m_InScenePlaced: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 0
@@ -604,10 +606,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2416550075
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -629,6 +633,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   GameTitle:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
     m_InternalValue:
       utf8LengthInBytes: 0
       bytes:
@@ -776,7 +783,7 @@ MonoBehaviour:
   - name: Deathmatch
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 6
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -796,7 +803,7 @@ MonoBehaviour:
   - name: King of the Hill
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 2
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 1
@@ -816,7 +823,7 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 2
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -836,7 +843,7 @@ MonoBehaviour:
   - name: Parkour
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 2
     lastPlayerAliveWins: 0
     firstToScoreWins: 1
     highestScoreWins: 0
@@ -856,7 +863,7 @@ MonoBehaviour:
   - name: Don't Hold the C4
     roomPrefabs:
     - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
-    gameModeWeight: 0
+    gameModeWeight: 2
     lastPlayerAliveWins: 1
     firstToScoreWins: 0
     highestScoreWins: 0
@@ -2386,10 +2393,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 672858639
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -2444,7 +2453,7 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1459132901}
   m_Enabled: 1
-  serializedVersion: 12
+  serializedVersion: 13
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
@@ -2496,7 +2505,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShadowRadius: 0
+  m_ShapeRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1

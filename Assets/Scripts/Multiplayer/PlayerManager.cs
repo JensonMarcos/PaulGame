@@ -404,6 +404,6 @@ public class PlayerData
     public float health;
     public bool isDead = false;
     public int team = -1;
-    public ulong? lastAttackedBy;
+    [System.NonSerialized] public ulong? lastAttackedBy;
     public float lastAttackedTime;
 }

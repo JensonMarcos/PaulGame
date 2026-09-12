@@ -17,8 +17,8 @@ public class SteamManager : MonoBehaviour
     public static SteamManager Instance;
     //FacepunchTransport transport;
 
-	public Lobby? CurrentLobby;
-    public List<Friend> Players;
+	[NonSerialized] public Lobby? CurrentLobby;
+    [NonSerialized] public List<Friend> Players;
 
     // [SerializeField] TMP_InputField LobbyIDInputField;
     // [SerializeField] TextMeshProUGUI LobbyIDDisplay;
