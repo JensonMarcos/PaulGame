@@ -914,6 +914,24 @@ MonoBehaviour:
     initialItemID: 0
     numberOfInitialItems: 0
   unpickedWeightBonus: 1
+  defaultTeamColor: {r: 1, g: 0.5019608, b: 0, a: 1}
+  teams:
+  - name: RED
+    color: {r: 1, g: 0, b: 0, a: 1}
+  - name: BLUE
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - name: YELLOW
+    color: {r: 1, g: 1, b: 0, a: 1}
+  - name: PURPLE
+    color: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
+  - name: GREEN
+    color: {r: 0, g: 0.5019608, b: 0, a: 1}
+  - name: CYAN
+    color: {r: 0, g: 1, b: 1, a: 1}
+  - name: WHITE
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - name: BLACK
+    color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
   moveTime: 10
   startGameTime: 3.5
   endGameTime: 3

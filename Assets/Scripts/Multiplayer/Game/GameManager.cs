@@ -61,6 +61,13 @@ public struct GameMode
 }
 
 [System.Serializable]
+public struct TeamInfo
+{
+    public string name;
+    public Color color;
+}
+
+[System.Serializable]
 public class Rooms
 {
     public Room previous, current, next;
@@ -126,6 +133,11 @@ public class GameManager : NetworkBehaviour
     GamemodeScript activeGamemodeScript;
 
     [Space]
+    [Header("Teams")]
+    public Color defaultTeamColor = new Color(1f, 0.5f, 0f); //no team FFA
+    public TeamInfo[] teams = new TeamInfo[8]; 
+
+    [Space]
     [Header("Timers")]
     [SerializeField] float moveTime; 
     [SerializeField] float startGameTime;
@@ -134,8 +146,6 @@ public class GameManager : NetworkBehaviour
     float doorCloseKillTime;
     bool pendingDoorCloseKill;
     int previousDisplayTime;
-
-    public float TimeLeft => timer - Time.time; //for gamemode scripts that show their own timer
 
     void Awake()
     {
@@ -231,6 +241,8 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.GameEnd:
                 EndGamemodeScript();
+
+                playerManager.AssignTeamsFFA(); //back to no team, so everyone goes back to the default colour
 
                 CleanObjects();
             
@@ -601,4 +613,9 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+
+    public float TimeLeft => timer - Time.time; //for gamemode scripts that show their own timer
+
+    public Color GetTeamColor(int team) => (team >= 0 && team < teams.Length) ? teams[team].color : defaultTeamColor;
+    public string GetTeamName(int team) => (team >= 0 && team < teams.Length) ? teams[team].name : "";
 }

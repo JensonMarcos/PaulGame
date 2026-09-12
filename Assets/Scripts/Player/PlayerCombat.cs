@@ -90,7 +90,7 @@ public class PlayerCombat : NetworkBehaviour
     Player player;
     Coroutine reloadCoroutine;
 
-    readonly RaycastHit[] shootHitsBuffer = new RaycastHit[16];
+    readonly RaycastHit[] shootHitsBuffer = new RaycastHit[32];
     readonly Collider[] explosionOverlapBuffer = new Collider[32];
     readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
     readonly List<ShotPellet> shotPellets = new List<ShotPellet>(16);
@@ -245,37 +245,29 @@ public class PlayerCombat : NetworkBehaviour
             ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, shootDir, shootHitsBuffer, _data.range, shootLayer)
             : Physics.RaycastNonAlloc(cam.position, shootDir, shootHitsBuffer, _data.range, shootLayer);
 
-        if(hitCount == 0)
+        //closest hit that isnt ourselves or a teammate
+        int best = -1;
+        for(int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = shootHitsBuffer[i];
+            if(hit.transform.root == transform.root) continue;
+            if(IsFriendly(hit.transform.root)) continue;
+            if(best == -1 || hit.distance < shootHitsBuffer[best].distance) best = i;
+        }
+
+        if(best == -1)
         {
             if(_data.type != ItemType.Melee)
             {
                 Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
                 shotPellets.Add(new ShotPellet { end = targetPoint, normal = Vector3.zero, hit = false, trail = true, decal = 0 });
-            } 
-            
+            }
+
         } else
         {
-            RaycastHit hitObject = shootHitsBuffer[0];
-            for(int i = 0; i < hitCount; i++)
-            {
-                RaycastHit hit = shootHitsBuffer[i];
-                if((hit.distance < hitObject.distance && hit.transform.root != transform) || hitObject.transform.root == transform) { //shitty logic  <- pick closest point question mark ?
-                    hitObject = hit;
-                }
-            }
-
-            if(hitObject.transform.root == transform) //wtf
-            {
-                if(_data.type != ItemType.Melee)
-                {
-                    Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
-                    shotPellets.Add(new ShotPellet { end = targetPoint, normal = Vector3.zero, hit = false, trail = true, decal = 0 });
-                } 
-                return;
-            }
-
             //Actualy hit something
 
+            RaycastHit hitObject = shootHitsBuffer[best];
             Transform hitRoot = hitObject.transform.root;
 
             int decalIndex = _data.DecalIndex;
@@ -323,6 +315,14 @@ public class PlayerCombat : NetworkBehaviour
         }
     }
 
+    bool IsFriendly(Transform root)
+    {
+        if(root == transform.root) return false;
+        if(!root.TryGetComponent(out Player other)) return false;
+        int myTeam = player.Team.Value;
+        return myTeam >= 0 && myTeam == other.Team.Value;
+    }
+
     IEnumerator FireProjectile(
         Vector3 origin,
         Vector3 direction,
@@ -362,6 +362,7 @@ public class PlayerCombat : NetworkBehaviour
             {
                 RaycastHit hit = shootHitsBuffer[i];
                 if (hit.transform.root == transform.root) continue;
+                if (IsFriendly(hit.transform.root)) continue;
                 if (bestHit == null || hit.distance < bestHit.Value.distance)
                     bestHit = hit;
             }
@@ -414,8 +415,8 @@ public class PlayerCombat : NetworkBehaviour
             Vector3 toHit = hitPoint - center;
             float dist = toHit.magnitude;
 
-            //los check
-            if (Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer) && losHit.transform.root != root)
+            //los check - only walls/geometry block LOS, players never block it for other players
+            if (Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer) && losHit.transform.root != root && !losHit.transform.root.TryGetComponent<Player>(out _))
                 continue;
 
             float falloff = 1f - Mathf.Pow(Mathf.Clamp01(dist / explosionRadius), 4);
@@ -427,15 +428,16 @@ public class PlayerCombat : NetworkBehaviour
 
             if (root.GetComponent<Player>() != null)
             {
-                bool isSelf = root == transform.root;
-                float damage = (isSelf ? explosionSelfDamage : explosionDamage) * falloff;
-                
+                //teammates still get damaged but for the self damage amount
+                bool friendly = root == transform.root || IsFriendly(root);
+                float damage = (friendly ? explosionSelfDamage : explosionDamage) * falloff;
+
                 Vector3 playerForce = impactForcePlayer == 0f ? Vector3.zero : blastDir * impactForcePlayer * falloff;
                 Vector3 ragdollForce = impactForceObject == 0f ? Vector3.zero : blastDir * impactForceObject * falloff;
 
                 PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, damage, playerForce, ragdollForce);
 
-                SoundManager.Play(hitSound);
+                if(!friendly) SoundManager.Play(hitSound);
             }
             else if (root.TryGetComponent(out ItemCrate crate))
             {

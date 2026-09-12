@@ -74,6 +74,12 @@ public class Player : NetworkBehaviour
     
     public PlayerState playerState;
 
+    public NetworkVariable<int> Team = new NetworkVariable<int>(
+        -1,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     PlayerInputs playerInputs;
 
     public PlayerInventory playerInventory;
@@ -82,6 +88,7 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
+    [SerializeField] BodyMaterials bodyMaterials;
     [SerializeField] float deathCamDuration = 3f;
 
     bool isDead;
@@ -111,6 +118,9 @@ public class Player : NetworkBehaviour
             RegisterRemoteCollider();
         }
 
+        Team.OnValueChanged += OnTeamChanged;
+        bodyMaterials.ApplyTeamColor(Team.Value);
+
         lastRemotePosition = playerCharacter.transform.position;
     }
 
@@ -119,10 +129,14 @@ public class Player : NetworkBehaviour
         if(IsOwner && GameManager.instance != null)
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
 
+        Team.OnValueChanged -= OnTeamChanged;
+
         if(!IsOwner) RemoteColliders.Remove(playerCharacter.Motor.Capsule);
 
         playerInputs.Dispose();
     }
+
+    void OnTeamChanged(int previous, int current) => bodyMaterials.ApplyTeamColor(current);
 
     void RegisterRemoteCollider()
     {

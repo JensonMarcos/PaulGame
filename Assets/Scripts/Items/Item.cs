@@ -111,6 +111,10 @@ public class Item : NetworkBehaviour
         Player player = collision.collider.GetComponentInParent<Player>();
         if (player == null || player.OwnerClientId == lastOwnerId) return;
 
+        //teamates check
+        PlayerData thrower = PlayerManager.instance.Players.Find(x => x.ClientId == lastOwnerId);
+        if (thrower != null && thrower.team >= 0 && thrower.team == player.Team.Value) return;
+
         PlayerInventory inv = player.playerInventory;
 
         bool hasItem = false;

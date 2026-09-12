@@ -6,7 +6,6 @@ public class Soccer : GamemodeScript
     [SerializeField] GameObject ballPrefab;   
     [SerializeField] Transform ballSpawnPoint;
     [SerializeField] Collider[] goals;          //indexed by the team that defends the net
-    [SerializeField] string[] teamNames = { "Red", "Blue" };
     [SerializeField] string goalSound = "";
     [SerializeField] float goalTitleTime = 1.5f;
 
@@ -25,7 +24,7 @@ public class Soccer : GamemodeScript
         gameManager.worldObjects.Add(obj);
         ball = obj.GetComponent<NetworkProp>();
 
-        scoreText = teamNames[0] + " " + scores[0] + " | " + scores[1] + " " + teamNames[1];
+        scoreText = "[" + gameManager.GetTeamName(0) + " " + scores[0] + " | " + gameManager.GetTeamName(1) + " " + scores[1] + "]";
     }
 
     public override void OnGameModeEnd()
@@ -39,25 +38,35 @@ public class Soccer : GamemodeScript
         }
     }
 
+    bool resetball = false;
+
     public override void OnGameModeFixedUpdate()
     {
+        if(Time.time <= goalFlashUntil) return;
+
+        if(resetball)
+        {
+            ball.rb.position = ballSpawnPoint.position;
+            ball.rb.linearVelocity = Vector3.zero;
+            ball.rb.angularVelocity = Vector3.zero;
+            resetball = false;
+        }
+
+        int secondsLeft = Mathf.Max(0, (int)gameManager.TimeLeft);
+        SetTitle(scoreText + " : " + secondsLeft);
+
         Vector3 ballPos = ball.rb.position;
 
         for (int i = 0; i < 2; i++)
         {
             if (goals[i].ClosestPoint(ballPos) == ballPos) Score(1-i); //team i defending goal, so team 1-i scores
         }
-
-        if (Time.time >= goalFlashUntil) {
-            int secondsLeft = Mathf.Max(0, (int)gameManager.TimeLeft);
-            SetTitle(scoreText + " - " + secondsLeft);
-        }
     }
 
     void Score(int team)
     {
         scores[team]++;
-        scoreText = teamNames[0] + " " + scores[0] + " | " + scores[1] + " " + teamNames[1];
+        scoreText = "[" + gameManager.GetTeamName(0) + " " + scores[0] + " | " + gameManager.GetTeamName(1) + " " + scores[1] + "]";
 
         foreach (PlayerData p in playerManager.Players)
             if (p.team == team) p.score++;
@@ -67,9 +76,7 @@ public class Soccer : GamemodeScript
         goalFlashUntil = Time.time + goalTitleTime;
         SetTitle("GOAL");
 
-        ball.rb.position = ballSpawnPoint.position;
-        ball.rb.linearVelocity = Vector3.zero;
-        ball.rb.angularVelocity = Vector3.zero;
+        resetball = true;
     }
 
     void SetTitle(string text)

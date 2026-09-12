@@ -127,13 +127,19 @@ public class PlayerManager : NetworkBehaviour
             (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
         }
         for (int i = 0; i < shuffled.Count; i++)
+        {
             shuffled[i].team = i % numberOfTeams;
+            if (shuffled[i].player != null) shuffled[i].player.Team.Value = shuffled[i].team;
+        }
     }
 
     public void AssignTeamsFFA()
     {
         foreach (PlayerData player in Players)
+        {
             player.team = -1;
+            if (player.player != null) player.player.Team.Value = -1;
+        }
     }
 
     [Rpc(SendTo.Server)]
@@ -145,8 +151,6 @@ public class PlayerManager : NetworkBehaviour
         PlayerData target = Players.Find(x => x.ClientId == targetid);
         PlayerData sender = Players.Find(x => x.ClientId == senderId);
         if(target == null || sender == null) return;
-
-        if (senderId != targetid && sender.team >= 0 && sender.team == target.team) return;
 
         if(damageEnabled.Value) target.health -= damage;
 
