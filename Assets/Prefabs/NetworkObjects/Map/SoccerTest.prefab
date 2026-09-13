@@ -4302,10 +4302,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 563066834
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -4340,6 +4342,7 @@ MonoBehaviour:
     lastPlayerAliveWins: 0
     firstToScoreWins: 0
     highestScoreWins: 0
+    allowMultipleWinners: 0
     doDamage: 0
     doPunching: 0
     showCrowns: 0
@@ -4394,11 +4397,15 @@ MonoBehaviour:
   goals:
   - {fileID: 842012668573257245}
   - {fileID: 7632756616864676114}
-  teamNames:
-  - Red
-  - Blue
   goalSound: 
+  explosionSound: explosion
   goalTitleTime: 1.5
+  explosionLayer:
+    serializedVersion: 2
+    m_Bits: 1729
+  explosionRadius: 10
+  explosionForcePlayer: 40
+  explosionForceProp: 50
 --- !u!1 &8941909587142703709
 GameObject:
   m_ObjectHideFlags: 0

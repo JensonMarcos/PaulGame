@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &-7201922307951490754
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -23,7 +23,7 @@ MonoBehaviour:
       normalBlend: 0
 --- !u!114 &-3210273863529357739
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -63,9 +63,10 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+    depthInputAttachment: 0
 --- !u!114 &-908921114818911396
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -105,6 +106,7 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+    depthInputAttachment: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,8 +137,7 @@ MonoBehaviour:
   - {fileID: -7201922307951490754}
   - {fileID: -3210273863529357739}
   - {fileID: 4123456789012345678}
-  m_RendererFeatureMap: ad6b866f10d7b46c5ce35dce0fdd62f33e09977ed1a10d9c559e9c0ceed072d34ef3c0431a763939
-  m_UseNativeRenderPass: 1
+  m_RendererFeatureMap: ad6b866f10d7b46c5ce35dce0fdd62f33e09977ed1a10d9c559e9c0ceed072d34ef3c0431a763939l
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 19680e40d04e4a348987936d8d92e237, type: 2}
   m_AssetVersion: 3
@@ -164,9 +165,10 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+  m_TileOnlyMode: 0
 --- !u!114 &4123456789012345678
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -179,7 +181,7 @@ MonoBehaviour:
   m_Active: 1
 --- !u!114 &7833122117494664109
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}

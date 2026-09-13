@@ -18,8 +18,8 @@ MonoBehaviour:
   useProjectile: 0
   position: {x: 0, y: 0, z: 0}
   pullOutTime: 0.3
-  fireRate: 4
-  attackDelay: 0.1
+  fireRate: 4.5
+  attackDelay: 0.05
   reloadSpeed: 0
   ammoCap: 0
   ammoSpawn: 0

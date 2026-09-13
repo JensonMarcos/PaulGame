@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   type: 0
   slot: 0
+  cantDrop: 0
   useProjectile: 0
   position: {x: 0.1, y: -0.18, z: 0.3}
   pullOutTime: 0.4
@@ -40,8 +41,8 @@ MonoBehaviour:
   ADSAccuracy: 0
   Recoil: {x: 8, y: 1, z: 0.5}
   ADSRecoilMult: 0.8
-  snap: 8
-  returnSpeed: 4
+  snap: 30
+  returnSpeed: 2
   adsSpeed: 1.5
   adsZoom: 60
   RightHandIK: 1

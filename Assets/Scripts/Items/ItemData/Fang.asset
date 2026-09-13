@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 0
   slot: 0
+  cantDrop: 0
   useProjectile: 0
   position: {x: 0.1, y: -0.18, z: 0.25}
   pullOutTime: 0.3
@@ -39,15 +40,15 @@ MonoBehaviour:
   accuracy: 0.02
   ADSAccuracy: 0.015
   Recoil: {x: 3, y: 0.3, z: 0.1}
-  ADSRecoilMult: 0.5
-  snap: 5
+  ADSRecoilMult: 0.8
+  snap: 10
   returnSpeed: 8
   adsSpeed: 2
   adsZoom: 65
   RightHandIK: 1
   LeftHandIK: 1
   backKick: 0.1
-  rotKick: 30
+  rotKick: 20
   ADSAnimMult: 0.5
   numberOfShots: 0
   AmmoPos: {x: -0.0724, y: 0.02, z: 0.1}

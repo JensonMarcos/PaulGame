@@ -49,7 +49,7 @@ public class HandsPunch : MonoBehaviour, IItemAction
 
         handedness = !handedness;
 
-        StartCoroutine(PunchAnimation(handedness ? RHand : LHand, handedness ? -2f : 1f));
+        StartCoroutine(PunchAnimation(handedness ? RHand : LHand, handedness ? -1.5f : 1f));
         //PunchServerRpc(handedness);
     }
 

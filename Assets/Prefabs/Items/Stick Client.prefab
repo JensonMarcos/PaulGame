@@ -410,7 +410,7 @@ MonoBehaviour:
     transform: {fileID: 8292046940419522357}
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}
-  swingSpeed: 6
+  swingSpeed: 10
   retractSpeed: 4
   swingHoldTime: 0
   swingDistance: 0.55
@@ -418,7 +418,7 @@ MonoBehaviour:
   arcHeight: 0.2
   swingStartRot: {x: -2, y: -93, z: -40}
   swingEndRot: {x: -2, y: -93, z: -150}
-  tiltAmount: 20
+  tiltAmount: 15
 --- !u!1 &9026881361221196014
 GameObject:
   m_ObjectHideFlags: 0

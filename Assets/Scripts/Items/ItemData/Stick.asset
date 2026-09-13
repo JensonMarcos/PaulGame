@@ -19,7 +19,7 @@ MonoBehaviour:
   position: {x: 0, y: 0, z: 0}
   pullOutTime: 0.4
   fireRate: 3.5
-  attackDelay: 0.06
+  attackDelay: 0.05
   reloadSpeed: 0
   ammoCap: 0
   ammoSpawn: 0

@@ -40,7 +40,7 @@ public class Swing : MonoBehaviour, IItemAction
         anim.SetUpperBodyTilt(0f);
 
 
-        StartCoroutine(SwingAnimation(RHand, -2f));
+        StartCoroutine(SwingAnimation(RHand, -1.5f));
         //PunchServerRpc(handedness);
     }
 

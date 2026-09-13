@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 1
   slot: 0
+  cantDrop: 0
   useProjectile: 0
   position: {x: 0.1, y: -0.25, z: 0.2}
   pullOutTime: 0.8
@@ -40,7 +41,7 @@ MonoBehaviour:
   ADSAccuracy: 0
   Recoil: {x: 18, y: 1, z: 1}
   ADSRecoilMult: 1
-  snap: 10
+  snap: 20
   returnSpeed: 3.5
   adsSpeed: 1
   adsZoom: 40
