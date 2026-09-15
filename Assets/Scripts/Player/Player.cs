@@ -80,6 +80,12 @@ public class Player : NetworkBehaviour
         NetworkVariableWritePermission.Server
     );
 
+    public NetworkVariable<ulong> SteamId = new NetworkVariable<ulong>(
+        0,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     PlayerInputs playerInputs;
 
     public PlayerInventory playerInventory;
@@ -121,6 +127,10 @@ public class Player : NetworkBehaviour
         Team.OnValueChanged += OnTeamChanged;
         bodyMaterials.ApplyTeamColor(Team.Value);
 
+        SteamId.OnValueChanged += OnSteamIdChanged;
+        bodyMaterials.ApplyFace(SteamId.Value);
+        if(IsOwner) SetSteamIdServerRpc(Steamworks.SteamClient.IsValid ? Steamworks.SteamClient.SteamId.Value : 0);
+
         lastRemotePosition = playerCharacter.transform.position;
     }
 
@@ -130,6 +140,7 @@ public class Player : NetworkBehaviour
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
 
         Team.OnValueChanged -= OnTeamChanged;
+        SteamId.OnValueChanged -= OnSteamIdChanged;
 
         if(!IsOwner) RemoteColliders.Remove(playerCharacter.Motor.Capsule);
 
@@ -137,6 +148,11 @@ public class Player : NetworkBehaviour
     }
 
     void OnTeamChanged(int previous, int current) => bodyMaterials.ApplyTeamColor(current);
+
+    void OnSteamIdChanged(ulong previous, ulong current) => bodyMaterials.ApplyFace(current);
+
+    [Rpc(SendTo.Server)]
+    void SetSteamIdServerRpc(ulong steamId) => SteamId.Value = steamId;
 
     void RegisterRemoteCollider()
     {
