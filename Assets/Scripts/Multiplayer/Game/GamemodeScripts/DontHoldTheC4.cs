@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
@@ -66,18 +65,7 @@ public class DontHoldTheC4 : GamemodeScript
 
     bool HasC4(PlayerData player)
     {
-        PlayerInventory inventory = player.player.playerInventory;
-        if (inventory == null || inventory.NetworkIDInventory == null) return false;
-
-        for (int i = 0; i < inventory.NetworkIDInventory.Count; i++)
-        {
-            ulong netId = inventory.NetworkIDInventory[i];
-            if (netId == 0UL) continue;
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out NetworkObject netObj)) continue;
-
-            if (gameManager.itemList.GetItemId(netObj.gameObject) == c4ItemId) return true;
-        }
-        return false;
+        return playerManager.HasItem(player.ClientId, c4ItemId);
     }
 
     void GiveC4s()

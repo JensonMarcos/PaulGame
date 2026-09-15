@@ -43,6 +43,24 @@ public class PlayerManager : NetworkBehaviour
         NetworkManager.OnClientDisconnectCallback -= OnClientDisconnectedCallback;
     }
 
+    //some bs incase someone falls out of map
+    const float fallKillY = -30f;
+    const float fallCheckInterval = 5f;
+    float nextFallCheck;
+    void Update()
+    {
+        if(!IsServer || Time.time < nextFallCheck) return;
+        nextFallCheck = Time.time + fallCheckInterval;
+
+        foreach(PlayerData player in Players.ToList()) {
+            if(player.player == null) continue;
+            if(player.player.playerCharacter.transform.position.y > fallKillY) continue;
+
+            if(!player.isDead) WorldDamage(player.ClientId, 1000f, Vector3.zero);
+            if(GameManager.instance != null) GameManager.instance.GameTeleport(player.ClientId);
+        }
+    }
+
     void OnClientConnectedCallback(ulong id)
     {
         if(!IsServer) return;
@@ -83,7 +101,7 @@ public class PlayerManager : NetworkBehaviour
         Vector3 spawnPos = Vector3.right * (Players.Count * 1.5f); //kinda dumb but works good enough
         GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
-        PlayerData newPlayer = new PlayerData(player, id, 100f, GetPlayerName(id));
+        PlayerData newPlayer = new PlayerData(player, id, 100f, GetPlayerName(id, player.GetComponent<Player>().SteamId.Value));
         Players.Add(newPlayer);
 
         playersAlive = Players.Count(x => x.isDead == false);
@@ -100,22 +118,36 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
-    string GetPlayerName(ulong id)
+    public void SetPlayerSteamId(ulong clientId, ulong steamId)
     {
-        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is FacepunchTransport)
-        {
-            if (id == NetworkManager.ServerClientId) return SteamClient.Name;
+        if(!IsServer) return;
 
-            if (SteamManager.Instance != null && SteamManager.Instance.Players != null)
+        PlayerData data = Players.Find(x => x.ClientId == clientId);
+        if(data == null) return;
+
+        string name = GetPlayerName(clientId, steamId);
+        if(name == data.name) return;
+        data.name = name;
+
+        foreach(PlayerData player in Players)
+        {
+            if(player.player != null && player.player.NetworkObject.IsSpawned)
+                player.player.AddOrRemoveScoreboardItemClientRpc(true, clientId, name, data.wins, data.kills, data.deaths);
+        }
+    }
+
+    string GetPlayerName(ulong clientId, ulong steamId)
+    {
+        if (steamId != 0 && SteamClient.IsValid && SteamManager.Instance != null)
+        {
+            foreach (Friend friend in SteamManager.Instance.Players)
             {
-                foreach (Friend friend in SteamManager.Instance.Players)
-                {
-                    if (friend.Id == SteamClient.SteamId) continue;
-                    if (Players.All(p => p.name != friend.Name)) return friend.Name;
-                }
+                if (friend.Id.Value == steamId) return friend.Name;
             }
         }
-        return "Player" + id;
+
+        if (clientId == NetworkManager.ServerClientId && SteamClient.IsValid) return SteamClient.Name;
+        return "Player" + clientId;
     }
 
     public void AssignTeamsRandomly(int numberOfTeams)
@@ -202,6 +234,9 @@ public class PlayerManager : NetworkBehaviour
         NetworkObject ragdollNet = ragdoll.GetComponent<NetworkObject>();
         ragdollNet.Spawn();
         ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
+
+        //undroppable items (e.g. C4) get removed instead of dropped on death
+        DespawnInventoryItems(target.player, netObj => netObj.TryGetComponent(out Item item) && item.data.cantDrop);
 
         target.player.DieClientRpc(ragdollNet.NetworkObjectId);
 
@@ -307,26 +342,31 @@ public class PlayerManager : NetworkBehaviour
 
         Player player = Players[index].player;
 
-        PlayerInventory inventory = player.playerInventory;
-        if(inventory != null && inventory.NetworkIDInventory != null)
-        {
-            for(int i = 0; i < inventory.NetworkIDInventory.Count; i++)
-            {
-                ulong netId = inventory.NetworkIDInventory[i];
-
-                if(netId == 0UL) continue;
-                if(!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out NetworkObject netObj)) continue;
-
-                if(GameManager.instance != null)
-                    GameManager.instance.worldObjects.Remove(netObj.gameObject);
-
-                if(netObj.IsSpawned)
-                    netObj.Despawn(true);
-            }
-        }
+        DespawnInventoryItems(player, netObj => itemId == -1 || GameManager.instance.itemList.GetItemId(netObj.gameObject) == itemId);
 
         if(player.NetworkObject != null && player.NetworkObject.IsSpawned)
             player.ClearItemClientRpc(itemId);
+    }
+
+    void DespawnInventoryItems(Player player, System.Func<NetworkObject, bool> match)
+    {
+        PlayerInventory inventory = player.playerInventory;
+        if(inventory == null || inventory.NetworkIDInventory == null) return;
+
+        for(int i = 0; i < inventory.NetworkIDInventory.Count; i++)
+        {
+            ulong netId = inventory.NetworkIDInventory[i];
+
+            if(netId == 0UL) continue;
+            if(!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out NetworkObject netObj)) continue;
+            if(!match(netObj)) continue;
+
+            if(GameManager.instance != null)
+                GameManager.instance.worldObjects.Remove(netObj.gameObject);
+
+            if(netObj.IsSpawned)
+                netObj.Despawn(true);
+        }
     }
 
     public void GiveItem(int itemId, ulong playerId)
@@ -342,9 +382,29 @@ public class PlayerManager : NetworkBehaviour
     {
         ulong senderId = rpcParams.Receive.SenderClientId;
         if(senderId == targetId) return;
+        if(!HasItem(senderId, itemId) || HasItem(targetId, itemId)) return;
 
         ClearItem(senderId, itemId);
         GiveItem(itemId, targetId);
+    }
+
+    public bool HasItem(ulong playerId, int itemId)
+    {
+        PlayerData data = Players.Find(x => x.ClientId == playerId);
+        if(data == null || data.player == null) return false;
+
+        PlayerInventory inventory = data.player.playerInventory;
+        if(inventory == null || inventory.NetworkIDInventory == null) return false;
+
+        for(int i = 0; i < inventory.NetworkIDInventory.Count; i++)
+        {
+            ulong netId = inventory.NetworkIDInventory[i];
+            if(netId == 0UL) continue;
+            if(!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out NetworkObject netObj)) continue;
+
+            if(GameManager.instance.itemList.GetItemId(netObj.gameObject) == itemId) return true;
+        }
+        return false;
     }
 
     public void UpdatePlayerScoreboard(ulong playerId) {

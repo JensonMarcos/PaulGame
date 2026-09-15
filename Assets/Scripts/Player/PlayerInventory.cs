@@ -288,11 +288,20 @@ public class PlayerInventory : NetworkBehaviour
     {
         for (int i = 0; i < Inventory.Length; i++)
         {
-            if(Inventory[i] != handsItem)
+            if(Inventory[i] == handsItem) continue;
+
+            //undroppable items are despawned by the server on death, so just empty the slot
+            Item item = Inventory[i] != null ? Inventory[i].GetComponent<Item>() : null;
+            if(item == null || item.data.cantDrop)
             {
-                Drop(i, true);
+                Inventory[i] = handsItem;
+                NetworkIDInventory[i] = 0UL;
+                continue;
             }
+
+            Drop(i, true);
         }
+        SyncClientInventory();
     }
 
     public void GiveItem(ulong itemNetworkId)

@@ -21,7 +21,12 @@ public class SceneManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneLoaded;
+        if (NetworkManager.SceneManager != null) NetworkManager.SceneManager.OnLoadEventCompleted += SceneLoaded;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (NetworkManager != null && NetworkManager.SceneManager != null) NetworkManager.SceneManager.OnLoadEventCompleted -= SceneLoaded;
     }
 
     private void SceneLoaded(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)

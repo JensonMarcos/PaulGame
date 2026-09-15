@@ -152,7 +152,13 @@ public class Player : NetworkBehaviour
     void OnSteamIdChanged(ulong previous, ulong current) => bodyMaterials.ApplyFace(current);
 
     [Rpc(SendTo.Server)]
-    void SetSteamIdServerRpc(ulong steamId) => SteamId.Value = steamId;
+    void SetSteamIdServerRpc(ulong steamId, RpcParams rpcParams = default)
+    {
+        if(rpcParams.Receive.SenderClientId != OwnerClientId) return;
+
+        SteamId.Value = steamId;
+        if(PlayerManager.instance != null) PlayerManager.instance.SetPlayerSteamId(OwnerClientId, steamId);
+    }
 
     void RegisterRemoteCollider()
     {

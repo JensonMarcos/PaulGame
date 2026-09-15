@@ -340,6 +340,7 @@ public class GameManager : NetworkBehaviour
                     }
                     
                     GameState = GameState.GameEnd;
+                    break;
                 }
 
                 if(currentGameMode.lastPlayerAliveWins && playerManager.playersAlive <= 1)
@@ -351,28 +352,21 @@ public class GameManager : NetworkBehaviour
                     }
 
                     if(winner != null)
-                    {
-                        winner.wins++;
-                        playerManager.UpdatePlayerScoreboard(winner.ClientId);
-                        GameTitle.Value = winner.name + " won";
-                    } else
-                    {
+                        AwardWin(winner);
+                    else
                         GameTitle.Value = "Nobody won";
-                    }
-                
+
                     GameState = GameState.GameEnd;
+                    break;
                 }
 
                 if(currentGameMode.firstToScoreWins)
                 {
-                    foreach (PlayerData player in playerManager.Players)
+                    PlayerData winner = playerManager.Players.Find(p => p.score > 1);
+                    if(winner != null)
                     {
-                        if(player.score > 1f)
-                        {
-                            GameTitle.Value = player.name + " won";
-                            GameState = GameState.GameEnd;
-                            break;
-                        }
+                        AwardWin(winner);
+                        GameState = GameState.GameEnd;
                     }
                 }
 
@@ -390,6 +384,13 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+
+    void AwardWin(PlayerData winner)
+    {
+        winner.wins++;
+        playerManager.UpdatePlayerScoreboard(winner.ClientId);
+        GameTitle.Value = winner.name + " won";
+    }
 
     void DeclareWinners(List<PlayerData> players, bool allowMultipleWinners)
     {

@@ -53,8 +53,13 @@ public class Scoreboard : MonoBehaviour
 
     public void AddItem(ulong playerId, string playerName, int wins, int kills, int deaths)
     {
-        ScoreboardItem item = Instantiate(scorboardItemPrefab, layoutGroup).GetComponent<ScoreboardItem>();
-        item.playerId = playerId;
+        ScoreboardItem item = items.Find(x => x.playerId == playerId);
+        if (item == null)
+        {
+            item = Instantiate(scorboardItemPrefab, layoutGroup).GetComponent<ScoreboardItem>();
+            item.playerId = playerId;
+            items.Add(item);
+        }
         item.wins = wins;
         item.kills = kills;
 
@@ -63,8 +68,8 @@ public class Scoreboard : MonoBehaviour
         item.killsText.text = kills.ToString();
         item.deathsText.text = deaths.ToString();
 
-        items.Add(item);
-        
+        SortItems();
+
         InputUpdate(tabPressed);
     }
 

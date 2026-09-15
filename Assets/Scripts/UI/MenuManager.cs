@@ -20,6 +20,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] Transform playerListContent;
     [SerializeField] GameObject playerListItemPrefab;
     public GameObject startButton;
+    [SerializeField] TextMeshProUGUI statusText;
 
     void Awake() {
         instance = this;
@@ -66,6 +67,15 @@ public class MenuManager : MonoBehaviour
         LobbyName.text = Name;
         OpenMenu("Room");
         startButton.SetActive(Host);
+    }
+
+    public void ShowStatus(string message) {
+        if (statusText == null) {
+            if (!string.IsNullOrEmpty(message)) Debug.Log(message);
+            return;
+        }
+        statusText.text = message ?? "";
+        statusText.gameObject.SetActive(!string.IsNullOrEmpty(message));
     }
 
     public void UpdatePlayerList(List<string> PlayerNames) {

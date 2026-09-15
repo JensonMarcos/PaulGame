@@ -30,7 +30,9 @@ namespace Netcode.Transports.Facepunch
         [Tooltip("When in play mode, this will display your Steam ID.")]
         [SerializeField] private ulong userSteamId;
 
-        private LogLevel LogLevel => NetworkManager.Singleton.LogLevel;
+        private LogLevel LogLevel => NetworkManager.Singleton != null ? NetworkManager.Singleton.LogLevel : LogLevel.Normal;
+
+        private static FacepunchTransport steamOwner;
 
         private class Client
         {
@@ -42,9 +44,15 @@ namespace Netcode.Transports.Facepunch
 
         private void Awake()
         {
+            // Another transport already owns the Steam client (e.g. a duplicate from a scene reload)
+            if (steamOwner != null)
+                return;
+
             try
             {
-                SteamClient.Init(steamAppId, false);
+                if (!SteamClient.IsValid)
+                    SteamClient.Init(steamAppId, false);
+                steamOwner = this;
             }
             catch (Exception e)
             {
@@ -59,11 +67,16 @@ namespace Netcode.Transports.Facepunch
 
         private void Update()
         {
-            SteamClient.RunCallbacks();
+            if (steamOwner == this && SteamClient.IsValid)
+                SteamClient.RunCallbacks();
         }
 
         private void OnDestroy()
         {
+            if (steamOwner != this)
+                return;
+
+            steamOwner = null;
             SteamClient.Shutdown();
         }
 
@@ -75,7 +88,8 @@ namespace Netcode.Transports.Facepunch
 
         public override void DisconnectLocalClient()
         {
-            connectionManager?.Connection.Close();
+            if (SteamClient.IsValid)
+                connectionManager?.Connection.Close();
 
             if (LogLevel <= LogLevel.Developer)
                 Debug.Log($"[{nameof(FacepunchTransport)}] - Disconnecting local client.");
@@ -83,7 +97,7 @@ namespace Netcode.Transports.Facepunch
 
         public override void DisconnectRemoteClient(ulong clientId)
         {
-            if (connectedClients.TryGetValue(clientId, out Client user))
+            if (connectedClients != null && connectedClients.TryGetValue(clientId, out Client user))
             {
                 // Flush any pending messages before closing the connection
                 user.connection.Flush();
@@ -127,13 +141,22 @@ namespace Netcode.Transports.Facepunch
                 if (LogLevel <= LogLevel.Developer)
                     Debug.Log($"[{nameof(FacepunchTransport)}] - Shutting down.");
 
-                connectionManager?.Close();
-                socketManager?.Close();
+                if (SteamClient.IsValid)
+                {
+                    connectionManager?.Close();
+                    socketManager?.Close();
+                }
             }
             catch (Exception e)
             {
                 if (LogLevel <= LogLevel.Error)
                     Debug.LogError($"[{nameof(FacepunchTransport)}] - Caught an exception while shutting down: {e}");
+            }
+            finally
+            {
+                connectionManager = null;
+                socketManager = null;
+                connectedClients?.Clear();
             }
         }
 
@@ -141,9 +164,9 @@ namespace Netcode.Transports.Facepunch
         {
 	        var sendType = NetworkDeliveryToSendType(delivery);
 
-	        if (clientId == ServerClientId)
+	        if (clientId == ServerClientId && connectionManager != null)
 		        connectionManager.Connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
-	        else if (connectedClients.TryGetValue(clientId, out Client user))
+	        else if (clientId != ServerClientId && connectedClients != null && connectedClients.TryGetValue(clientId, out Client user))
 		        user.connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
 	        else if (LogLevel <= LogLevel.Normal)
 		        Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to send packet to remote client with ID {clientId}, client not connected.");
@@ -151,8 +174,11 @@ namespace Netcode.Transports.Facepunch
 
         public override NetworkEvent PollEvent(out ulong clientId, out ArraySegment<byte> payload, out float receiveTime)
         {
-            connectionManager?.Receive();
-            socketManager?.Receive();
+            if (SteamClient.IsValid)
+            {
+                connectionManager?.Receive();
+                socketManager?.Receive();
+            }
 
             clientId = 0;
             receiveTime = Time.realtimeSinceStartup;
@@ -165,9 +191,24 @@ namespace Netcode.Transports.Facepunch
             if (LogLevel <= LogLevel.Developer)
                 Debug.Log($"[{nameof(FacepunchTransport)}] - Starting as client.");
 
-            connectionManager = SteamNetworkingSockets.ConnectRelay<ConnectionManager>(targetSteamId);
-            connectionManager.Interface = this;
-            return true;
+            if (!SteamClient.IsValid || targetSteamId == 0)
+            {
+                Debug.LogError($"[{nameof(FacepunchTransport)}] - Can't start client, Steam isn't initialized or no target Steam ID.");
+                return false;
+            }
+
+            try
+            {
+                connectionManager = SteamNetworkingSockets.ConnectRelay<ConnectionManager>(targetSteamId);
+                connectionManager.Interface = this;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[{nameof(FacepunchTransport)}] - Failed to start client: {e}");
+                connectionManager = null;
+                return false;
+            }
         }
 
         public override bool StartServer()
@@ -175,9 +216,24 @@ namespace Netcode.Transports.Facepunch
             if (LogLevel <= LogLevel.Developer)
                 Debug.Log($"[{nameof(FacepunchTransport)}] - Starting as server.");
 
-            socketManager = SteamNetworkingSockets.CreateRelaySocket<SocketManager>();
-            socketManager.Interface = this;
-            return true;
+            if (!SteamClient.IsValid)
+            {
+                Debug.LogError($"[{nameof(FacepunchTransport)}] - Can't start server, Steam isn't initialized.");
+                return false;
+            }
+
+            try
+            {
+                socketManager = SteamNetworkingSockets.CreateRelaySocket<SocketManager>();
+                socketManager.Interface = this;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[{nameof(FacepunchTransport)}] - Failed to start server: {e}");
+                socketManager = null;
+                return false;
+            }
         }
 
         #endregion
