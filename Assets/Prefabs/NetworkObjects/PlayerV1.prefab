@@ -3686,6 +3686,7 @@ MonoBehaviour:
   wallJumpPushSpeed: 4
   wallCheckDistance: 0.1
   handPushAmount: 0.05
+  wallJumpCooldown: 1
   vaultForwardSpeed: 1.7
   vaultExtraHeight: 0.275
   vaultCheckHeight: 1.5
@@ -3740,8 +3741,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   DiscreteCollisionEvents: 0
   StepHandling: 1
-  MaxStepHeight: 0.55
-  AllowSteppingWithoutStableGrounding: 0
+  MaxStepHeight: 0.51
+  AllowSteppingWithoutStableGrounding: 1
   MinRequiredStepDepth: 0
   LedgeAndDenivelationHandling: 1
   MaxStableDistanceFromLedge: 0

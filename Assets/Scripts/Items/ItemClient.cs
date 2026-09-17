@@ -1,10 +1,11 @@
 using UnityEngine;
 
-public interface IItemAction
+public abstract class ItemAction : MonoBehaviour
 {
-    void OnLeftClick();
-    void OnRightClick();
-    void OnHit(ulong targetid);
+    public virtual void OnLeftClick(PlayerState state, Player player, bool isOwner) { }
+    public virtual void OnRightClick(PlayerState state, Player player, bool isOwner) { }
+    public virtual void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId) { }
+    public virtual void PlayAttack() { }
 }
 
 [System.Serializable]
@@ -15,33 +16,36 @@ public class ItemClient : MonoBehaviour
     public Transform LHand, RHand;
     public Transform sight, muzzleTrans;
 
-    public IItemAction action;
+    public ItemAction action;
 
     public int Ammo;
 
     void Start()
     {
-        action = GetComponent<IItemAction>();
+        action = GetComponent<ItemAction>();
     }
 
-    public void LeftClick()
+    public void LeftClick(PlayerState state, Player player, bool isOwner)
     {
         if(action == null) return;
-        action.OnLeftClick();
+        action.OnLeftClick(state, player, isOwner);
     }
 
-    public void RightClick()
+    public void RightClick(PlayerState state, Player player, bool isOwner)
     {
         if(action == null) return;
-        action.OnRightClick();
+        action.OnRightClick(state, player, isOwner);
     }
 
-    public void OnHit(ulong targetid)
+    public void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId)
     {
         if(action == null) return;
-        action.OnHit(targetid);
+        action.OnHit(state, player, isOwner, targetId);
+    }
+
+    public void PlayAttack()
+    {
+        if(action == null) return;
+        action.PlayAttack();
     }
 }
-
-
-

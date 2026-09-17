@@ -410,24 +410,17 @@ public class Player : NetworkBehaviour
         playerAnimations.TriggerAnimation(name);
     }
 
-    public void CallItemAction(bool rightClick) {
-        CallItemActionServerRpc(rightClick);
-        LocalCallItemAction(rightClick);
+    public void ReplicateAttack() {
+        ReplicateAttackServerRpc();
     }
 
     [Rpc(SendTo.Server)]
-    void CallItemActionServerRpc(bool rightClick, RpcParams rpcParams = default) {
-        CallItemActionClientRpc(rightClick, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+    void ReplicateAttackServerRpc(RpcParams rpcParams = default) {
+        ReplicateAttackClientRpc(RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
     [Rpc(SendTo.SpecifiedInParams)]
-    void CallItemActionClientRpc(bool rightClick, RpcParams rpcParams = default) {
-        LocalCallItemAction(rightClick);
-    }
-
-    void LocalCallItemAction(bool rightClick) {
-        ItemClient item = playerInventory.ClientInventory[playerState.InventoryIndex];
-        if(rightClick) item.RightClick();
-        else item.LeftClick();
+    void ReplicateAttackClientRpc(RpcParams rpcParams = default) {
+        playerInventory.ClientInventory[playerState.InventoryIndex].PlayAttack();
     }
 }

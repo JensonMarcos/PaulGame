@@ -1,5 +1,4 @@
 using System.Collections;
-//using Unity.Netcode;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,7 +9,7 @@ public struct HandData
     public Quaternion startRot;
 }
 
-public class HandsPunch : MonoBehaviour, IItemAction
+public class HandsPunch : ItemAction
 {
     [SerializeField] HandData RHand, LHand;
 
@@ -39,41 +38,20 @@ public class HandsPunch : MonoBehaviour, IItemAction
         LHand.startRot = LHand.transform.localRotation;
     }
 
-    public void OnLeftClick()
+    public override void OnLeftClick(PlayerState state, Player player, bool isOwner)
     {
-        //StopCoroutine("PunchAnimation");
+        PlayAttack();
+        if(isOwner) player.ReplicateAttack();
+    }
 
-        //ResetHands();
-
+    public override void PlayAttack()
+    {
         anim.SetUpperBodyTilt(0f);
 
         handedness = !handedness;
 
         StartCoroutine(PunchAnimation(handedness ? RHand : LHand, handedness ? -1.5f : 1f));
-        //PunchServerRpc(handedness);
     }
-
-    public void OnRightClick()
-    {
-        
-    }
-
-    public void OnHit(ulong targetid)
-    {
-    }
-
-    // [Rpc(SendTo.Server)]
-    // public void PunchServerRpc(bool _handedness)
-    // {
-    //     PunchClientRpc(_handedness);
-    // }
-
-    // [Rpc(SendTo.ClientsAndHost)]
-    // public void PunchClientRpc(bool _handedness)
-    // {
-    //     if(IsOwner) return;
-    //     StartCoroutine(PunchAnimation(_handedness ? RHand : LHand, _handedness ? -2f : 1f));
-    // }
 
     IEnumerator PunchAnimation(HandData hand, float tiltMult)
     {

@@ -1,8 +1,7 @@
 using System.Collections;
-//using Unity.Netcode;
 using UnityEngine;
 
-public class C4swing : MonoBehaviour, IItemAction
+public class C4swing : ItemAction
 {
     [SerializeField] HandData RHand, LHand;
 
@@ -31,31 +30,26 @@ public class C4swing : MonoBehaviour, IItemAction
         LHand.startRot = LHand.transform.localRotation;
     }
 
-    public void OnLeftClick()
+    public override void OnLeftClick(PlayerState state, Player player, bool isOwner)
     {
-        //StopCoroutine("PunchAnimation");
+        PlayAttack();
+        if(isOwner) player.ReplicateAttack();
+    }
 
-        //ResetHands();
-
+    public override void PlayAttack()
+    {
         anim.SetUpperBodyTilt(0f);
 
-
         StartCoroutine(SwingAnimation(RHand, -2f));
-        //PunchServerRpc(handedness);
     }
 
-    public void OnRightClick()
-    {
-
-    }
-
-    public void OnHit(ulong targetid)
+    public override void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId)
     {
         if(GameManager.instance == null) return;
         int itemId = GameManager.instance.itemList.GetItemId(GetComponent<ItemClient>().data);
         if(itemId == -1) return;
 
-        PlayerManager.instance.SwapItemServerRpc(targetid, itemId);
+        PlayerManager.instance.SwapItemServerRpc(targetId, itemId);
     }
 
     IEnumerator SwingAnimation(HandData hand, float tiltMult)

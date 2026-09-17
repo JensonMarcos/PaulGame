@@ -93,7 +93,10 @@ public class PlayerCombat : NetworkBehaviour
     readonly RaycastHit[] shootHitsBuffer = new RaycastHit[32];
     readonly Collider[] explosionOverlapBuffer = new Collider[32];
     readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
+    readonly HashSet<Transform> meleeHitRoots = new HashSet<Transform>();
     readonly List<ShotPellet> shotPellets = new List<ShotPellet>(16);
+
+    Coroutine meleeSweepCoroutine;
 
     void Awake()
     {
@@ -128,6 +131,11 @@ public class PlayerCombat : NetworkBehaviour
                 StopCoroutine(reloadCoroutine);
                 reloadCoroutine = null;
             }
+            if(meleeSweepCoroutine != null)
+            {
+                StopCoroutine(meleeSweepCoroutine);
+                meleeSweepCoroutine = null;
+            }
             Reloading = 0;
         }
         prevItem = _item;
@@ -138,24 +146,25 @@ public class PlayerCombat : NetworkBehaviour
             return;
         }
 
-        if(wishAttack) Attack( _item, _state.Grounded);
+        if(wishAttack) Attack(_item, _state);
 
-        if(wishAim) _item.RightClick();
+        if(wishAim) _item.RightClick(_state, player, true);
     }
 
-    void Attack(ItemClient _item, bool grounded)
+    void Attack(ItemClient _item, PlayerState state)
     {
         ItemData _data = _item.data;
 
         if(nextTimeToFire > Time.time) return;
 
-        player.CallItemAction(false);
+        _item.LeftClick(state, player, true);
 
         if (_data.type is ItemType.Melee)
         {
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
-            StartCoroutine(DelayShoot(_item, 0f));
+            if(meleeSweepCoroutine != null) StopCoroutine(meleeSweepCoroutine);
+            meleeSweepCoroutine = StartCoroutine(MeleeSweep(_item));
 
             SoundManager.Play(_data.AttackSound, cam.position);
         }
@@ -191,7 +200,7 @@ public class PlayerCombat : NetworkBehaviour
             PlayShotFx(fx);
             SendShotServerRpc(fx);
 
-            if(_data.backwardVelocity != 0 && !grounded) {
+            if(_data.backwardVelocity != 0 && !state.Grounded) {
                 character.AddForce(-cam.forward * _data.backwardVelocity);
             }
         }
@@ -265,54 +274,99 @@ public class PlayerCombat : NetworkBehaviour
 
         } else
         {
-            //Actualy hit something
-
-            RaycastHit hitObject = shootHitsBuffer[best];
-            Transform hitRoot = hitObject.transform.root;
-
-            int decalIndex = _data.DecalIndex;
-
-            if (hitRoot.GetComponent<Player>()) //player damage
-            {
-                float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
-
-                Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : shootDir * _data.impactForcePlayer + Vector3.up * upForceMult;
-                Vector3 _propForce = shootDir * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
-                
-                if (_data.type is ItemType.Melee) {
-                    _force += character.State.Velocity;
-                    _propForce += character.State.Velocity;
-                } 
-
-                PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
-
-                SoundManager.Play(hitSound);
-
-                decalIndex = playerHitDecalIndex;
-
-                _item.OnHit(hitRoot.GetComponent<NetworkObject>().OwnerClientId);
-            }
-            else if(hitRoot.TryGetComponent(out ItemCrate crate))
-            {
-                crate.BreakCrateServerRpc();
-                decalIndex = crateHitDecalIndex;
-            }
-            else if(hitRoot.TryGetComponent(out NetworkProp prop))
-            {
-                Vector3 propImpulse = shootDir * _data.impactForceObject;
-                if (_data.type is ItemType.Melee) propImpulse += character.State.Velocity;
-                prop.ApplyForce(propImpulse, hitObject.point);
-                decalIndex = playerHitDecalIndex; //kinda temp
-            }
-
-            shotPellets.Add(new ShotPellet {
-                end = hitObject.point,
-                normal = hitObject.normal,
-                hit = true,
-                trail = _data.type != ItemType.Melee,
-                decal = decalIndex
-            });
+            ApplyHitscanHit(_item, _data, shootHitsBuffer[best], shootDir);
         }
+    }
+
+    IEnumerator MeleeSweep(ItemClient _item)
+    {
+        meleeHitRoots.Clear();
+        float endTime = Time.time + _item.data.meleeHitDuration;
+
+        while (true)
+        {
+            MeleeCast(_item);
+            if (Time.time >= endTime) break;
+            yield return null;
+        }
+
+        meleeSweepCoroutine = null;
+    }
+
+    void MeleeCast(ItemClient _item)
+    {
+        ItemData _data = _item.data;
+        Vector3 shootDir = cam.forward;
+
+        int hitCount = _data.shootRadius > 0
+            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, shootDir, shootHitsBuffer, _data.range, shootLayer)
+            : Physics.RaycastNonAlloc(cam.position, shootDir, shootHitsBuffer, _data.range, shootLayer);
+
+        shotPellets.Clear();
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = shootHitsBuffer[i];
+            Transform hitRoot = hit.transform.root;
+            if (hitRoot == transform.root) continue;
+            if (IsFriendly(hitRoot)) continue;
+            if (!meleeHitRoots.Add(hitRoot)) continue;
+
+            ApplyHitscanHit(_item, _data, hit, shootDir);
+        }
+
+        if (shotPellets.Count == 0) return;
+
+        ShotFx fx = BuildShotFx(_item, Vector3.zero, 0f, 0f, false, false);
+        PlayShotFx(fx);
+        SendShotServerRpc(fx);
+    }
+
+    void ApplyHitscanHit(ItemClient _item, ItemData _data, RaycastHit hitObject, Vector3 shootDir)
+    {
+        Transform hitRoot = hitObject.transform.root;
+
+        int decalIndex = _data.DecalIndex;
+
+        if (hitRoot.GetComponent<Player>()) //player damage
+        {
+            float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
+
+            Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : shootDir * _data.impactForcePlayer + Vector3.up * upForceMult;
+            Vector3 _propForce = shootDir * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
+            
+            if (_data.type is ItemType.Melee) {
+                _force += character.State.Velocity;
+                _propForce += character.State.Velocity;
+            } 
+
+            PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
+
+            SoundManager.Play(hitSound);
+
+            decalIndex = playerHitDecalIndex;
+
+            _item.OnHit(player.playerState, player, true, hitRoot.GetComponent<NetworkObject>().OwnerClientId);
+        }
+        else if(hitRoot.TryGetComponent(out ItemCrate crate))
+        {
+            crate.BreakCrateServerRpc();
+            decalIndex = crateHitDecalIndex;
+        }
+        else if(hitRoot.TryGetComponent(out NetworkProp prop))
+        {
+            Vector3 propImpulse = shootDir * _data.impactForceObject;
+            if (_data.type is ItemType.Melee) propImpulse += character.State.Velocity;
+            prop.ApplyForce(propImpulse, hitObject.point);
+            decalIndex = playerHitDecalIndex; //kinda temp
+        }
+
+        shotPellets.Add(new ShotPellet {
+            end = hitObject.point,
+            normal = hitObject.normal,
+            hit = true,
+            trail = _data.type != ItemType.Melee,
+            decal = decalIndex
+        });
     }
 
     bool IsFriendly(Transform root)
@@ -448,16 +502,6 @@ public class PlayerCombat : NetworkBehaviour
                 prop.ApplyForce(blastDir * (impactForceObject * falloff), hitPoint);
             }
         }
-    }
-
-    IEnumerator DelayShoot(ItemClient _item, float _delay)
-    {
-        yield return new WaitForSeconds(_delay);
-        shotPellets.Clear();
-        Shoot(_item);
-        ShotFx fx = BuildShotFx(_item, Vector3.zero, 0f, 0f, false, false);
-        PlayShotFx(fx);
-        SendShotServerRpc(fx);
     }
 
     ShotFx BuildShotFx(ItemClient item, Vector3 recoil, float backKick, float rotKick, bool playRecoil, bool doMuzzle)

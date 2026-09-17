@@ -38,16 +38,13 @@ public class ItemData : ScriptableObject
     [ShowIf("isNotProjectile")] public float range;
     [ShowIf("isNotProjectile")] public float shootRadius;
 
-    [Header("Melee")]
-    [ShowIf("isMelee")] public float meleeChargeTime = 0.4f;
     [ShowIf("isMelee")] public float meleeHitDuration = 0.12f;
-    [ShowIf("isMelee")] public float meleeHitDurationCharged = 0.22f;
+    [ShowIf("isMelee")] public float meleeChargeTime = 0.4f;
     [ShowIf("isMelee")] public float meleeChargeDamageMult = 1.5f;
     [ShowIf("isMelee")] public float meleeChargeKnockbackMult = 1.5f;
     [ShowIf("isMelee")] public float meleeChargeRangeMult = 1.25f;
     [ShowIf("isMelee")] public float slideKnockbackMult = 1.5f;
     [ShowIf("isMelee")] public float uppercutUpForce = 8f;
-    [ShowIf("isMelee")] public float uppercutForwardMult = 0.4f;
 
     [ShowIf("useProjectile")] public int ProjectileIndex;
     [ShowIf("useProjectile")] public float projectileSize;
