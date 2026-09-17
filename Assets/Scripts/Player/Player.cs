@@ -260,13 +260,15 @@ public class Player : NetworkBehaviour
         playerInventory.SetInputs(inventoryInputs);
 
 
-        bool _auto = playerInventory.ClientInventory[playerInventory.InvIndex].data.isAutomatic;
+        ItemData itemData = playerInventory.ClientInventory[playerInventory.InvIndex].data;
+        bool _auto = itemData.isAutomatic;
         CombatInputs combatInputs = new CombatInputs {
             Attack = _auto ? inputs.Attack.IsPressed() : inputs.Attack.WasPressedThisFrame(),
             Aim = inputs.Aim.IsPressed(),
             Reload = PlayerManager.instance.reloadEnabled.Value ? inputs.Reload.WasPressedThisFrame() : false
         };
-        playerCombat.SetInputs(combatInputs, playerState.Stance is Stance.Sprint, playerInventory.ReadyPull);   
+        bool sprinting = playerState.Stance is Stance.Sprint && !itemData.canAttackWhileSprinting;
+        playerCombat.SetInputs(combatInputs, sprinting, playerInventory.ReadyPull);   
 
         playerUI.SetInputs(inputs.Tab.IsPressed());
     }

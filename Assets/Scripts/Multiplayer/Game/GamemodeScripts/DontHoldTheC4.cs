@@ -1,15 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Gamemode: every [checkInterval] seconds, anyone holding the C4 explodes.
-/// A new C4 is then given to a random alive player. Last one standing wins.
-///
-/// Setup in the GameManager inspector for this gamemode:
-/// - lastPlayerAliveWins = true (so the game actually ends at 1 player)
-/// - respawnOnDeath = false
-/// - assign this script's prefab to the "Script" field, set c4ItemId to the C4's item id
-/// </summary>
 public class DontHoldTheC4 : GamemodeScript
 {
     [Header("Settings")]

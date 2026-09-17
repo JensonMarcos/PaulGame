@@ -106,6 +106,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     [SerializeField] float wallJumpPushSpeed;
     [SerializeField] float wallCheckDistance;
     [SerializeField] float handPushAmount;
+    [SerializeField] float wallJumpCooldown = 1f;
 
     [Space]
     [Header("Vault")]
@@ -116,6 +117,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     Vector3 wallNormal, lastWallJumpNormal;
     bool canWallJump;
     bool canVault;
+    int consecutiveWallJumps;
+    float wallJumpCooldownRemaining;
     RaycastHit[] wallHits = new RaycastHit[8];
 
     Vector3 vaultLandingPos;
@@ -431,7 +434,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
                 currentVelocity += Motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
             }
-            else if (canWallJump)
+            else if (canWallJump && wallJumpCooldownRemaining <= 0f)
             {
                 wishJump = false;
                 lurchTimer = 0f;
@@ -447,6 +450,13 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 currentVelocity += wallNormal * (targetWallSpeed - currentWallSpeed);
 
                 player.HandPush(transform.InverseTransformDirection(-wallNormal) * handPushAmount);
+
+                consecutiveWallJumps++;
+                if (consecutiveWallJumps >= 2)
+                {
+                    wallJumpCooldownRemaining = wallJumpCooldown;
+                    consecutiveWallJumps = 0;
+                }
             }
             else
             {
@@ -503,7 +513,13 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
         }
 
-        if (Motor.GroundingStatus.IsStableOnGround) lastWallJumpNormal = Vector3.zero;
+        if (wallJumpCooldownRemaining > 0f) wallJumpCooldownRemaining -= deltaTime;
+
+        if (Motor.GroundingStatus.IsStableOnGround)
+        {
+            lastWallJumpNormal = Vector3.zero;
+            consecutiveWallJumps = 0;
+        }
 
 
         State.Grounded = Motor.GroundingStatus.IsStableOnGround;

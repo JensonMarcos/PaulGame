@@ -155,7 +155,7 @@ public class PlayerCombat : NetworkBehaviour
         {
             nextTimeToFire = Time.time + 1f / _data.fireRate;
 
-            StartCoroutine(DelayShoot(_item, _data.attackDelay));
+            StartCoroutine(DelayShoot(_item, 0f));
 
             SoundManager.Play(_data.AttackSound, cam.position);
         }
