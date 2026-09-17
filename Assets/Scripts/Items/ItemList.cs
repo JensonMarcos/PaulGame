@@ -29,17 +29,23 @@ public class ItemList : ScriptableObject
 
     public int GetItemId(GameObject itemInstance)
     {
-        ItemData data = itemInstance.GetComponent<Item>().data;
-        return GetItemId(data);
+        if (itemInstance == null) return -1;
+        Item item = itemInstance.GetComponent<Item>();
+        if (item == null) return -1;
+        return GetItemIdByClientPrefab(item.clientPrefab);
     }
 
-    public int GetItemId(ItemData data)
+    public int GetItemIdByClientPrefab(GameObject clientPrefab)
     {
+        if (clientPrefab == null) return -1;
+
         for(int i = 0; i < itemPool.Length; i++) {
-            if(itemPool[i].item.GetComponent<Item>().data == data) return itemPool[i].id;
+            Item item = itemPool[i].item != null ? itemPool[i].item.GetComponent<Item>() : null;
+            if(item != null && item.clientPrefab == clientPrefab) return itemPool[i].id;
         }
         for(int i = 0; i < specialItems.Length; i++) {
-            if(specialItems[i].item.GetComponent<Item>().data == data) return specialItems[i].id;
+            Item item = specialItems[i].item != null ? specialItems[i].item.GetComponent<Item>() : null;
+            if(item != null && item.clientPrefab == clientPrefab) return specialItems[i].id;
         }
         return -1;
     }

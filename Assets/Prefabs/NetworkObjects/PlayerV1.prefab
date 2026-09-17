@@ -1826,12 +1826,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  Aiming: 0
-  Reloading: 0
   character: {fileID: 3154624319263331040}
   animations: {fileID: 8215228522949132519}
   cam: {fileID: 8418498531701191655}
-  aimSpeed: 20
   shootLayer:
     serializedVersion: 2
     m_Bits: 1729
@@ -3525,7 +3522,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5844547364250430380}
   - component: {fileID: 5993272575108901541}
-  - component: {fileID: 5138522660358401377}
   m_Layer: 3
   m_Name: HandsItem
   m_TagString: Untagged
@@ -3559,33 +3555,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 3667026374664616224}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9fabe8e9a23f5547a1cccc1bbf5bd4e, type: 3}
+  m_Script: {fileID: 11500000, guid: 6cea0b535f4859f4d99f124932894211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: 87165a82d362c5a4a85c2a34de3e95b1, type: 2}
+  slot: 0
+  cantDrop: 0
+  pullOutTime: 0.3
+  ammoCap: 0
+  ammoSpawn: 0
+  isAutomatic: 0
+  canAttackWhileSprinting: 1
+  holdPosition: {x: 0, y: 0, z: 0}
+  rightHandIK: 0
+  leftHandIK: 0
   model: {fileID: 0}
   LHand: {fileID: 8960439865454848169}
   RHand: {fileID: 2087391735233662819}
   sight: {fileID: 0}
   muzzleTrans: {fileID: 0}
   Ammo: 0
---- !u!114 &5138522660358401377
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3667026374664616224}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6cea0b535f4859f4d99f124932894211, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RHand:
+  fireRate: 4.5
+  damage: 5
+  range: 2.25
+  shootRadius: 0.25
+  meleeHitDuration: 0.12
+  impactForceObject: 50
+  impactForcePlayer: 10
+  attackSound: 
+  decalIndex: 0
+  rightPunch:
     transform: {fileID: 2087391735233662819}
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}
-  LHand:
+  leftPunch:
     transform: {fileID: 8960439865454848169}
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}

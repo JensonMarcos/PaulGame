@@ -1,22 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-[System.Serializable]
-public struct HandData
+public class PunchWeapon : MeleeWeapon
 {
-    public Transform transform;
-    public Vector3 startPos;
-    public Quaternion startRot;
-}
-
-public class HandsPunch : ItemAction
-{
-    [SerializeField] HandData RHand, LHand;
-
-    Transform parent;
-    PlayerAnimations anim;
-    Transform cam;
-
+    [SerializeField] HandData rightPunch, leftPunch;
     [SerializeField] float punchSpeed, retractSpeed;
     [SerializeField] float punchHoldTime;
     [SerializeField] float punchDistance = 0.55f;
@@ -24,33 +11,31 @@ public class HandsPunch : ItemAction
     [SerializeField] float tiltAmount;
     [SerializeField] float rotWeight;
 
+    Transform parent;
+    PlayerAnimations anim;
+    Transform cam;
     bool handedness;
+    bool cached;
 
-    void Start()
+    void Cache()
     {
+        if (cached) return;
         parent = transform.parent;
         anim = transform.root.GetComponent<PlayerAnimations>();
         cam = anim.cam.transform;
-
-        RHand.startPos = RHand.transform.localPosition;
-        RHand.startRot = RHand.transform.localRotation;
-        LHand.startPos = LHand.transform.localPosition;
-        LHand.startRot = LHand.transform.localRotation;
-    }
-
-    public override void OnLeftClick(PlayerState state, Player player, bool isOwner)
-    {
-        PlayAttack();
-        if(isOwner) player.ReplicateAttack();
+        rightPunch.startPos = rightPunch.transform.localPosition;
+        rightPunch.startRot = rightPunch.transform.localRotation;
+        leftPunch.startPos = leftPunch.transform.localPosition;
+        leftPunch.startRot = leftPunch.transform.localRotation;
+        cached = true;
     }
 
     public override void PlayAttack()
     {
+        Cache();
         anim.SetUpperBodyTilt(0f);
-
         handedness = !handedness;
-
-        StartCoroutine(PunchAnimation(handedness ? RHand : LHand, handedness ? -1.5f : 1f));
+        StartCoroutine(PunchAnimation(handedness ? rightPunch : leftPunch, handedness ? -1.5f : 1f));
     }
 
     IEnumerator PunchAnimation(HandData hand, float tiltMult)
@@ -64,7 +49,6 @@ public class HandsPunch : ItemAction
         {
             yield return new WaitForEndOfFrame();
             x += punchSpeed * Time.deltaTime;
-            //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
             t = 2.70158f * x * x * x - 1.70158f * x * x;
 
             punchPos = parent.InverseTransformPoint(cam.forward * punchDistance + cam.position);
@@ -76,7 +60,6 @@ public class HandsPunch : ItemAction
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
         }
 
-
         yield return new WaitForSeconds(punchHoldTime);
 
         t = 1f;
@@ -85,7 +68,7 @@ public class HandsPunch : ItemAction
         {
             yield return new WaitForEndOfFrame();
             x -= retractSpeed * Time.deltaTime;
-            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
+            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2;
 
             punchPos = parent.InverseTransformPoint(cam.forward * punchDistance + cam.position);
             punchRot = Quaternion.Inverse(parent.rotation) * cam.rotation * Quaternion.Euler(punchEndRot);
@@ -98,10 +81,6 @@ public class HandsPunch : ItemAction
 
         hand.transform.localPosition = hand.startPos;
         hand.transform.localRotation = hand.startRot;
-
         anim.SetUpperBodyTilt(0f);
-
-        
     }
-
 }

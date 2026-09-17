@@ -187,7 +187,7 @@ public class Player : NetworkBehaviour
 
         if(!isDead)
         {
-            playerAnimations.UpdateAnimatorValues(playerState, playerInventory.ClientInventory[playerState.InventoryIndex].data);
+            playerAnimations.UpdateAnimatorValues(playerState, playerInventory.ClientInventory[playerState.InventoryIndex]);
 
             playerAnimations.UpdateAnimator(Time.deltaTime);
         }
@@ -219,7 +219,7 @@ public class Player : NetworkBehaviour
             {
                 playerInventory.TryPickUp();
                 playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-                playerCamera.UpdateCam(playerInventory.ClientInventory[i].data.adsZoom, playerState.Aiming);
+                playerCamera.UpdateCam(playerInventory.ClientInventory[i].adsZoom, playerState.Aiming);
             }
 
             playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
@@ -237,7 +237,7 @@ public class Player : NetworkBehaviour
         if (deathCamTarget == null)
         {
             Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();
-            playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex].data);
+            playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex]);
         }
 
         CharacterInputs characterInputs = new CharacterInputs {
@@ -260,15 +260,16 @@ public class Player : NetworkBehaviour
         playerInventory.SetInputs(inventoryInputs);
 
 
-        ItemData itemData = playerInventory.ClientInventory[playerInventory.InvIndex].data;
-        bool _auto = itemData.isAutomatic;
         CombatInputs combatInputs = new CombatInputs {
-            Attack = _auto ? inputs.Attack.IsPressed() : inputs.Attack.WasPressedThisFrame(),
-            Aim = inputs.Aim.IsPressed(),
-            Reload = PlayerManager.instance.reloadEnabled.Value ? inputs.Reload.WasPressedThisFrame() : false
+            FirePressed = inputs.Attack.WasPressedThisFrame(),
+            FireHeld = inputs.Attack.IsPressed(),
+            FireReleased = inputs.Attack.WasReleasedThisFrame(),
+            AltPressed = inputs.Aim.WasPressedThisFrame(),
+            AltHeld = inputs.Aim.IsPressed(),
+            AltReleased = inputs.Aim.WasReleasedThisFrame(),
+            ReloadPressed = PlayerManager.instance.reloadEnabled.Value && inputs.Reload.WasPressedThisFrame()
         };
-        bool sprinting = playerState.Stance is Stance.Sprint && !itemData.canAttackWhileSprinting;
-        playerCombat.SetInputs(combatInputs, sprinting, playerInventory.ReadyPull);   
+        playerCombat.SetInputs(combatInputs, playerInventory.ReadyPull);
 
         playerUI.SetInputs(inputs.Tab.IsPressed());
     }
@@ -281,12 +282,10 @@ public class Player : NetworkBehaviour
         playerState.Velocity = _characterState.Velocity;
 
         playerState.InventoryIndex = playerInventory.InvIndex;
-        playerState.Aiming = playerCombat.Aiming;
-        if(playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee) playerState.Aiming = 0;
+        ItemClient equipped = playerInventory.ClientInventory[playerState.InventoryIndex];
+        playerState.Aiming = equipped.Aiming;
         playerState.ReadyPull = playerInventory.ReadyPull;
-        playerState.Reloading = playerCombat.Reloading;
-
-        // playerState.Melee = playerInventory.ClientInventory[playerState.InventoryIndex].data.type == ItemType.Melee;
+        playerState.Reloading = equipped.Reloading;
     }
 
     [Rpc(SendTo.Owner)]
@@ -410,17 +409,4 @@ public class Player : NetworkBehaviour
         playerAnimations.TriggerAnimation(name);
     }
 
-    public void ReplicateAttack() {
-        ReplicateAttackServerRpc();
-    }
-
-    [Rpc(SendTo.Server)]
-    void ReplicateAttackServerRpc(RpcParams rpcParams = default) {
-        ReplicateAttackClientRpc(RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
-    }
-
-    [Rpc(SendTo.SpecifiedInParams)]
-    void ReplicateAttackClientRpc(RpcParams rpcParams = default) {
-        playerInventory.ClientInventory[playerState.InventoryIndex].PlayAttack();
-    }
 }

@@ -45,7 +45,7 @@ public class PlayerUI : MonoBehaviour
         float aiming = _state.Aiming;
         bool scoped = false;
 
-        if(_item.data.type is ItemType.Sniper)
+        if(_item.useScopeOverlay)
         {
             scoped = aiming > scopeThreshold;
             scope.SetActive(scoped);

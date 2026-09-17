@@ -236,7 +236,7 @@ public class PlayerManager : NetworkBehaviour
         ragdoll.GetComponent<Ragdoll>().ApplyPoseAndVelocityClientRpc(target.player.NetworkObjectId, vel);
 
         //undroppable items (e.g. C4) get removed instead of dropped on death
-        DespawnInventoryItems(target.player, netObj => netObj.TryGetComponent(out Item item) && item.data.cantDrop);
+        DespawnInventoryItems(target.player, netObj => netObj.TryGetComponent(out Item item) && item.ClientStats != null && item.ClientStats.cantDrop);
 
         target.player.DieClientRpc(ragdollNet.NetworkObjectId);
 

@@ -169,7 +169,6 @@ MonoBehaviour:
   Ammo:
     m_InternalValue: 0
   clientPrefab: {fileID: 3553630485567434856, guid: 13f0bb42e23efbc448dbaf30627d96d3, type: 3}
-  data: {fileID: 11400000, guid: aa8b2f06c17557d4297bb8d004bb41a0, type: 2}
   hovered: 0
   model: {fileID: 1494461732961118949}
 --- !u!65 &2719339104376361307

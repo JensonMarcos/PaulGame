@@ -31,7 +31,7 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
-    public void UpdateRotation(Vector2 inputs, ItemData _data)
+    public void UpdateRotation(Vector2 inputs, ItemClient _item)
     {
         FovSensitivity = cam.fieldOfView / defaultFov;
 
@@ -42,8 +42,8 @@ public class PlayerCamera : MonoBehaviour
         realRotation = new Vector3(Mathf.Clamp(realRotation.x + yMovement, -89.9f, 89.9f), realRotation.y + xMovement, 0);
 
         //cam offset
-        targetRot = Vector3.Lerp(targetRot, Vector3.zero, _data.returnSpeed * Time.deltaTime);
-        offsetRot = Vector3.Slerp(offsetRot, targetRot, _data.snap * Time.deltaTime);
+        targetRot = Vector3.Lerp(targetRot, Vector3.zero, _item.recoilReturnSpeed * Time.deltaTime);
+        offsetRot = Vector3.Slerp(offsetRot, targetRot, _item.recoilSnap * Time.deltaTime);
 
         //Apply rotation to body
         Vector3 newRot = realRotation + offsetRot;

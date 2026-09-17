@@ -1,14 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-public class C4swing : ItemAction
+public class SwingWeapon : MeleeWeapon
 {
-    [SerializeField] HandData RHand, LHand;
-
-    Transform parent;
-    PlayerAnimations anim;
-    Transform cam;
-
+    [SerializeField] protected HandData rightSwing, leftSwing;
     [SerializeField] float swingSpeed, retractSpeed;
     [SerializeField] float swingHoldTime;
     [SerializeField] float swingDistance = 0.55f;
@@ -16,43 +11,38 @@ public class C4swing : ItemAction
     [SerializeField] float arcHeight = 0.15f;
     [SerializeField] Vector3 swingStartRot;
     [SerializeField] Vector3 swingEndRot;
-    [SerializeField] float tiltAmount;
+    [SerializeField] protected float tiltAmount = 15f;
+    [SerializeField] float tiltMult = -1.5f;
 
-    void Start()
+    Transform parent;
+    protected PlayerAnimations anim;
+    Transform cam;
+    bool cached;
+
+    protected void Cache()
     {
+        if (cached) return;
         parent = transform.parent;
         anim = transform.root.GetComponent<PlayerAnimations>();
         cam = anim.cam.transform;
-
-        RHand.startPos = RHand.transform.localPosition;
-        RHand.startRot = RHand.transform.localRotation;
-        LHand.startPos = LHand.transform.localPosition;
-        LHand.startRot = LHand.transform.localRotation;
-    }
-
-    public override void OnLeftClick(PlayerState state, Player player, bool isOwner)
-    {
-        PlayAttack();
-        if(isOwner) player.ReplicateAttack();
+        rightSwing.startPos = rightSwing.transform.localPosition;
+        rightSwing.startRot = rightSwing.transform.localRotation;
+        if (leftSwing.transform != null)
+        {
+            leftSwing.startPos = leftSwing.transform.localPosition;
+            leftSwing.startRot = leftSwing.transform.localRotation;
+        }
+        cached = true;
     }
 
     public override void PlayAttack()
     {
+        Cache();
         anim.SetUpperBodyTilt(0f);
-
-        StartCoroutine(SwingAnimation(RHand, -2f));
+        StartCoroutine(SwingAnimation(rightSwing, tiltMult));
     }
 
-    public override void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId)
-    {
-        if(GameManager.instance == null) return;
-        int itemId = GameManager.instance.itemList.GetItemId(GetComponent<ItemClient>().data);
-        if(itemId == -1) return;
-
-        PlayerManager.instance.SwapItemServerRpc(targetId, itemId);
-    }
-
-    IEnumerator SwingAnimation(HandData hand, float tiltMult)
+    protected IEnumerator SwingAnimation(HandData hand, float tiltMult)
     {
         Vector3 swingPos;
         var startSwing = Quaternion.Euler(swingStartRot);
@@ -64,16 +54,12 @@ public class C4swing : ItemAction
         {
             yield return new WaitForEndOfFrame();
             x += swingSpeed * Time.deltaTime;
-            //t = 1 - Mathf.Cos((x * Mathf.PI) / 2); //ease in lerping function
             t = 2.70158f * x * x * x - 1.70158f * x * x;
 
             swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
-
-            // Arc up on the way out
             var arc = parent.InverseTransformDirection(cam.up) * Mathf.Sin(x * Mathf.PI) * arcHeight;
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, swingPos, t) + arc;
 
-            // Quick to start rot, then near end of swing to end rot
             if (x < 0.2f)
                 hand.transform.localRotation = Quaternion.Lerp(hand.startRot, startSwing, x / 0.2f);
             else if (x < 0.7f)
@@ -84,7 +70,6 @@ public class C4swing : ItemAction
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
         }
 
-
         yield return new WaitForSeconds(swingHoldTime);
 
         t = 1f;
@@ -93,11 +78,9 @@ public class C4swing : ItemAction
         {
             yield return new WaitForEndOfFrame();
             x -= retractSpeed * Time.deltaTime;
-            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2; //ease in lerping function
+            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2;
 
             swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
-
-            // Arc down on the way back
             var arc = parent.InverseTransformDirection(cam.up) * -Mathf.Sin(x * Mathf.PI) * arcHeight;
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, swingPos, t) + arc;
             hand.transform.localRotation = Quaternion.Lerp(hand.startRot, endSwing, x);
@@ -107,10 +90,6 @@ public class C4swing : ItemAction
 
         hand.transform.localPosition = hand.startPos;
         hand.transform.localRotation = hand.startRot;
-
         anim.SetUpperBodyTilt(0f);
-
-        
     }
-
 }

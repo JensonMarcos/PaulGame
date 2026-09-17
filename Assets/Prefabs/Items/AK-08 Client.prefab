@@ -3181,13 +3181,50 @@ MonoBehaviour:
   m_GameObject: {fileID: 8891281219331394330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9fabe8e9a23f5547a1cccc1bbf5bd4e, type: 3}
+  m_Script: {fileID: 11500000, guid: 7e4a1c8b92d54f6e8c3a1b0d5e7f9012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: 21d4bc24014f1d849baa19dd9553ecf5, type: 2}
+  slot: 0
+  cantDrop: 0
+  pullOutTime: 0.5
+  ammoCap: 30
+  ammoSpawn: 30
+  isAutomatic: 1
+  canAttackWhileSprinting: 0
+  holdPosition: {x: 0.165, y: -0.221, z: 0.148}
+  rightHandIK: 1
+  leftHandIK: 1
   model: {fileID: 3198172302405372038}
   LHand: {fileID: 5996288392134526744}
   RHand: {fileID: 4736790039183502511}
   sight: {fileID: 1905612258000441041}
   muzzleTrans: {fileID: 6703014796223542427}
   Ammo: 0
+  fireRate: 8.5
+  reloadSpeed: 2
+  aimLerpSpeed: 20
+  accuracy: 0.006
+  adsAccuracy: 0.001
+  recoil: {x: 2, y: 1.4, z: 0.2}
+  adsRecoilMult: 0.5
+  recoilSnap: 20
+  recoilReturnSpeed: 2
+  adsZoom: 60
+  cancelAdsWhileCycling: 0
+  useScopeOverlay: 0
+  backKick: 0.06
+  rotKick: 1
+  adsAnimMult: 0.7
+  ammoPos: {x: -0.0805, y: 0.01, z: 0.22}
+  sightPos: {x: 0, y: 0.085, z: 0.15}
+  adsAmmoPos: {x: -0.105, y: 0.08, z: 0.25}
+  widTopBot: {x: 0.42, y: 0.24, z: 0.07}
+  impactForceObject: 50
+  impactForcePlayer: 0
+  backwardVelocity: 0
+  attackSound: gun_ak
+  decalIndex: 0
+  damage: 20
+  range: 100
+  shootRadius: 0.02
+  numberOfShots: 0

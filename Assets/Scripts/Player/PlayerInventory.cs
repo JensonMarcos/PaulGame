@@ -25,7 +25,6 @@ public class PlayerInventory : NetworkBehaviour
 
     public int InvIndex;
     public bool ReadyPull;
-    public bool Reloading;
 
     [SerializeField] GameObject handsItem;
 
@@ -110,7 +109,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             ReadyPull = false;
 
-            float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            float _pullOutTime = ClientInventory[InvIndex].pullOutTime;
 
             if(readyPullCoroutine != null) StopCoroutine(readyPullCoroutine);
             readyPullCoroutine = StartCoroutine(WaitToReadyPull(_pullOutTime));
@@ -205,7 +204,9 @@ public class PlayerInventory : NetworkBehaviour
 
             if(item == lastDropped && Time.time - lastDropTime < dropPickupCooldown) continue; //just dropped
 
-            int slot = item.data.slot;
+            if(item.ClientStats == null) continue;
+
+            int slot = item.ClientStats.slot;
             if(Inventory[slot] != handsItem) continue; //slot already filled
 
             PickupItem(item);
@@ -215,13 +216,14 @@ public class PlayerInventory : NetworkBehaviour
     void PickupItem(Item item)
     {
         if(item.HasOwner.Value) return;
+        if(item.ClientStats == null) return;
 
-        int slot = item.data.slot;
+        int slot = item.ClientStats.slot;
 
         if(Inventory[slot] != handsItem)
         {
             Item current = Inventory[slot].GetComponent<Item>();
-            if(current != null && current.data.cantDrop) return;
+            if(current != null && current.ClientStats.cantDrop) return;
             Drop(slot);
         }
 
@@ -236,7 +238,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             InvIndex = slot;
             ReadyPull = false;
-            _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            _pullOutTime = ClientInventory[InvIndex].pullOutTime;
             if(readyPullCoroutine != null) StopCoroutine(readyPullCoroutine);
             readyPullCoroutine = StartCoroutine(WaitToReadyPull(_pullOutTime));
             _animate = true;
@@ -244,7 +246,7 @@ public class PlayerInventory : NetworkBehaviour
 
         SyncClientInventory();
 
-        _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+        _pullOutTime = ClientInventory[InvIndex].pullOutTime;
         Select(InvIndex, _pullOutTime, _animate);
         SelectServerRpc(InvIndex, _pullOutTime, _animate);
     }
@@ -259,7 +261,7 @@ public class PlayerInventory : NetworkBehaviour
             NetworkIDInventory[i] = 0UL;
             SyncClientInventory();
 
-            float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+            float _pullOutTime = ClientInventory[InvIndex].pullOutTime;
             Select(InvIndex, _pullOutTime, true);
             SelectServerRpc(InvIndex, _pullOutTime, true);
             return;
@@ -269,7 +271,7 @@ public class PlayerInventory : NetworkBehaviour
     void Drop(int i, bool force = false)
     {
         Item item = Inventory[i].GetComponent<Item>();
-        if(!force && item != null && item.data.cantDrop) return;
+        if(!force && item != null && item.ClientStats.cantDrop) return;
 
         lastDropped = item;
         lastDropTime = Time.time;
@@ -279,7 +281,7 @@ public class PlayerInventory : NetworkBehaviour
         NetworkIDInventory[i] = 0UL;
         SyncClientInventory();
 
-        float _pullOutTime = ClientInventory[InvIndex].data.pullOutTime;
+        float _pullOutTime = ClientInventory[InvIndex].pullOutTime;
         Select(i, _pullOutTime, true);
         SelectServerRpc(i, _pullOutTime, true);
     }
@@ -292,7 +294,7 @@ public class PlayerInventory : NetworkBehaviour
 
             //undroppable items are despawned by the server on death, so just empty the slot
             Item item = Inventory[i] != null ? Inventory[i].GetComponent<Item>() : null;
-            if(item == null || item.data.cantDrop)
+            if(item == null || item.ClientStats.cantDrop)
             {
                 Inventory[i] = handsItem;
                 NetworkIDInventory[i] = 0UL;
@@ -382,7 +384,7 @@ public class PlayerInventory : NetworkBehaviour
 
             if(Inventory[i] != handsItem)
             {
-                if(ClientInventory[i].data == Inventory[i].GetComponent<Item>().data) continue;
+                if(ClientInventory[i].PrefabAsset == Inventory[i].GetComponent<Item>().clientPrefab) continue;
 
                 if(ClientInventory[i].gameObject != handsItem) Destroy(ClientInventory[i].gameObject);
 
@@ -391,6 +393,7 @@ public class PlayerInventory : NetworkBehaviour
                 clientItem.transform.localPosition = Vector3.zero;
                 clientItem.transform.localEulerAngles = Vector3.zero;
                 ClientInventory[i] = clientItem.GetComponent<ItemClient>();
+                ClientInventory[i].PrefabAsset = Inventory[i].GetComponent<Item>().clientPrefab;
 
                 ClientInventory[i].Ammo = Inventory[i].GetComponent<Item>().Ammo.Value;
             } else

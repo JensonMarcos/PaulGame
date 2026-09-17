@@ -7,7 +7,17 @@ public class Item : NetworkBehaviour
     public NetworkVariable<int> Ammo = new();
 
     public GameObject clientPrefab;
-    public ItemData data;
+    ItemClient clientStats;
+
+    public ItemClient ClientStats
+    {
+        get
+        {
+            if (clientStats == null && clientPrefab != null)
+                clientStats = clientPrefab.GetComponent<ItemClient>();
+            return clientStats;
+        }
+    }
 
     public bool hovered;
     [SerializeField] GameObject model;
@@ -32,13 +42,9 @@ public class Item : NetworkBehaviour
         if(IsServer)
         {
             if(PlayerManager.instance != null)
-            {
-                Ammo.Value = PlayerManager.instance.reloadEnabled.Value ? data.ammoCap : data.ammoSpawn;
-            } else
-            {
-                Ammo.Value = data.ammoCap;
-            }
-            
+                Ammo.Value = PlayerManager.instance.reloadEnabled.Value ? ClientStats.ammoCap : ClientStats.ammoSpawn;
+            else
+                Ammo.Value = ClientStats.ammoCap;
         } 
     }
 

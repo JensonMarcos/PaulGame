@@ -23,12 +23,12 @@ public class PlayerAnimations : NetworkBehaviour
     }
 
     //control animator
-    public void UpdateAnimatorValues(PlayerState _state, ItemData _item)
+    public void UpdateAnimatorValues(PlayerState _state, ItemClient _item)
     {
         var _stance = _state.Stance is Stance.Stand or Stance.Sprint ? 1f : 0f;
         var _sprint = _state.Stance is Stance.Sprint? 1f : 0f;
         var _slide = _state.Stance is Stance.Slide? 1f : 0f;
-        var _idleState = _item.type == ItemType.Melee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
+        var _idleState = _item.idleIsMelee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
 
         var _vel = character.transform.InverseTransformDirection(_state.Velocity);
 
@@ -71,15 +71,15 @@ public class PlayerAnimations : NetworkBehaviour
         reloading = _state.Reloading > 0f ? Mathf.Lerp(reloading, _state.Reloading, 30f * Time.deltaTime) : 0f; //MY CODE IS SHIT
         hands.UpdateTransform(camTarget, reloading);
 
-        bool _doIKRight = _item.data.RightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
-        bool _doIKLeft = _item.data.LeftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+        bool _doIKRight = _item.rightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+        bool _doIKLeft = _item.leftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
 
         body.SetLayerWeight(2, _doIKRight ? 1f : 0f);
         //body.SetLayerWeight(3, _doIKLeft ? 1f : 0f);
         
         hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
 
-        Vector3 aimPos = _item.data.position; //if no sight, just keep same position
+        Vector3 aimPos = _item.holdPosition;
         if(_item.sight != null)
         {
             aimPos = camTarget.transform.position - _item.sight.position; ;
@@ -88,8 +88,8 @@ public class PlayerAnimations : NetworkBehaviour
             aimPos = item.transform.localPosition + aimPos;
         }
 
-        item.UpdatePosition(Vector3.Lerp(_item.data.position, aimPos, _state.Aiming), IsOwner);
-        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && _item.data.type != ItemType.Melee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
+        item.UpdatePosition(Vector3.Lerp(_item.holdPosition, aimPos, _state.Aiming), IsOwner);
+        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_item.idleIsMelee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
 
         //fingers.UpdateFingers();
     }

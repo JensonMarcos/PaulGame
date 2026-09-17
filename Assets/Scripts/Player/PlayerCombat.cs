@@ -1,13 +1,16 @@
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public struct CombatInputs
 {
-    public bool Attack;
-    public bool Aim;
-    public bool Reload;
+    public bool FirePressed;
+    public bool FireHeld;
+    public bool FireReleased;
+    public bool AltPressed;
+    public bool AltHeld;
+    public bool AltReleased;
+    public bool ReloadPressed;
 }
 
 public struct ShotPellet : INetworkSerializable
@@ -59,402 +62,175 @@ public struct ShotFx : INetworkSerializable
     }
 }
 
+public struct CombatHit
+{
+    public ShotPellet pellet;
+    public bool isPlayer;
+    public ulong playerId;
+}
+
 public class PlayerCombat : NetworkBehaviour
 {
-    public float Aiming;
-
-    public float Reloading;
-
-    //[SerializeField] PlayerInventory inventory;
     [SerializeField] PlayerCharacter character;
     [SerializeField] PlayerAnimations animations;
     [SerializeField] Transform cam;
 
-    [SerializeField] float aimSpeed;
     [SerializeField] LayerMask shootLayer;
-
     [SerializeField] float upForceMult = 0.5f;
-
     [SerializeField] int playerHitDecalIndex;
     [SerializeField] int crateHitDecalIndex;
-
     [SerializeField] string hitSound = "hitmarker";
 
-    bool wishAttack;
-    bool wishAim;
-    bool wishReload;
-
-    float nextTimeToFire;
-
+    CombatInputs currentInputs;
     ItemClient prevItem;
     Player player;
-    Coroutine reloadCoroutine;
 
     readonly RaycastHit[] shootHitsBuffer = new RaycastHit[32];
     readonly Collider[] explosionOverlapBuffer = new Collider[32];
     readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
-    readonly HashSet<Transform> meleeHitRoots = new HashSet<Transform>();
-    readonly List<ShotPellet> shotPellets = new List<ShotPellet>(16);
 
-    Coroutine meleeSweepCoroutine;
+    public PlayerCharacter Character => character;
+    public Transform Cam => cam;
 
     void Awake()
     {
         player = transform.root.GetComponent<Player>();
     }
 
-    public void SetInputs(CombatInputs inputs, bool _sprinting, bool _readyPull)
+    public void SetInputs(CombatInputs inputs, bool readyPull)
     {
-        wishAttack = inputs.Attack;
-
-        wishAim = inputs.Aim;
-        if (_sprinting || !_readyPull || Reloading > 0) {
-            wishAttack = false;
-            wishAim = false;
-        }
-
-        wishReload = inputs.Reload;         
-        if(!_readyPull || Reloading > 0) wishReload = false;
+        if (!readyPull) inputs = default;
+        currentInputs = inputs;
     }
 
-    public void UpdateCombat(PlayerState _state, ItemClient _item)
+    public void UpdateCombat(PlayerState state, ItemClient item)
     {
-        if(_item.data.type is ItemType.Sniper && nextTimeToFire > Time.time) wishAim = false; 
-
-        Aiming = Mathf.Lerp(Aiming, wishAim ? 1 : 0, Time.deltaTime * aimSpeed);
-
-        if(prevItem != _item)
+        if (prevItem != item)
         {
-            Aiming = 0;
-            if(reloadCoroutine != null)
-            {
-                StopCoroutine(reloadCoroutine);
-                reloadCoroutine = null;
-            }
-            if(meleeSweepCoroutine != null)
-            {
-                StopCoroutine(meleeSweepCoroutine);
-                meleeSweepCoroutine = null;
-            }
-            Reloading = 0;
-        }
-        prevItem = _item;
-
-        if(wishReload && _item.Ammo < _item.data.ammoCap)
-        {
-            reloadCoroutine = StartCoroutine(Reload(_item));
-            return;
+            if (prevItem != null) prevItem.OnUnequip();
+            prevItem = item;
         }
 
-        if(wishAttack) Attack(_item, _state);
-
-        if(wishAim) _item.RightClick(_state, player, true);
+        item.SetInputs(currentInputs);
+        item.Tick(this, state);
     }
 
-    void Attack(ItemClient _item, PlayerState state)
+    public bool TryTrace(Vector3 origin, Vector3 direction, float radius, float range, out RaycastHit hit)
     {
-        ItemData _data = _item.data;
+        int count = radius > 0
+            ? Physics.SphereCastNonAlloc(origin, radius, direction, shootHitsBuffer, range, shootLayer)
+            : Physics.RaycastNonAlloc(origin, direction, shootHitsBuffer, range, shootLayer);
 
-        if(nextTimeToFire > Time.time) return;
-
-        _item.LeftClick(state, player, true);
-
-        if (_data.type is ItemType.Melee)
-        {
-            nextTimeToFire = Time.time + 1f / _data.fireRate;
-
-            if(meleeSweepCoroutine != null) StopCoroutine(meleeSweepCoroutine);
-            meleeSweepCoroutine = StartCoroutine(MeleeSweep(_item));
-
-            SoundManager.Play(_data.AttackSound, cam.position);
-        }
-
-        if (_data.type is ItemType.Gun or ItemType.Shotgun or ItemType.Sniper)
-        {
-            if(!PlayerManager.instance.damageEnabled.Value) return;
-
-            if(_item.Ammo <= 0) {
-                if(PlayerManager.instance.reloadEnabled.Value) reloadCoroutine = StartCoroutine(Reload(_item));
-                return;
-            }
-
-            _item.Ammo--;
-
-            nextTimeToFire = Time.time + 1f / _data.fireRate;
-
-            SoundManager.Play(_data.AttackSound, _item.muzzleTrans.position);
-
-            Vector3 _recoil = new Vector3(-_data.Recoil.x, _data.Recoil.y * (Random.value < 0.5f ? -1.0f : 1.0f), _data.Recoil.z * (Random.value < 0.5f ? -1.0f : 1.0f)) * Mathf.Lerp(1f, _data.ADSRecoilMult, Aiming);
-            float _backKick = -_data.backKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
-            float _rotKick = -_data.rotKick * Mathf.Lerp(1f, _data.ADSAnimMult, Aiming);
-
-            shotPellets.Clear();
-            if(_data.type is ItemType.Shotgun) {
-                for (int i = 0; i < _data.numberOfShots; i++)
-                    Shoot(_item);
-            } else {
-                Shoot(_item);
-            }
-
-            ShotFx fx = BuildShotFx(_item, _recoil, _backKick, _rotKick, true, !_data.useProjectile);
-            PlayShotFx(fx);
-            SendShotServerRpc(fx);
-
-            if(_data.backwardVelocity != 0 && !state.Grounded) {
-                character.AddForce(-cam.forward * _data.backwardVelocity);
-            }
-        }
-    }
-    
-    void Shoot(ItemClient _item)
-    {
-        ItemData _data = _item.data;
-        
-        Vector3 shootDir = cam.forward;
-        if(_data.type != ItemType.Melee)
-        {
-            float curretAccuracy = Mathf.Lerp(_data.accuracy, _data.ADSAccuracy, Aiming);
-            shootDir = cam.forward + new Vector3(Random.insideUnitSphere.x * curretAccuracy,  Random.insideUnitSphere.y * curretAccuracy, Random.insideUnitSphere.z * curretAccuracy);
-
-            if(shootDir.sqrMagnitude > 0.0001f) shootDir.Normalize();
-            else shootDir = cam.forward;
-        }
-
-        Vector3 spawnPos = _data.type != ItemType.Melee ? _item.muzzleTrans.position : cam.position;
-
-        if(_data.useProjectile)
-        {
-            StartCoroutine(FireProjectile(
-                spawnPos,
-                shootDir,
-                _data.projectileSize,
-                _data.projectileSpeed,
-                _data.projectileGravity,
-                _data.projectileHitDamage,
-                _data.projectileExplosionRadius,
-                _data.projectileExplosionDamage,
-                _data.projectileExplosionSelfDamage,
-                _data.projectileLifetime,
-                _data.impactForcePlayer,
-                _data.impactForceObject,
-                _data.projectileHitSound));
-            VFXManager.instance.ProjectileFX(
-                _data.ProjectileIndex,
-                spawnPos,
-                shootDir,
-                _data.projectileSpeed,
-                _data.projectileGravity,
-                _data.projectileSize,
-                _data.projectileLifetime);
-            VFXManager.instance.MuzzleFlashFX(spawnPos);
-            return;
-        }
-        
-        int hitCount = _data.shootRadius > 0
-            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, shootDir, shootHitsBuffer, _data.range, shootLayer)
-            : Physics.RaycastNonAlloc(cam.position, shootDir, shootHitsBuffer, _data.range, shootLayer);
-
-        //closest hit that isnt ourselves or a teammate
         int best = -1;
-        for(int i = 0; i < hitCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            RaycastHit hit = shootHitsBuffer[i];
-            if(hit.transform.root == transform.root) continue;
-            if(IsFriendly(hit.transform.root)) continue;
-            if(best == -1 || hit.distance < shootHitsBuffer[best].distance) best = i;
+            Transform root = shootHitsBuffer[i].transform.root;
+            if (root == transform.root) continue;
+            if (IsFriendly(root)) continue;
+            if (best == -1 || shootHitsBuffer[i].distance < shootHitsBuffer[best].distance)
+                best = i;
         }
 
-        if(best == -1)
+        if (best < 0)
         {
-            if(_data.type != ItemType.Melee)
-            {
-                Vector3 targetPoint = cam.transform.position + shootDir*_data.range;
-                shotPellets.Add(new ShotPellet { end = targetPoint, normal = Vector3.zero, hit = false, trail = true, decal = 0 });
-            }
-
-        } else
-        {
-            ApplyHitscanHit(_item, _data, shootHitsBuffer[best], shootDir);
+            hit = default;
+            return false;
         }
+
+        hit = shootHitsBuffer[best];
+        return true;
     }
 
-    IEnumerator MeleeSweep(ItemClient _item)
+    public int TraceAll(Vector3 origin, Vector3 direction, float radius, float range, List<RaycastHit> results)
     {
-        meleeHitRoots.Clear();
-        float endTime = Time.time + _item.data.meleeHitDuration;
+        results.Clear();
+        int count = radius > 0
+            ? Physics.SphereCastNonAlloc(origin, radius, direction, shootHitsBuffer, range, shootLayer)
+            : Physics.RaycastNonAlloc(origin, direction, shootHitsBuffer, range, shootLayer);
 
-        while (true)
+        for (int i = 0; i < count; i++)
         {
-            MeleeCast(_item);
-            if (Time.time >= endTime) break;
-            yield return null;
+            Transform root = shootHitsBuffer[i].transform.root;
+            if (root == transform.root) continue;
+            if (IsFriendly(root)) continue;
+            results.Add(shootHitsBuffer[i]);
         }
 
-        meleeSweepCoroutine = null;
+        return results.Count;
     }
 
-    void MeleeCast(ItemClient _item)
+    public CombatHit HitscanHit(RaycastHit hit, Vector3 shootDir, float damage, float impactForcePlayer, float impactForceObject, float ragdollForceMult, int decal)
     {
-        ItemData _data = _item.data;
-        Vector3 shootDir = cam.forward;
-
-        int hitCount = _data.shootRadius > 0
-            ? Physics.SphereCastNonAlloc(cam.position, _data.shootRadius, shootDir, shootHitsBuffer, _data.range, shootLayer)
-            : Physics.RaycastNonAlloc(cam.position, shootDir, shootHitsBuffer, _data.range, shootLayer);
-
-        shotPellets.Clear();
-        for (int i = 0; i < hitCount; i++)
-        {
-            RaycastHit hit = shootHitsBuffer[i];
-            Transform hitRoot = hit.transform.root;
-            if (hitRoot == transform.root) continue;
-            if (IsFriendly(hitRoot)) continue;
-            if (!meleeHitRoots.Add(hitRoot)) continue;
-
-            ApplyHitscanHit(_item, _data, hit, shootDir);
-        }
-
-        if (shotPellets.Count == 0) return;
-
-        ShotFx fx = BuildShotFx(_item, Vector3.zero, 0f, 0f, false, false);
-        PlayShotFx(fx);
-        SendShotServerRpc(fx);
+        return ApplyHit(hit, shootDir, damage, impactForcePlayer, impactForceObject, ragdollForceMult, addAttackerVelocity: false, trail: true, decal);
     }
 
-    void ApplyHitscanHit(ItemClient _item, ItemData _data, RaycastHit hitObject, Vector3 shootDir)
+    public CombatHit MeleeHit(RaycastHit hit, Vector3 shootDir, float damage, float impactForcePlayer, float impactForceObject, int decal)
+    {
+        return ApplyHit(hit, shootDir, damage, impactForcePlayer, impactForceObject, 1f, addAttackerVelocity: true, trail: false, decal);
+    }
+
+    CombatHit ApplyHit(RaycastHit hitObject, Vector3 shootDir, float damage, float impactForcePlayer, float impactForceObject, float ragdollForceMult, bool addAttackerVelocity, bool trail, int decal)
     {
         Transform hitRoot = hitObject.transform.root;
+        int decalIndex = decal;
+        bool isPlayer = false;
+        ulong playerId = 0;
 
-        int decalIndex = _data.DecalIndex;
-
-        if (hitRoot.GetComponent<Player>()) //player damage
+        if (hitRoot.GetComponent<Player>())
         {
-            float _damage = hitObject.transform.tag == "Head" ? _data.damage * 2 : _data.damage;
+            float hitDamage = hitObject.transform.CompareTag("Head") ? damage * 2f : damage;
+            Vector3 force = impactForcePlayer == 0f ? Vector3.zero : shootDir * impactForcePlayer + Vector3.up * upForceMult;
+            Vector3 propForce = shootDir * impactForceObject * 0.4f * ragdollForceMult;
 
-            Vector3 _force = _data.impactForcePlayer == 0 ? Vector3.zero : shootDir * _data.impactForcePlayer + Vector3.up * upForceMult;
-            Vector3 _propForce = shootDir * _data.impactForceObject * 0.4f * (_data.type is ItemType.Shotgun ? _data.numberOfShots * 0.5f : 1f);
-            
-            if (_data.type is ItemType.Melee) {
-                _force += character.State.Velocity;
-                _propForce += character.State.Velocity;
-            } 
+            if (addAttackerVelocity)
+            {
+                force += character.State.Velocity;
+                propForce += character.State.Velocity;
+            }
 
-            PlayerManager.instance.DealDamageServerRpc(hitRoot.GetComponent<NetworkObject>().OwnerClientId, _damage, _force, _propForce);
-
+            playerId = hitRoot.GetComponent<NetworkObject>().OwnerClientId;
+            PlayerManager.instance.DealDamageServerRpc(playerId, hitDamage, force, propForce);
             SoundManager.Play(hitSound);
-
             decalIndex = playerHitDecalIndex;
-
-            _item.OnHit(player.playerState, player, true, hitRoot.GetComponent<NetworkObject>().OwnerClientId);
+            isPlayer = true;
         }
-        else if(hitRoot.TryGetComponent(out ItemCrate crate))
+        else if (hitRoot.TryGetComponent(out ItemCrate crate))
         {
             crate.BreakCrateServerRpc();
             decalIndex = crateHitDecalIndex;
         }
-        else if(hitRoot.TryGetComponent(out NetworkProp prop))
+        else if (hitRoot.TryGetComponent(out NetworkProp prop))
         {
-            Vector3 propImpulse = shootDir * _data.impactForceObject;
-            if (_data.type is ItemType.Melee) propImpulse += character.State.Velocity;
+            Vector3 propImpulse = shootDir * impactForceObject;
+            if (addAttackerVelocity) propImpulse += character.State.Velocity;
             prop.ApplyForce(propImpulse, hitObject.point);
-            decalIndex = playerHitDecalIndex; //kinda temp
+            decalIndex = playerHitDecalIndex;
         }
 
-        shotPellets.Add(new ShotPellet {
-            end = hitObject.point,
-            normal = hitObject.normal,
-            hit = true,
-            trail = _data.type != ItemType.Melee,
-            decal = decalIndex
-        });
+        return new CombatHit {
+            pellet = new ShotPellet {
+                end = hitObject.point,
+                normal = hitObject.normal,
+                hit = true,
+                trail = trail,
+                decal = decalIndex
+            },
+            isPlayer = isPlayer,
+            playerId = playerId
+        };
     }
 
-    bool IsFriendly(Transform root)
+    public bool IsFriendly(Transform root)
     {
-        if(root == transform.root) return false;
-        if(!root.TryGetComponent(out Player other)) return false;
+        if (root == transform.root) return false;
+        if (!root.TryGetComponent(out Player other)) return false;
         int myTeam = player.Team.Value;
         return myTeam >= 0 && myTeam == other.Team.Value;
     }
 
-    IEnumerator FireProjectile(
-        Vector3 origin,
-        Vector3 direction,
-        float size,
-        float speed,
-        float gravity,
-        float onHitDamage,
-        float explosionRadius,
-        float explosionDamage,
-        float explosionSelfDamage,
-        float lifetime,
-        float impactForcePlayer,
-        float impactForceObject,
-        string projectileHitSound)
-    {
-        Vector3 position = origin;
-        Vector3 velocity = direction * speed;
-        float age = 0f;
-
-        while (age < lifetime)
-        {
-            yield return new WaitForFixedUpdate();
-
-            float dt = Time.fixedDeltaTime;
-            age += dt;
-            velocity += Vector3.down * gravity * dt;
-
-            Vector3 displacement = velocity * dt;
-            float distance = displacement.magnitude;
-            if (distance <= 0f) continue;
-
-            Vector3 stepDir = displacement / distance;
-            int hitCount = Physics.SphereCastNonAlloc(position, size, stepDir, shootHitsBuffer, distance, shootLayer);
-
-            RaycastHit? bestHit = null;
-            for (int i = 0; i < hitCount; i++)
-            {
-                RaycastHit hit = shootHitsBuffer[i];
-                if (hit.transform.root == transform.root) continue;
-                if (IsFriendly(hit.transform.root)) continue;
-                if (bestHit == null || hit.distance < bestHit.Value.distance)
-                    bestHit = hit;
-            }
-
-            if (bestHit.HasValue)
-            {
-                RaycastHit hit = bestHit.Value;
-                position = hit.point;
-
-                Transform hitRoot = hit.transform.root;
-                if (hitRoot.GetComponent<Player>() != null && hitRoot.TryGetComponent(out NetworkObject netObj))
-                {
-                    PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, onHitDamage, Vector3.zero, Vector3.zero);
-
-                    SoundManager.Play(hitSound);
-                }
-                else if (hitRoot.TryGetComponent(out ItemCrate hitCrate))
-                {
-                    hitCrate.BreakCrateServerRpc();
-                }
-
-                if (explosionRadius > 0)
-                {
-                    ExplosionDamage(position, explosionRadius, explosionDamage, explosionSelfDamage, impactForcePlayer, impactForceObject);
-                }
-
-                SoundManager.Play(projectileHitSound, position);
-                yield break;
-            }
-
-            position += displacement;
-        }
-    }
-
-    void ExplosionDamage(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject)
+    public void Explosion(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject)
     {
         VFXManager.instance.PlayExplosion(center);
-
         explosionHitNetIds.Clear();
 
         int count = Physics.OverlapSphereNonAlloc(center, explosionRadius, explosionOverlapBuffer, shootLayer);
@@ -469,29 +245,26 @@ public class PlayerCombat : NetworkBehaviour
             Vector3 toHit = hitPoint - center;
             float dist = toHit.magnitude;
 
-            //los check - only walls/geometry block LOS, players never block it for other players
-            if (Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer) && losHit.transform.root != root && !losHit.transform.root.TryGetComponent<Player>(out _))
+            if (dist > 0.0001f
+                && Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer)
+                && losHit.transform.root != root
+                && !losHit.transform.root.TryGetComponent<Player>(out _))
                 continue;
 
             float falloff = 1f - Mathf.Pow(Mathf.Clamp01(dist / explosionRadius), 4);
             if (falloff <= 0.0001f) continue;
 
             explosionHitNetIds.Add(netObj.NetworkObjectId);
-
-            Vector3 blastDir = toHit / dist;
+            Vector3 blastDir = dist > 0.0001f ? toHit / dist : Vector3.up;
 
             if (root.GetComponent<Player>() != null)
             {
-                //teammates still get damaged but for the self damage amount
                 bool friendly = root == transform.root || IsFriendly(root);
-                float damage = (friendly ? explosionSelfDamage : explosionDamage) * falloff;
-
+                float dmg = (friendly ? explosionSelfDamage : explosionDamage) * falloff;
                 Vector3 playerForce = impactForcePlayer == 0f ? Vector3.zero : blastDir * impactForcePlayer * falloff;
                 Vector3 ragdollForce = impactForceObject == 0f ? Vector3.zero : blastDir * impactForceObject * falloff;
-
-                PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, damage, playerForce, ragdollForce);
-
-                if(!friendly) SoundManager.Play(hitSound);
+                PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, dmg, playerForce, ragdollForce);
+                if (!friendly) SoundManager.Play(hitSound);
             }
             else if (root.TryGetComponent(out ItemCrate crate))
             {
@@ -504,22 +277,18 @@ public class PlayerCombat : NetworkBehaviour
         }
     }
 
-    ShotFx BuildShotFx(ItemClient item, Vector3 recoil, float backKick, float rotKick, bool playRecoil, bool doMuzzle)
+    public void PlayShotFx(ShotFx fx)
     {
-        ItemData data = item.data;
-        Vector3 muzzle = data.type != ItemType.Melee ? item.muzzleTrans.position : cam.position;
-        return new ShotFx {
-            muzzle = muzzle,
-            recoil = recoil,
-            backKick = backKick,
-            rotKick = rotKick,
-            playRecoil = playRecoil,
-            doMuzzle = doMuzzle,
-            pellets = shotPellets.ToArray()
-        };
+        PlayShotFxLocal(fx);
+        SendShotServerRpc(fx);
     }
 
-    void PlayShotFx(ShotFx fx)
+    public void ReplicateAttack()
+    {
+        ReplicateAttackServerRpc();
+    }
+
+    void PlayShotFxLocal(ShotFx fx)
     {
         if (fx.playRecoil)
             animations.Shoot(fx.recoil, fx.backKick, fx.rotKick);
@@ -544,21 +313,18 @@ public class PlayerCombat : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     void SendShotClientRpc(ShotFx fx, RpcParams rpcParams = default)
     {
-        PlayShotFx(fx);
+        PlayShotFxLocal(fx);
     }
 
+    [Rpc(SendTo.Server)]
+    void ReplicateAttackServerRpc(RpcParams rpcParams = default)
+    {
+        ReplicateAttackClientRpc(RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+    }
 
-    IEnumerator Reload(ItemClient _item) {
-        float _reloadTime = _item.data.reloadSpeed;
-        Reloading = 0;
-        
-        while(Reloading < 1) {
-            Reloading += 1/_reloadTime * Time.deltaTime;
-            yield return null;
-        }
-
-        _item.Ammo = _item.data.ammoCap;
-        Reloading = 0;
-        reloadCoroutine = null;
+    [Rpc(SendTo.SpecifiedInParams)]
+    void ReplicateAttackClientRpc(RpcParams rpcParams = default)
+    {
+        player.playerInventory.ClientInventory[player.playerState.InventoryIndex].PlayAttack();
     }
 }

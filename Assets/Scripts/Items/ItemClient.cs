@@ -1,51 +1,72 @@
 using UnityEngine;
 
-public abstract class ItemAction : MonoBehaviour
+[System.Serializable]
+public struct HandData
 {
-    public virtual void OnLeftClick(PlayerState state, Player player, bool isOwner) { }
-    public virtual void OnRightClick(PlayerState state, Player player, bool isOwner) { }
-    public virtual void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId) { }
-    public virtual void PlayAttack() { }
+    public Transform transform;
+    public Vector3 startPos;
+    public Quaternion startRot;
 }
 
-[System.Serializable]
-public class ItemClient : MonoBehaviour
+public abstract class ItemClient : MonoBehaviour
 {
-    public ItemData data;
+    [Header("Pickup")]
+    public int slot;
+    public bool cantDrop;
+    public float pullOutTime;
+    public int ammoCap;
+    public int ammoSpawn;
+    public bool isAutomatic;
+    public bool canAttackWhileSprinting;
+
+    [Header("View")]
+    public Vector3 holdPosition;
+    public bool rightHandIK;
+    public bool leftHandIK;
+    public bool idleIsMelee;
+    public float adsZoom;
+    public bool useScopeOverlay;
+    public float recoilSnap;
+    public float recoilReturnSpeed;
+    public Vector3 ammoPos;
+    public Vector3 sightPos;
+    public Vector3 adsAmmoPos;
+    public Vector3 widTopBot;
+
     public GameObject model;
     public Transform LHand, RHand;
     public Transform sight, muzzleTrans;
 
-    public ItemAction action;
-
     public int Ammo;
 
-    void Start()
+    public float Aiming { get; protected set; }
+    public float Reloading { get; protected set; }
+
+    public GameObject PrefabAsset { get; set; }
+
+    public bool ShowsHudAmmo => ammoCap > 0;
+
+    protected CombatInputs inputs;
+
+    public virtual void OnUnequip()
     {
-        action = GetComponent<ItemAction>();
+        Aiming = 0f;
+        Reloading = 0f;
     }
 
-    public void LeftClick(PlayerState state, Player player, bool isOwner)
+    public virtual void SetInputs(CombatInputs combatInputs)
     {
-        if(action == null) return;
-        action.OnLeftClick(state, player, isOwner);
+        inputs = combatInputs;
     }
 
-    public void RightClick(PlayerState state, Player player, bool isOwner)
-    {
-        if(action == null) return;
-        action.OnRightClick(state, player, isOwner);
-    }
+    public virtual void Tick(PlayerCombat combat, PlayerState state) { }
 
-    public void OnHit(PlayerState state, Player player, bool isOwner, ulong targetId)
-    {
-        if(action == null) return;
-        action.OnHit(state, player, isOwner, targetId);
-    }
+    public virtual void PlayAttack() { }
 
-    public void PlayAttack()
+    protected bool FireHeldThisFrame => isAutomatic ? inputs.FireHeld : inputs.FirePressed;
+
+    protected bool SprintBlocked(PlayerState state)
     {
-        if(action == null) return;
-        action.PlayAttack();
+        return state.Stance is Stance.Sprint && !canAttackWhileSprinting;
     }
 }
