@@ -88,6 +88,15 @@ MonoBehaviour:
   holdPosition: {x: 0.2, y: -0.2, z: 0.32}
   rightHandIK: 1
   leftHandIK: 1
+  idleIsMelee: 0
+  adsZoom: 0
+  useScopeOverlay: 0
+  recoilSnap: 0
+  recoilReturnSpeed: 0
+  ammoPos: {x: 0, y: 0, z: 0}
+  sightPos: {x: 0, y: 0, z: 0}
+  adsAmmoPos: {x: 0, y: 0, z: 0}
+  widTopBot: {x: 0, y: 0, z: 0}
   model: {fileID: 6886770543828659635}
   LHand: {fileID: 6335927330832414784}
   RHand: {fileID: 5497122024356441343}
@@ -101,6 +110,7 @@ MonoBehaviour:
   meleeHitDuration: 0.12
   impactForceObject: 50
   impactForcePlayer: 10
+  chargeDuration: 0.4
   attackSound: 
   decalIndex: 0
   rightSwing:
@@ -119,8 +129,10 @@ MonoBehaviour:
   arcHeight: 0.15
   swingStartRot: {x: -2, y: -93, z: -40}
   swingEndRot: {x: -2, y: -93, z: -159}
-  tiltAmount: 20
-  tiltMult: -2
+  tiltAmount: -20
+  ChargeOffset: {x: 0.05, y: -0.3, z: 0.3}
+  ChargeRot: {x: -2, y: -93, z: -50}
+  ChargeTilt: 10
 --- !u!1 &4075508730068672177
 GameObject:
   m_ObjectHideFlags: 0

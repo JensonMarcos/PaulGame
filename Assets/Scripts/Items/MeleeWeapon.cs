@@ -12,14 +12,22 @@ public abstract class MeleeWeapon : ItemClient
     public float meleeHitDuration = 0.12f;
     public float impactForceObject;
     public float impactForcePlayer;
+    public float chargeDuration = 0.4f;
     public string attackSound;
     public int decalIndex;
 
     float nextTimeToFire;
+    float charge;
+    bool charging;
     Coroutine sweepCoroutine;
+    protected Coroutine attackRoutine;
+    protected Coroutine chargeRoutine;
     readonly HashSet<Transform> hitRoots = new HashSet<Transform>();
     readonly List<RaycastHit> traces = new List<RaycastHit>(16);
     readonly List<ShotPellet> pellets = new List<ShotPellet>(8);
+
+    protected float ChargeTime => Mathf.Max(chargeDuration, 0.01f);
+    bool AttackPlaying => attackRoutine != null;
 
     void Awake()
     {
@@ -28,35 +36,78 @@ public abstract class MeleeWeapon : ItemClient
 
     public override void OnUnequip()
     {
+        charging = false;
+        charge = 0f;
         StopAllCoroutines();
+        attackRoutine = null;
+        chargeRoutine = null;
+        sweepCoroutine = null;
+        StopCharge();
         base.OnUnequip();
     }
 
     public override void Tick(PlayerCombat combat, PlayerState state)
     {
         Aiming = 0f;
-        if (!FireHeldThisFrame || SprintBlocked(state)) return;
-        if (nextTimeToFire > Time.time) return;
 
+        if (SprintBlocked(state) || state.Stance is Stance.Vault)
+        {
+            CancelCharge(combat);
+            return;
+        }
+
+        if (!charging)
+        {
+            if (AttackPlaying || nextTimeToFire > Time.time) return;
+            if (!inputs.FireHeld && !inputs.FirePressed) return;
+
+            charging = true;
+            charge = 0f;
+            PlayCharge();
+            combat.ReplicateCharge(true);
+        }
+
+        charge = Mathf.Min(1f, charge + Time.deltaTime / ChargeTime);
+
+        if (inputs.FireReleased)
+            Attack(combat);
+        else if (!inputs.FireHeld)
+            CancelCharge(combat);
+    }
+
+    void CancelCharge(PlayerCombat combat)
+    {
+        if (!charging) return;
+        charging = false;
+        charge = 0f;
+        StopCharge();
+        combat.ReplicateCharge(false);
+    }
+
+    void Attack(PlayerCombat combat)
+    {
+        charging = false;
+        float attackCharge = charge;
+        charge = 0f;
         nextTimeToFire = Time.time + 1f / fireRate;
 
         PlayAttack();
         combat.ReplicateAttack();
 
         if (sweepCoroutine != null) StopCoroutine(sweepCoroutine);
-        sweepCoroutine = StartCoroutine(Sweep(combat));
+        sweepCoroutine = StartCoroutine(Sweep(combat, attackCharge));
 
         SoundManager.Play(attackSound, combat.Cam.position);
     }
 
-    IEnumerator Sweep(PlayerCombat combat)
+    IEnumerator Sweep(PlayerCombat combat, float attackCharge)
     {
         hitRoots.Clear();
         float endTime = Time.time + meleeHitDuration;
 
         while (true)
         {
-            Cast(combat);
+            Cast(combat, attackCharge);
             if (Time.time >= endTime) break;
             yield return null;
         }
@@ -64,7 +115,7 @@ public abstract class MeleeWeapon : ItemClient
         sweepCoroutine = null;
     }
 
-    void Cast(PlayerCombat combat)
+    void Cast(PlayerCombat combat, float attackCharge)
     {
         combat.TraceAll(combat.Cam.position, combat.Cam.forward, shootRadius, range, traces);
         pellets.Clear();

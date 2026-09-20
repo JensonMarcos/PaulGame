@@ -7,9 +7,13 @@ public class PunchWeapon : MeleeWeapon
     [SerializeField] float punchSpeed, retractSpeed;
     [SerializeField] float punchHoldTime;
     [SerializeField] float punchDistance = 0.55f;
-    [SerializeField] Vector3 punchEndRot = new Vector3(90, 0, 0);
+    [SerializeField] Vector3 punchEndRot;
     [SerializeField] float tiltAmount;
     [SerializeField] float rotWeight;
+
+    [SerializeField] Vector3 ChargeOffset;
+    [SerializeField] Vector3 ChargeRot;
+    [SerializeField] float ChargeTilt = 10f;
 
     Transform parent;
     PlayerAnimations anim;
@@ -30,16 +34,71 @@ public class PunchWeapon : MeleeWeapon
         cached = true;
     }
 
+    public override void PlayCharge()
+    {
+        Cache();
+        if (chargeRoutine != null) StopCoroutine(chargeRoutine);
+
+        chargeRoutine = StartCoroutine(ChargeAnimation(
+            handedness ? rightPunch : leftPunch,
+            handedness ? 1f : -1.5f,
+            handedness ? 1f : -1f));
+    }
+
     public override void PlayAttack()
     {
         Cache();
-        anim.SetUpperBodyTilt(0f);
+        if (chargeRoutine != null)
+        {
+            StopCoroutine(chargeRoutine);
+            chargeRoutine = null;
+        }
+
+        attackRoutine = StartCoroutine(PunchAnimation(handedness ? rightPunch : leftPunch, handedness ? 2.5f : -1f));   
         handedness = !handedness;
-        StartCoroutine(PunchAnimation(handedness ? rightPunch : leftPunch, handedness ? -1.5f : 1f));
     }
+
+    public override void StopCharge()
+    {
+        if (chargeRoutine != null)
+        {
+            StopCoroutine(chargeRoutine);
+            chargeRoutine = null;
+        }
+        if (!cached) return;
+
+        rightPunch.transform.localPosition = rightPunch.startPos;
+        rightPunch.transform.localRotation = rightPunch.startRot;
+        leftPunch.transform.localPosition = leftPunch.startPos;
+        leftPunch.transform.localRotation = leftPunch.startRot;
+        anim.SetUpperBodyTilt(0f);
+    }
+
+    IEnumerator ChargeAnimation(HandData hand, float tiltMult, float side)
+    {
+        var t = 0f;
+        var x = 0f;
+        while (x < 1f)
+        {
+            yield return new WaitForEndOfFrame();
+            x += Time.deltaTime / ChargeTime;
+            t = -(Mathf.Cos(Mathf.PI * Mathf.Clamp01(x)) - 1f) / 2f;
+
+            Vector3 pos = parent.InverseTransformPoint(cam.position + cam.forward * ChargeOffset.x + cam.up * ChargeOffset.y + cam.right * ChargeOffset.z * side);
+            Quaternion sumbs = Quaternion.Euler(ChargeRot.x, ChargeRot.y * side, ChargeRot.z * side);
+            Quaternion rot = Quaternion.Inverse(parent.rotation) * cam.rotation * sumbs;
+
+            hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, pos, t);
+            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, rot, t * rotWeight);
+            anim.SetUpperBodyTilt(Mathf.Lerp(0f, ChargeTilt * tiltMult, t));
+        }
+    }
+
 
     IEnumerator PunchAnimation(HandData hand, float tiltMult)
     {
+        Vector3 fromPos = hand.transform.localPosition;
+        Quaternion fromRot = hand.transform.localRotation;
         Vector3 punchPos;
         Quaternion punchRot;
 
@@ -54,8 +113,8 @@ public class PunchWeapon : MeleeWeapon
             punchPos = parent.InverseTransformPoint(cam.forward * punchDistance + cam.position);
             punchRot = Quaternion.Inverse(parent.rotation) * cam.rotation * Quaternion.Euler(punchEndRot);
 
-            hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, punchPos, t);
-            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, punchRot, x * rotWeight);
+            hand.transform.localPosition = Vector3.LerpUnclamped(fromPos, punchPos, t);
+            hand.transform.localRotation = Quaternion.Lerp(fromRot, punchRot, x * rotWeight);
 
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
         }
@@ -82,5 +141,6 @@ public class PunchWeapon : MeleeWeapon
         hand.transform.localPosition = hand.startPos;
         hand.transform.localRotation = hand.startRot;
         anim.SetUpperBodyTilt(0f);
+        attackRoutine = null;
     }
 }

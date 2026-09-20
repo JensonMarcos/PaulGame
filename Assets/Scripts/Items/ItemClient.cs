@@ -63,6 +63,10 @@ public abstract class ItemClient : MonoBehaviour
 
     public virtual void PlayAttack() { }
 
+    public virtual void PlayCharge() { }
+
+    public virtual void StopCharge() { }
+
     protected bool FireHeldThisFrame => isAutomatic ? inputs.FireHeld : inputs.FirePressed;
 
     protected bool SprintBlocked(PlayerState state)

@@ -288,6 +288,11 @@ public class PlayerCombat : NetworkBehaviour
         ReplicateAttackServerRpc();
     }
 
+    public void ReplicateCharge(bool charging)
+    {
+        ReplicateChargeServerRpc(charging);
+    }
+
     void PlayShotFxLocal(ShotFx fx)
     {
         if (fx.playRecoil)
@@ -326,5 +331,19 @@ public class PlayerCombat : NetworkBehaviour
     void ReplicateAttackClientRpc(RpcParams rpcParams = default)
     {
         player.playerInventory.ClientInventory[player.playerState.InventoryIndex].PlayAttack();
+    }
+
+    [Rpc(SendTo.Server)]
+    void ReplicateChargeServerRpc(bool charging, RpcParams rpcParams = default)
+    {
+        ReplicateChargeClientRpc(charging, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void ReplicateChargeClientRpc(bool charging, RpcParams rpcParams = default)
+    {
+        ItemClient item = player.playerInventory.ClientInventory[player.playerState.InventoryIndex];
+        if (charging) item.PlayCharge();
+        else item.StopCharge();
     }
 }
