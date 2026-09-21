@@ -121,18 +121,18 @@ MonoBehaviour:
     transform: {fileID: 6335927330832414784}
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}
-  swingSpeed: 6
+  swingSpeed: 8
   retractSpeed: 4
   swingHoldTime: 0
   swingDistance: 0.55
   swingOffset: {x: 0.15, y: 0, z: 0}
   arcHeight: 0.15
-  swingStartRot: {x: -2, y: -93, z: -40}
-  swingEndRot: {x: -2, y: -93, z: -159}
+  swingStartRot: {x: 0, y: -93, z: -40}
+  swingEndRot: {x: 0, y: -93, z: -140}
   tiltAmount: -20
-  ChargeOffset: {x: 0.05, y: -0.3, z: 0.3}
-  ChargeRot: {x: -2, y: -93, z: -50}
-  ChargeTilt: 10
+  ChargeOffset: {x: -0.08, y: -0.04, z: 0}
+  ChargeRot: {x: -10, y: -90, z: -30}
+  ChargeTilt: 20
 --- !u!1 &4075508730068672177
 GameObject:
   m_ObjectHideFlags: 0

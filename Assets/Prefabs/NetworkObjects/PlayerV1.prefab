@@ -200,8 +200,6 @@ Transform:
   m_Children:
   - {fileID: 2955872376453644514}
   - {fileID: 8939073109438496829}
-  - {fileID: 4213844048937791849}
-  - {fileID: 5325181543205267402}
   m_Father: {fileID: 2256187839092922141}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &414835750774043336
@@ -1155,7 +1153,7 @@ Transform:
   m_GameObject: {fileID: 1168106528583448921}
   serializedVersion: 2
   m_LocalRotation: {x: 0.37792248, y: 0.7385215, z: -0.04467977, w: 0.55656475}
-  m_LocalPosition: {x: -0.18413533, y: -0.22681546, z: 0.17667703}
+  m_LocalPosition: {x: -0.2125, y: -0.2268, z: 0.1751}
   m_LocalScale: {x: 0.099999994, y: 0.09999998, z: 0.10000002}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1306,11 +1304,11 @@ Transform:
   m_GameObject: {fileID: 1450730639888495742}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.336, y: -0.512, z: -0.139}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -5, y: -8, z: -4}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2084209997749870633}
+  m_Father: {fileID: 8939073109438496829}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1546160067507482701
 GameObject:
@@ -1640,13 +1638,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03ca45bb53dc94f478358a1b6475653d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChainLength: 2
+  ChainLength: 3
   Target: {fileID: 8939073109438496829}
   Pole: {fileID: 5325181543205267402}
-  Iterations: 4
+  Iterations: 3
   Delta: 0.001
   SnapBackStrength: 0
   Weight: 1
+  FirstBoneWeight: 0.4
 --- !u!54 &3652442336386595582
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2576,7 +2575,8 @@ Transform:
   m_LocalPosition: {x: 0.18100816, y: -0.17386687, z: 0.105172075}
   m_LocalScale: {x: 0.099999964, y: 0.10000002, z: 0.10000001}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4213844048937791849}
   m_Father: {fileID: 2084209997749870633}
   m_LocalEulerAnglesHint: {x: 27.021, y: -108.542, z: -31.254}
 --- !u!33 &952876014100350516
@@ -3636,11 +3636,11 @@ MonoBehaviour:
   punchSpeed: 10
   retractSpeed: 4
   punchHoldTime: 0
-  punchDistance: 0.5
-  punchEndRot: {x: 90, y: 0, z: 0}
-  tiltAmount: -25
+  punchDistance: 0.6
+  punchEndRot: {x: 50, y: -90, z: -90}
+  tiltAmount: -20
   rotWeight: 0.85
-  ChargeOffset: {x: -0.05, y: -0.4, z: 0.25}
+  ChargeOffset: {x: -0.07, y: -0.08, z: 0.06}
   ChargeRot: {x: 0, y: -90, z: -70}
   ChargeTilt: 25
 --- !u!1 &3749683256609901313
@@ -6565,7 +6565,8 @@ Transform:
   m_LocalPosition: {x: -0.18413533, y: -0.22681546, z: 0.17667703}
   m_LocalScale: {x: 0.10000001, y: 0.09999998, z: 0.10000001}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5325181543205267402}
   m_Father: {fileID: 2084209997749870633}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2437153017070722917
@@ -9270,13 +9271,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03ca45bb53dc94f478358a1b6475653d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChainLength: 2
+  ChainLength: 3
   Target: {fileID: 2955872376453644514}
   Pole: {fileID: 4213844048937791849}
-  Iterations: 4
+  Iterations: 3
   Delta: 0.001
   SnapBackStrength: 0
   Weight: 1
+  FirstBoneWeight: 0.4
 --- !u!54 &3272692751565113320
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9683,11 +9685,11 @@ Transform:
   m_GameObject: {fileID: 9212133091171578954}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.15, y: -0.571, z: -0.341}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 5, y: -8, z: -4}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2084209997749870633}
+  m_Father: {fileID: 2955872376453644514}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9216494154485985695
 GameObject:

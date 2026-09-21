@@ -41,6 +41,13 @@ namespace DitzelGames.FastIK
         [Range(0, 1)]
         public float Weight = 1f;
 
+        /// <summary>
+        /// How much the first bone (root of the chain, e.g. shoulder) is allowed to rotate.
+        /// 1 = full IK, 0 = keep the animated pose.
+        /// </summary>
+        [Range(0, 1)]
+        public float FirstBoneWeight = 1f;
+
 
         protected float[] BonesLength; //Target to Origin
         protected float CompleteLength;
@@ -137,6 +144,7 @@ namespace DitzelGames.FastIK
             for (int i = 0; i < Bones.Length; i++)
                 Positions[i] = GetPositionRootSpace(Bones[i]);
 
+            var firstChildStart = Positions.Length > 1 ? Positions[1] : Vector3.zero;
             var targetPosition = GetPositionRootSpace(Target);
             var targetRotation = GetRotationRootSpace(Target);
 
@@ -188,6 +196,23 @@ namespace DitzelGames.FastIK
                     var angle = Vector3.SignedAngle(projectedBone - Positions[i - 1], projectedPole - Positions[i - 1], plane.normal);
                     Positions[i] = Quaternion.AngleAxis(angle, plane.normal) * (Positions[i] - Positions[i - 1]) + Positions[i - 1];
                 }
+            }
+
+            // Limit how far the first bone (shoulder) is allowed to swing, then re-reach with the rest of the chain.
+            if (FirstBoneWeight < 1f && Positions.Length > 1)
+            {
+                var blended = Vector3.Slerp(firstChildStart - Positions[0], Positions[1] - Positions[0], FirstBoneWeight);
+                Positions[1] = Positions[0] + blended.normalized * BonesLength[0];
+
+                for (int i = Positions.Length - 1; i > 1; i--)
+                {
+                    if (i == Positions.Length - 1)
+                        Positions[i] = targetPosition;
+                    else
+                        Positions[i] = Positions[i + 1] + (Positions[i] - Positions[i + 1]).normalized * BonesLength[i];
+                }
+                for (int i = 2; i < Positions.Length; i++)
+                    Positions[i] = Positions[i - 1] + (Positions[i] - Positions[i - 1]).normalized * BonesLength[i - 1];
             }
 
             //set position & rotation

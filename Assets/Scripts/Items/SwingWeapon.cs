@@ -73,6 +73,7 @@ public class SwingWeapon : MeleeWeapon
             leftSwing.transform.localRotation = leftSwing.startRot;
         }
         anim.SetUpperBodyTilt(0f);
+        anim.ResetFirstBoneWeights();
     }
 
     IEnumerator ChargeAnimation(HandData hand, float tilt)
@@ -85,7 +86,7 @@ public class SwingWeapon : MeleeWeapon
             x += Time.deltaTime / ChargeTime;
             t = -(Mathf.Cos(Mathf.PI * Mathf.Clamp01(x)) - 1f) / 2f;
 
-            Vector3 pos = parent.InverseTransformPoint(cam.position + cam.forward * ChargeOffset.x + cam.up * ChargeOffset.y + cam.right * ChargeOffset.z);
+            Vector3 pos = hand.startPos + parent.InverseTransformDirection(cam.forward * ChargeOffset.x + cam.up * ChargeOffset.y + cam.right * ChargeOffset.z);
             Quaternion rot = Quaternion.Inverse(parent.rotation) * cam.rotation * Quaternion.Euler(ChargeRot);
 
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, pos, t);
@@ -123,6 +124,7 @@ public class SwingWeapon : MeleeWeapon
                 hand.transform.localRotation = Quaternion.Lerp(startSwing, endSwing, (x - 0.7f) / 0.3f);
 
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
+            anim.SetFirstBoneWeight(true, t);
         }
 
         yield return new WaitForSeconds(swingHoldTime);
@@ -141,11 +143,13 @@ public class SwingWeapon : MeleeWeapon
             hand.transform.localRotation = Quaternion.Lerp(hand.startRot, endSwing, x);
 
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
+            anim.SetFirstBoneWeight(true, t);
         }
 
         hand.transform.localPosition = hand.startPos;
         hand.transform.localRotation = hand.startRot;
         anim.SetUpperBodyTilt(0f);
+        anim.SetFirstBoneWeight(true, 0f);
         attackRoutine = null;
     }
 }

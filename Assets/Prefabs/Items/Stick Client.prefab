@@ -428,13 +428,13 @@ MonoBehaviour:
   swingSpeed: 10
   retractSpeed: 4
   swingHoldTime: 0
-  swingDistance: 0.35
+  swingDistance: 0.5
   swingOffset: {x: 0.15, y: 0, z: 0}
   arcHeight: 0.2
-  swingStartRot: {x: -2, y: -93, z: -40}
-  swingEndRot: {x: -2, y: -93, z: -150}
+  swingStartRot: {x: 0, y: -93, z: -40}
+  swingEndRot: {x: 0, y: -93, z: -150}
   tiltAmount: -30
-  ChargeOffset: {x: -0.05, y: -0.3, z: 0.3}
+  ChargeOffset: {x: -0.2, y: -0.1, z: 0.05}
   ChargeRot: {x: -30, y: -93, z: -50}
   ChargeTilt: 15
 --- !u!1 &9026881361221196014

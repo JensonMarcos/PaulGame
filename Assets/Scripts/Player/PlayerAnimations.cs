@@ -75,7 +75,7 @@ public class PlayerAnimations : NetworkBehaviour
         bool _doIKLeft = _item.leftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
 
         body.SetLayerWeight(2, _doIKRight ? 1f : 0f);
-        //body.SetLayerWeight(3, _doIKLeft ? 1f : 0f);
+        body.SetLayerWeight(3, _doIKLeft ? 1f : 0f);
         
         hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
 
@@ -109,6 +109,16 @@ public class PlayerAnimations : NetworkBehaviour
     public void SetUpperBodyTilt(float _tilt)
     {
         body.UpperBodyTilt = _tilt;
+    }
+
+    public void SetFirstBoneWeight(bool right, float weight)
+    {
+        hands.SetFirstBoneWeight(right, weight);
+    }
+
+    public void ResetFirstBoneWeights()
+    {
+        hands.ResetFirstBoneWeights();
     }
 
     #region TriggerAnimation

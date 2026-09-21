@@ -36,14 +36,46 @@ public class HandsAnimation : MonoBehaviour
 
     Transform lastTargetTrans;
     float lastReloadingVal;
+    float rFirstBoneRest;
+    float lFirstBoneRest;
+    float rFirstBone;
+    float lFirstBone;
+    bool firstBoneCached;
+
+    void CacheFirstBone()
+    {
+        if (firstBoneCached) return;
+        rFirstBoneRest = rFirstBone = RHand.IK.FirstBoneWeight;
+        lFirstBoneRest = lFirstBone = LHand.IK.FirstBoneWeight;
+        firstBoneCached = true;
+    }
+
+    public void SetFirstBoneWeight(bool right, float attack)
+    {
+        CacheFirstBone();
+        float weight = Mathf.Lerp(right ? rFirstBoneRest : lFirstBoneRest, 1f, Mathf.Clamp01(attack));
+        if (right) rFirstBone = weight;
+        else lFirstBone = weight;
+    }
+
+    public void ResetFirstBoneWeights()
+    {
+        CacheFirstBone();
+        rFirstBone = rFirstBoneRest;
+        lFirstBone = lFirstBoneRest;
+    }
 
     public void UpdateRigs(Transform _rHand, Transform _lHand, bool _rHandIK, bool _lHandIK)
     {
+        CacheFirstBone();
+
         RHandIKWeight = Mathf.Lerp(RHandIKWeight, _rHandIK ? 1f : 0f, weightChangeSpeed * Time.deltaTime);
         LHandIKWeight = Mathf.Lerp(LHandIKWeight, _lHandIK ? 1f : 0f, weightChangeSpeed * Time.deltaTime);
 
         RHand.IK.Weight = RHandIKWeight;
         LHand.IK.Weight = LHandIKWeight;
+        RHand.IK.FirstBoneWeight = rFirstBone;
+        LHand.IK.FirstBoneWeight = lFirstBone;
 
         if (_rHand != null)
         {
