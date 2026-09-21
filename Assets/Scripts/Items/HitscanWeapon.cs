@@ -4,6 +4,9 @@ public class HitscanWeapon : GunWeapon
 {
     [Header("Hitscan")]
     public float damage;
+    public float critDamage;
+
+    [Space]
     public float range;
     public float shootRadius;
     public int numberOfShots;
@@ -29,9 +32,15 @@ public class HitscanWeapon : GunWeapon
                 continue;
             }
 
-            hits[i] = combat.HitscanHit(hit, shootDir, damage, impactForcePlayer, impactForceObject, ragdollMult, decalIndex).pellet;
+            float hitDamage = IsHeadshot(hit) ? critDamage : damage;
+            hits[i] = combat.HitscanHit(hit, shootDir, hitDamage, impactForcePlayer, impactForceObject, ragdollMult, decalIndex).pellet;
         }
 
         combat.PlayShotFx(BuildRecoilFx(muzzleTrans.position, hits, true));
+    }
+
+    static bool IsHeadshot(RaycastHit hit)
+    {
+        return hit.transform.CompareTag("Head") && hit.transform.root.GetComponent<Player>() != null;
     }
 }

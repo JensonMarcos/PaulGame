@@ -219,7 +219,7 @@ public class Player : NetworkBehaviour
             {
                 playerInventory.TryPickUp();
                 playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-                playerCamera.UpdateCam(playerInventory.ClientInventory[i].adsZoom, playerState.Aiming);
+                playerCamera.UpdateCam(playerInventory.ClientInventory[i].AdsZoom, playerState.Aiming);
             }
 
             playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);

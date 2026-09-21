@@ -544,6 +544,7 @@ MonoBehaviour:
   attackSound: gun_sniper
   decalIndex: 0
   damage: 100
+  critDamage: 200
   range: 100
   shootRadius: 0.02
   numberOfShots: 0

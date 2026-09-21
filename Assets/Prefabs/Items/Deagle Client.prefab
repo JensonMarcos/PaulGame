@@ -334,6 +334,15 @@ MonoBehaviour:
   holdPosition: {x: 0.1, y: -0.18, z: 0.3}
   rightHandIK: 1
   leftHandIK: 1
+  idleIsMelee: 0
+  adsZoom: 60
+  useScopeOverlay: 0
+  recoilSnap: 30
+  recoilReturnSpeed: 2
+  ammoPos: {x: -0.0724, y: 0.02, z: 0.1}
+  sightPos: {x: 0, y: 0.083, z: 0.05}
+  adsAmmoPos: {x: -0.1, y: 0.08, z: 0.15}
+  widTopBot: {x: 0.35, y: 0.24, z: 0.12}
   model: {fileID: 6356801777366249474}
   LHand: {fileID: 1449938503926896928}
   RHand: {fileID: 3455767031127936574}
@@ -347,24 +356,17 @@ MonoBehaviour:
   adsAccuracy: 0
   recoil: {x: 8, y: 1, z: 0.5}
   adsRecoilMult: 0.8
-  recoilSnap: 30
-  recoilReturnSpeed: 2
-  adsZoom: 60
   cancelAdsWhileCycling: 0
-  useScopeOverlay: 0
   backKick: 0.2
   rotKick: 25
   adsAnimMult: 0.5
-  ammoPos: {x: -0.0724, y: 0.02, z: 0.1}
-  sightPos: {x: 0, y: 0.083, z: 0.05}
-  adsAmmoPos: {x: -0.1, y: 0.08, z: 0.15}
-  widTopBot: {x: 0.35, y: 0.24, z: 0.12}
   impactForceObject: 50
   impactForcePlayer: 0
   backwardVelocity: 0
   attackSound: gun_deagle
   decalIndex: 0
-  damage: 50
+  damage: 40
+  critDamage: 100
   range: 100
   shootRadius: 0.02
   numberOfShots: 0

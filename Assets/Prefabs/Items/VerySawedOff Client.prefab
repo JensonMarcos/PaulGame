@@ -465,6 +465,7 @@ MonoBehaviour:
   attackSound: gun_sawedoff
   decalIndex: 0
   damage: 4
+  critDamage: 8
   range: 100
   shootRadius: 0.01
   numberOfShots: 16

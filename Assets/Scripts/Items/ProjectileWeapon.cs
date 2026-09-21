@@ -8,12 +8,17 @@ public class ProjectileWeapon : GunWeapon
     public float projectileSize;
     public float projectileSpeed;
     public float projectileGravity;
+    public float projectileLifetime;
+
+    [Space]
     public float projectileHitDamage;
+    public float critDamage;
+    public string projectileHitSound;
+
+    [Space]
     public float projectileExplosionRadius;
     public float projectileExplosionDamage;
     public float projectileExplosionSelfDamage;
-    public float projectileLifetime;
-    public string projectileHitSound;
 
     protected override void Shoot(PlayerCombat combat)
     {
@@ -28,6 +33,7 @@ public class ProjectileWeapon : GunWeapon
             projectileSpeed,
             projectileGravity,
             projectileHitDamage,
+            critDamage,
             projectileExplosionRadius,
             projectileExplosionDamage,
             projectileExplosionSelfDamage,
@@ -57,6 +63,7 @@ public class ProjectileWeapon : GunWeapon
         float speed,
         float gravity,
         float hitDamage,
+        float critDamage,
         float explosionRadius,
         float explosionDamage,
         float explosionSelfDamage,
@@ -89,7 +96,8 @@ public class ProjectileWeapon : GunWeapon
 
                 if (hitRoot.GetComponent<Player>() != null && hitRoot.TryGetComponent(out Unity.Netcode.NetworkObject netObj))
                 {
-                    PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, hitDamage, Vector3.zero, Vector3.zero);
+                    float dmg = hit.transform.CompareTag("Head") ? critDamage : hitDamage;
+                    PlayerManager.instance.DealDamageServerRpc(netObj.OwnerClientId, dmg, Vector3.zero, Vector3.zero);
                     SoundManager.Play("hitmarker");
                 }
                 else if (hitRoot.TryGetComponent(out ItemCrate hitCrate))

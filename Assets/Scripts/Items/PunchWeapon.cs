@@ -3,7 +3,9 @@ using UnityEngine;
 
 public class PunchWeapon : MeleeWeapon
 {
-    [SerializeField] HandData rightPunch, leftPunch;
+    [Header("Punch")]
+    [SerializeField] HandData rightPunch;
+    [SerializeField] HandData leftPunch;
     [SerializeField] float punchSpeed, retractSpeed;
     [SerializeField] float punchHoldTime;
     [SerializeField] float punchDistance = 0.55f;
@@ -11,6 +13,7 @@ public class PunchWeapon : MeleeWeapon
     [SerializeField] float tiltAmount;
     [SerializeField] float rotWeight;
 
+    [Space]
     [SerializeField] Vector3 ChargeOffset;
     [SerializeField] Vector3 ChargeRot;
     [SerializeField] float ChargeTilt = 10f;

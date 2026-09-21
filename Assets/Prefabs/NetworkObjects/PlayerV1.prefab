@@ -1640,7 +1640,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 3
   Target: {fileID: 8939073109438496829}
-  Pole: {fileID: 5325181543205267402}
+  Pole: {fileID: 0}
   Iterations: 3
   Delta: 0.001
   SnapBackStrength: 0
@@ -3593,36 +3593,26 @@ MonoBehaviour:
   slot: 0
   cantDrop: 0
   pullOutTime: 0.3
-  ammoCap: 0
-  ammoSpawn: 0
-  isAutomatic: 0
   canAttackWhileSprinting: 0
   holdPosition: {x: 0, y: 0, z: 0}
   rightHandIK: 0
   leftHandIK: 0
-  idleIsMelee: 0
-  adsZoom: 0
-  useScopeOverlay: 0
-  recoilSnap: 0
-  recoilReturnSpeed: 0
-  ammoPos: {x: 0, y: 0, z: 0}
-  sightPos: {x: 0, y: 0, z: 0}
-  adsAmmoPos: {x: 0, y: 0, z: 0}
-  widTopBot: {x: 0, y: 0, z: 0}
   model: {fileID: 0}
   LHand: {fileID: 8960439865454848169}
   RHand: {fileID: 2087391735233662819}
-  sight: {fileID: 0}
-  muzzleTrans: {fileID: 0}
   Ammo: 0
   fireRate: 4.5
-  damage: 5
-  range: 2.25
-  shootRadius: 0.25
+  chargeDuration: 0.4
   meleeHitDuration: 0.12
+  range: 2.25
+  chargeRange: 2.75
+  shootRadius: 0.25
+  damage: 5
+  critDamage: 10
   impactForceObject: 50
   impactForcePlayer: 10
-  chargeDuration: 0.4
+  chargeKnockback: 15
+  chargeVelocity: 4
   attackSound: 
   decalIndex: 0
   rightPunch:
@@ -9273,7 +9263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 3
   Target: {fileID: 2955872376453644514}
-  Pole: {fileID: 4213844048937791849}
+  Pole: {fileID: 0}
   Iterations: 3
   Delta: 0.001
   SnapBackStrength: 0

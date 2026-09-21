@@ -3,7 +3,9 @@ using UnityEngine;
 
 public class SwingWeapon : MeleeWeapon
 {
-    [SerializeField] HandData rightSwing, leftSwing;
+    [Header("Swing")]
+    [SerializeField] HandData rightSwing;
+    [SerializeField] HandData leftSwing;
     [SerializeField] float swingSpeed, retractSpeed;
     [SerializeField] float swingHoldTime;
     [SerializeField] float swingDistance = 0.55f;
@@ -13,6 +15,7 @@ public class SwingWeapon : MeleeWeapon
     [SerializeField] Vector3 swingEndRot;
     [SerializeField] float tiltAmount = 15f;
 
+    [Space]
     [SerializeField] Vector3 ChargeOffset;
     [SerializeField] Vector3 ChargeRot;
     [SerializeField] float ChargeTilt = 10f;

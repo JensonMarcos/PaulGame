@@ -45,7 +45,7 @@ public class PlayerUI : MonoBehaviour
         float aiming = _state.Aiming;
         bool scoped = false;
 
-        if(_item.useScopeOverlay)
+        if(_item.UseScopeOverlay)
         {
             scoped = aiming > scopeThreshold;
             scope.SetActive(scoped);

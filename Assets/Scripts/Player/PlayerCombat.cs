@@ -178,7 +178,6 @@ public class PlayerCombat : NetworkBehaviour
 
         if (hitRoot.GetComponent<Player>())
         {
-            float hitDamage = hitObject.transform.CompareTag("Head") ? damage * 2f : damage;
             Vector3 force = impactForcePlayer == 0f ? Vector3.zero : shootDir * impactForcePlayer + Vector3.up * upForceMult;
             Vector3 propForce = shootDir * impactForceObject * 0.4f * ragdollForceMult;
 
@@ -189,7 +188,7 @@ public class PlayerCombat : NetworkBehaviour
             }
 
             playerId = hitRoot.GetComponent<NetworkObject>().OwnerClientId;
-            PlayerManager.instance.DealDamageServerRpc(playerId, hitDamage, force, propForce);
+            PlayerManager.instance.DealDamageServerRpc(playerId, damage, force, propForce);
             SoundManager.Play(hitSound);
             decalIndex = playerHitDecalIndex;
             isPlayer = true;

@@ -6,15 +6,25 @@ public abstract class MeleeWeapon : ItemClient
 {
     [Header("Melee")]
     public float fireRate;
-    public float damage;
-    public float range;
-    public float shootRadius;
+    public float chargeDuration = 0.4f;
     public float meleeHitDuration = 0.12f;
+    public float range;
+    public float chargeRange;
+    public float shootRadius;
+
+    [Space]
+    public float damage;
+    public float critDamage;
     public float impactForceObject;
     public float impactForcePlayer;
-    public float chargeDuration = 0.4f;
+    public float chargeKnockback;
+    public float chargeVelocity;
+
+    [Space]
     public string attackSound;
     public int decalIndex;
+
+    public override bool IdleIsMelee => true;
 
     float nextTimeToFire;
     float charge;
@@ -28,11 +38,6 @@ public abstract class MeleeWeapon : ItemClient
 
     protected float ChargeTime => Mathf.Max(chargeDuration, 0.01f);
     bool AttackPlaying => attackRoutine != null;
-
-    void Awake()
-    {
-        idleIsMelee = true;
-    }
 
     public override void OnUnequip()
     {
@@ -91,6 +96,16 @@ public abstract class MeleeWeapon : ItemClient
         charge = 0f;
         nextTimeToFire = Time.time + 1f / fireRate;
 
+        float velocityScale = Mathf.InverseLerp(0.5f, 1f, attackCharge);
+        if (chargeVelocity != 0f && velocityScale > 0f)
+        {
+            Vector3 direction = combat.Cam.forward;
+            float along = Vector3.Dot(combat.Character.Motor.BaseVelocity, direction);
+            float add = Mathf.Min(chargeVelocity * velocityScale, Mathf.Max(0f, chargeVelocity * 2f - along));
+            if (add > 0f)
+                combat.Character.AddForce(direction * add);
+        }
+
         PlayAttack();
         combat.ReplicateAttack();
 
@@ -117,7 +132,8 @@ public abstract class MeleeWeapon : ItemClient
 
     void Cast(PlayerCombat combat, float attackCharge)
     {
-        combat.TraceAll(combat.Cam.position, combat.Cam.forward, shootRadius, range, traces);
+        float hitRange = Mathf.Lerp(range, chargeRange, attackCharge);
+        combat.TraceAll(combat.Cam.position, combat.Cam.forward, shootRadius, hitRange, traces);
         pellets.Clear();
 
         for (int i = 0; i < traces.Count; i++)
@@ -129,8 +145,8 @@ public abstract class MeleeWeapon : ItemClient
             CombatHit result = combat.MeleeHit(
                 hit,
                 combat.Cam.forward,
-                damage,
-                impactForcePlayer,
+                Mathf.Lerp(damage, critDamage, attackCharge),
+                Mathf.Lerp(impactForcePlayer, chargeKnockback, attackCharge),
                 impactForceObject,
                 decalIndex);
 

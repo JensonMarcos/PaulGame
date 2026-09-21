@@ -42,9 +42,9 @@ public class Item : NetworkBehaviour
         if(IsServer)
         {
             if(PlayerManager.instance != null)
-                Ammo.Value = PlayerManager.instance.reloadEnabled.Value ? ClientStats.ammoCap : ClientStats.ammoSpawn;
+                Ammo.Value = PlayerManager.instance.reloadEnabled.Value ? ClientStats.AmmoCap : ClientStats.AmmoSpawn;
             else
-                Ammo.Value = ClientStats.ammoCap;
+                Ammo.Value = ClientStats.AmmoCap;
         } 
     }
 

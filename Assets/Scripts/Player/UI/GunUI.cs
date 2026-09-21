@@ -38,16 +38,16 @@ public class GunUI : MonoBehaviour
             ammo.SetActive(true);
         }
 
-        if(sight.transform.localPosition != _item.sightPos) sight.transform.localPosition = _item.sightPos;
+        if(sight.transform.localPosition != _item.SightPos) sight.transform.localPosition = _item.SightPos;
 
         sight.SetActive(aiming);
         ammo.SetActive(!scoped);
         
-        width.sizeDelta = new Vector2(_item.widTopBot.x , width.sizeDelta.y);
-        top.sizeDelta = new Vector2(top.sizeDelta.x, _item.widTopBot.y);
-        bottom.sizeDelta = new Vector2(bottom.sizeDelta.x, _item.widTopBot.z);
+        width.sizeDelta = new Vector2(_item.WidTopBot.x , width.sizeDelta.y);
+        top.sizeDelta = new Vector2(top.sizeDelta.x, _item.WidTopBot.y);
+        bottom.sizeDelta = new Vector2(bottom.sizeDelta.x, _item.WidTopBot.z);
 
-        targetAmmoPos = aiming ? _item.adsAmmoPos : _item.ammoPos; 
+        targetAmmoPos = aiming ? _item.AdsAmmoPos : _item.AmmoPos; 
         ammo.transform.localPosition = Vector3.Lerp(ammo.transform.localPosition, targetAmmoPos, speed * Time.deltaTime);
         ammo.transform.localEulerAngles = new Vector3(Mathf.Lerp(ammo.transform.localEulerAngles.x, aiming ? 0f : 15f, speed * Time.deltaTime), 0f, 0f);
 
@@ -61,9 +61,9 @@ public class GunUI : MonoBehaviour
             if(reloading > 0.925f)
                 SetAmmo(-2, Color.red);
             else
-                SetAmmo((int)(_item.ammoCap * (reloading/0.90f)), Color.red);
+                SetAmmo((int)(_item.AmmoCap * (reloading/0.90f)), Color.red);
         } else {
-            SetAmmo(_item.Ammo, (_item.Ammo < _item.ammoCap * 0.25) ? Color.red : Color.white);
+            SetAmmo(_item.Ammo, (_item.Ammo < _item.AmmoCap * 0.25) ? Color.red : Color.white);
         }
     }
 

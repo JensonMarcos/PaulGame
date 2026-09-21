@@ -94,6 +94,7 @@ MonoBehaviour:
   projectileSpeed: 60
   projectileGravity: 6
   projectileHitDamage: 33
+  critDamage: 66
   projectileExplosionRadius: 5.5
   projectileExplosionDamage: 33
   projectileExplosionSelfDamage: 15

@@ -42,8 +42,8 @@ public class PlayerCamera : MonoBehaviour
         realRotation = new Vector3(Mathf.Clamp(realRotation.x + yMovement, -89.9f, 89.9f), realRotation.y + xMovement, 0);
 
         //cam offset
-        targetRot = Vector3.Lerp(targetRot, Vector3.zero, _item.recoilReturnSpeed * Time.deltaTime);
-        offsetRot = Vector3.Slerp(offsetRot, targetRot, _item.recoilSnap * Time.deltaTime);
+        targetRot = Vector3.Lerp(targetRot, Vector3.zero, _item.RecoilReturnSpeed * Time.deltaTime);
+        offsetRot = Vector3.Slerp(offsetRot, targetRot, _item.RecoilSnap * Time.deltaTime);
 
         //Apply rotation to body
         Vector3 newRot = realRotation + offsetRot;

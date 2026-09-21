@@ -28,7 +28,7 @@ public class PlayerAnimations : NetworkBehaviour
         var _stance = _state.Stance is Stance.Stand or Stance.Sprint ? 1f : 0f;
         var _sprint = _state.Stance is Stance.Sprint? 1f : 0f;
         var _slide = _state.Stance is Stance.Slide? 1f : 0f;
-        var _idleState = _item.idleIsMelee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
+        var _idleState = _item.IdleIsMelee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
 
         var _vel = character.transform.InverseTransformDirection(_state.Velocity);
 
@@ -80,16 +80,16 @@ public class PlayerAnimations : NetworkBehaviour
         hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
 
         Vector3 aimPos = _item.holdPosition;
-        if(_item.sight != null)
+        if(_item.Sight != null)
         {
-            aimPos = camTarget.transform.position - _item.sight.position; ;
+            aimPos = camTarget.transform.position - _item.Sight.position;
 
             aimPos = item.transform.parent.InverseTransformVector(aimPos);
             aimPos = item.transform.localPosition + aimPos;
         }
 
         item.UpdatePosition(Vector3.Lerp(_item.holdPosition, aimPos, _state.Aiming), IsOwner);
-        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_item.idleIsMelee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
+        item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_item.IdleIsMelee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
 
         //fingers.UpdateFingers();
     }

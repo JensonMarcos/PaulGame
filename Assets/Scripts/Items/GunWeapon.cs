@@ -5,21 +5,57 @@ public abstract class GunWeapon : ItemClient
 {
     [Header("Gun")]
     public float fireRate;
+    public bool isAutomatic;
     public float reloadSpeed;
-    public float aimLerpSpeed = 20f;
+    public int ammoCap;
+    public int ammoSpawn;
+
+    [Space]
     public float accuracy;
     public float adsAccuracy;
+    public float aimLerpSpeed = 20f;
+    public float adsZoom;
+    public bool useScopeOverlay;
+    public bool cancelAdsWhileCycling;
+
+    [Space]
     public Vector3 recoil;
     public float adsRecoilMult;
-    public bool cancelAdsWhileCycling;
+    public float recoilSnap;
+    public float recoilReturnSpeed;
     public float backKick;
     public float rotKick;
     public float adsAnimMult;
+
+    [Space]
     public float impactForceObject;
     public float impactForcePlayer;
     public float backwardVelocity;
     public string attackSound;
     public int decalIndex;
+
+    [Space]
+    [Header("View")]
+    public bool idleIsMelee;
+    public Transform sight;
+    public Transform muzzleTrans;
+    public Vector3 ammoPos;
+    public Vector3 sightPos;
+    public Vector3 adsAmmoPos;
+    public Vector3 widTopBot;
+
+    public override bool IdleIsMelee => idleIsMelee;
+    public override float AdsZoom => adsZoom;
+    public override bool UseScopeOverlay => useScopeOverlay;
+    public override float RecoilSnap => recoilSnap;
+    public override float RecoilReturnSpeed => recoilReturnSpeed;
+    public override int AmmoCap => ammoCap;
+    public override int AmmoSpawn => ammoSpawn;
+    public override Vector3 AmmoPos => ammoPos;
+    public override Vector3 SightPos => sightPos;
+    public override Vector3 AdsAmmoPos => adsAmmoPos;
+    public override Vector3 WidTopBot => widTopBot;
+    public override Transform Sight => sight;
 
     float nextTimeToFire;
     Coroutine reloadCoroutine;
@@ -74,6 +110,8 @@ public abstract class GunWeapon : ItemClient
     }
 
     protected abstract void Shoot(PlayerCombat combat);
+
+    bool FireHeldThisFrame => isAutomatic ? inputs.FireHeld : inputs.FirePressed;
 
     void ConsumeShot()
     {

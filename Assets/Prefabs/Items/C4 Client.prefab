@@ -81,36 +81,26 @@ MonoBehaviour:
   slot: 0
   cantDrop: 1
   pullOutTime: 0.5
-  ammoCap: 0
-  ammoSpawn: 0
-  isAutomatic: 0
   canAttackWhileSprinting: 1
   holdPosition: {x: 0.2, y: -0.2, z: 0.32}
   rightHandIK: 1
   leftHandIK: 1
-  idleIsMelee: 0
-  adsZoom: 0
-  useScopeOverlay: 0
-  recoilSnap: 0
-  recoilReturnSpeed: 0
-  ammoPos: {x: 0, y: 0, z: 0}
-  sightPos: {x: 0, y: 0, z: 0}
-  adsAmmoPos: {x: 0, y: 0, z: 0}
-  widTopBot: {x: 0, y: 0, z: 0}
   model: {fileID: 6886770543828659635}
   LHand: {fileID: 6335927330832414784}
   RHand: {fileID: 5497122024356441343}
-  sight: {fileID: 0}
-  muzzleTrans: {fileID: 0}
   Ammo: 0
   fireRate: 4
-  damage: 0
-  range: 3.35
-  shootRadius: 0.15
-  meleeHitDuration: 0.12
-  impactForceObject: 50
-  impactForcePlayer: 10
   chargeDuration: 0.4
+  meleeHitDuration: 0.12
+  range: 2.75
+  chargeRange: 3.25
+  shootRadius: 0.25
+  damage: 0
+  critDamage: 0
+  impactForceObject: 50
+  impactForcePlayer: 20
+  chargeKnockback: 30
+  chargeVelocity: 8
   attackSound: 
   decalIndex: 0
   rightSwing:

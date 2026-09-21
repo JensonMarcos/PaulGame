@@ -4,49 +4,50 @@ using UnityEngine;
 public struct HandData
 {
     public Transform transform;
-    public Vector3 startPos;
-    public Quaternion startRot;
+    [HideInInspector] public Vector3 startPos;
+    [HideInInspector] public Quaternion startRot;
 }
 
 public abstract class ItemClient : MonoBehaviour
 {
-    [Header("Pickup")]
+    [Header("Item")]
     public int slot;
     public bool cantDrop;
     public float pullOutTime;
-    public int ammoCap;
-    public int ammoSpawn;
-    public bool isAutomatic;
     public bool canAttackWhileSprinting;
 
+    [Space]
     [Header("View")]
     public Vector3 holdPosition;
     public bool rightHandIK;
     public bool leftHandIK;
-    public bool idleIsMelee;
-    public float adsZoom;
-    public bool useScopeOverlay;
-    public float recoilSnap;
-    public float recoilReturnSpeed;
-    public Vector3 ammoPos;
-    public Vector3 sightPos;
-    public Vector3 adsAmmoPos;
-    public Vector3 widTopBot;
-
     public GameObject model;
-    public Transform LHand, RHand;
-    public Transform sight, muzzleTrans;
+    public Transform LHand;
+    public Transform RHand;
 
-    public int Ammo;
+    [HideInInspector] public int Ammo;
+
+    public virtual bool IdleIsMelee => false;
+    public virtual float AdsZoom => 0f;
+    public virtual bool UseScopeOverlay => false;
+    public virtual float RecoilSnap => 0f;
+    public virtual float RecoilReturnSpeed => 0f;
+    public virtual int AmmoCap => 0;
+    public virtual int AmmoSpawn => 0;
+    public virtual Vector3 AmmoPos => default;
+    public virtual Vector3 SightPos => default;
+    public virtual Vector3 AdsAmmoPos => default;
+    public virtual Vector3 WidTopBot => default;
+    public virtual Transform Sight => null;
+
+    public bool ShowsHudAmmo => AmmoCap > 0;
+
+    protected CombatInputs inputs;
 
     public float Aiming { get; protected set; }
     public float Reloading { get; protected set; }
 
     public GameObject PrefabAsset { get; set; }
-
-    public bool ShowsHudAmmo => ammoCap > 0;
-
-    protected CombatInputs inputs;
 
     public virtual void OnUnequip()
     {
@@ -66,8 +67,6 @@ public abstract class ItemClient : MonoBehaviour
     public virtual void PlayCharge() { }
 
     public virtual void StopCharge() { }
-
-    protected bool FireHeldThisFrame => isAutomatic ? inputs.FireHeld : inputs.FirePressed;
 
     protected bool SprintBlocked(PlayerState state)
     {
