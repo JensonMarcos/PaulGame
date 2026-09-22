@@ -76,7 +76,6 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] Transform cam;
 
     [SerializeField] LayerMask shootLayer;
-    [SerializeField] float upForceMult = 0.5f;
     [SerializeField] int playerHitDecalIndex;
     [SerializeField] int crateHitDecalIndex;
     [SerializeField] string hitSound = "hitmarker";
@@ -178,7 +177,7 @@ public class PlayerCombat : NetworkBehaviour
 
         if (hitRoot.GetComponent<Player>())
         {
-            Vector3 force = impactForcePlayer == 0f ? Vector3.zero : shootDir * impactForcePlayer + Vector3.up * upForceMult;
+            Vector3 force = impactForcePlayer == 0f ? Vector3.zero : shootDir * impactForcePlayer;
             Vector3 propForce = shootDir * impactForceObject * 0.4f * ragdollForceMult;
 
             if (addAttackerVelocity)
@@ -282,9 +281,9 @@ public class PlayerCombat : NetworkBehaviour
         SendShotServerRpc(fx);
     }
 
-    public void ReplicateAttack()
+    public void ReplicateAttack(bool uppercut = false)
     {
-        ReplicateAttackServerRpc();
+        ReplicateAttackServerRpc(uppercut);
     }
 
     public void ReplicateCharge(bool charging)
@@ -321,15 +320,15 @@ public class PlayerCombat : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void ReplicateAttackServerRpc(RpcParams rpcParams = default)
+    void ReplicateAttackServerRpc(bool uppercut, RpcParams rpcParams = default)
     {
-        ReplicateAttackClientRpc(RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+        ReplicateAttackClientRpc(uppercut, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
     }
 
     [Rpc(SendTo.SpecifiedInParams)]
-    void ReplicateAttackClientRpc(RpcParams rpcParams = default)
+    void ReplicateAttackClientRpc(bool uppercut, RpcParams rpcParams = default)
     {
-        player.playerInventory.ClientInventory[player.playerState.InventoryIndex].PlayAttack();
+        player.playerInventory.ClientInventory[player.playerState.InventoryIndex].PlayAttack(uppercut);
     }
 
     [Rpc(SendTo.Server)]

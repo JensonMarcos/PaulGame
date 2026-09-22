@@ -393,9 +393,10 @@ MonoBehaviour:
   LHand: {fileID: 8292046940419522357}
   RHand: {fileID: 7067766152765135626}
   Ammo: 0
-  fireRate: 3.5
+  fireRate: 3
+  onHitCooldownReduction: 0.15
   chargeDuration: 0.4
-  meleeHitDuration: 0.12
+  meleeHitDuration: 0.1
   range: 2.75
   chargeRange: 3.25
   shootRadius: 0.25
@@ -403,6 +404,7 @@ MonoBehaviour:
   critDamage: 0
   impactForceObject: 100
   impactForcePlayer: 20
+  uppercutForce: 4
   chargeKnockback: 30
   chargeVelocity: 8
   attackSound: 
@@ -424,6 +426,9 @@ MonoBehaviour:
   swingStartRot: {x: 0, y: -93, z: -40}
   swingEndRot: {x: 0, y: -93, z: -150}
   tiltAmount: -30
+  uppercutArc: 0.2
+  uppercutStartRot: {x: 0, y: -93, z: -150}
+  uppercutEndRot: {x: 0, y: -93, z: -90}
   ChargeOffset: {x: -0.2, y: -0.1, z: 0.05}
   ChargeRot: {x: -30, y: -93, z: -50}
   ChargeTilt: 15

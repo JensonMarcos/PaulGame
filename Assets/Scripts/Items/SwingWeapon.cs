@@ -13,7 +13,10 @@ public class SwingWeapon : MeleeWeapon
     [SerializeField] float arcHeight = 0.15f;
     [SerializeField] Vector3 swingStartRot;
     [SerializeField] Vector3 swingEndRot;
-    [SerializeField] float tiltAmount = 15f;
+    [SerializeField] float tiltAmount = 15f;    
+    [SerializeField] float uppercutArc = 0.2f;
+    [SerializeField] Vector3 uppercutStartRot;
+    [SerializeField] Vector3 uppercutEndRot;
 
     [Space]
     [SerializeField] Vector3 ChargeOffset;
@@ -44,19 +47,23 @@ public class SwingWeapon : MeleeWeapon
     public override void PlayCharge()
     {
         Cache();
-        if (chargeRoutine != null) StopCoroutine(chargeRoutine);
+        StopAttackRoutine();
+        StopCharge();
         chargeRoutine = StartCoroutine(ChargeAnimation(rightSwing, 1f));
     }
 
-    public override void PlayAttack()
+    public override void PlayAttack(bool uppercut = false)
     {
         Cache();
+        StopAttackRoutine();
         if (chargeRoutine != null)
         {
             StopCoroutine(chargeRoutine);
             chargeRoutine = null;
         }
-        attackRoutine = StartCoroutine(SwingAnimation(rightSwing, 1f));
+        attackRoutine = StartCoroutine(uppercut
+            ? UppercutAnimation(rightSwing, 1f)
+            : SwingAnimation(rightSwing, 1f));
     }
 
     public override void StopCharge()
@@ -143,6 +150,81 @@ public class SwingWeapon : MeleeWeapon
             swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
             var arc = parent.InverseTransformDirection(cam.up) * -Mathf.Sin(x * Mathf.PI) * arcHeight;
             hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, swingPos, t) + arc;
+            hand.transform.localRotation = Quaternion.Lerp(hand.startRot, endSwing, x);
+
+            anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
+            anim.SetFirstBoneWeight(true, t);
+        }
+
+        hand.transform.localPosition = hand.startPos;
+        hand.transform.localRotation = hand.startRot;
+        anim.SetUpperBodyTilt(0f);
+        anim.SetFirstBoneWeight(true, 0f);
+        attackRoutine = null;
+    }
+
+    IEnumerator UppercutAnimation(HandData hand, float tiltMult)
+    {
+        Vector3 fromPos = hand.transform.localPosition;
+        Quaternion fromRot = hand.transform.localRotation;
+        Vector3 swingPos;
+        var startSwing = Quaternion.Euler(uppercutStartRot);
+        var endSwing = Quaternion.Euler(uppercutEndRot);
+
+        var t = 0f;
+        var x = 0f;
+        while (x < 1)
+        {
+            yield return new WaitForEndOfFrame();
+            x += swingSpeed * Time.deltaTime * 1.1f;
+            t = 2.70158f * x * x * x - 1.70158f * x * x;
+
+            swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
+            var arc = parent.InverseTransformDirection(cam.up) * -Mathf.Sin(Mathf.Clamp01(x) * Mathf.PI) * uppercutArc;
+            hand.transform.localPosition = Vector3.LerpUnclamped(fromPos, swingPos, t) + arc;
+
+            if (x < 0.2f)
+                hand.transform.localRotation = Quaternion.Lerp(fromRot, startSwing, x / 0.2f);
+            else if (x < 0.7f)
+                hand.transform.localRotation = startSwing;
+            else
+                hand.transform.localRotation = Quaternion.Lerp(startSwing, endSwing, (x - 0.7f) / 0.3f);
+
+            anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));
+            anim.SetFirstBoneWeight(true, t);
+        }
+
+        yield return new WaitForSeconds(swingHoldTime);
+
+        float upTime = 0.5f / Mathf.Max(retractSpeed, 0.01f);
+        float u = 0f;
+        while (u < 1f)
+        {
+            yield return new WaitForEndOfFrame();
+            u += Time.deltaTime / upTime;
+            float e = -(Mathf.Cos(Mathf.PI * Mathf.Clamp01(u)) - 1f) / 2f;
+
+            swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
+            Vector3 up = parent.InverseTransformDirection(cam.up) * uppercutArc;
+            hand.transform.localPosition = swingPos + up * e;
+            hand.transform.localRotation = endSwing;
+
+            anim.SetUpperBodyTilt(tiltAmount * tiltMult);
+            anim.SetFirstBoneWeight(true, 1f);
+        }
+
+        t = 1f;
+        x = 1f;
+        while (x > 0)
+        {
+            yield return new WaitForEndOfFrame();
+            x -= retractSpeed * Time.deltaTime;
+            t = -(Mathf.Cos(Mathf.PI * x) - 1) / 2;
+
+            swingPos = parent.InverseTransformPoint(cam.forward * swingDistance + cam.position) + swingOffset;
+            Vector3 raised = swingPos + parent.InverseTransformDirection(cam.up) * uppercutArc;
+            var arc = parent.InverseTransformDirection(cam.up) * Mathf.Sin(x * Mathf.PI) * arcHeight;
+            hand.transform.localPosition = Vector3.LerpUnclamped(hand.startPos, raised, t) + arc;
             hand.transform.localRotation = Quaternion.Lerp(hand.startRot, endSwing, x);
 
             anim.SetUpperBodyTilt(Mathf.Lerp(0, tiltAmount * tiltMult, t));

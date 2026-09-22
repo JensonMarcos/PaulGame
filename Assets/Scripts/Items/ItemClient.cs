@@ -62,7 +62,7 @@ public abstract class ItemClient : MonoBehaviour
 
     public virtual void Tick(PlayerCombat combat, PlayerState state) { }
 
-    public virtual void PlayAttack() { }
+    public virtual void PlayAttack(bool uppercut = false) { }
 
     public virtual void PlayCharge() { }
 

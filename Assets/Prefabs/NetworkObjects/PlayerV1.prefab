@@ -1864,7 +1864,6 @@ MonoBehaviour:
   shootLayer:
     serializedVersion: 2
     m_Bits: 1729
-  upForceMult: 3
   playerHitDecalIndex: 1
   crateHitDecalIndex: 2
   hitSound: hitmarker
@@ -3601,7 +3600,8 @@ MonoBehaviour:
   LHand: {fileID: 8960439865454848169}
   RHand: {fileID: 2087391735233662819}
   Ammo: 0
-  fireRate: 4.5
+  fireRate: 3.7
+  onHitCooldownReduction: 0.05
   chargeDuration: 0.4
   meleeHitDuration: 0.12
   range: 2.25
@@ -3611,8 +3611,9 @@ MonoBehaviour:
   critDamage: 10
   impactForceObject: 50
   impactForcePlayer: 10
+  uppercutForce: 2.5
   chargeKnockback: 15
-  chargeVelocity: 4
+  chargeVelocity: 5
   attackSound: 
   decalIndex: 0
   rightPunch:
@@ -3624,12 +3625,14 @@ MonoBehaviour:
     startPos: {x: 0, y: 0, z: 0}
     startRot: {x: 0, y: 0, z: 0, w: 0}
   punchSpeed: 10
-  retractSpeed: 4
+  retractSpeed: 4.5
   punchHoldTime: 0
   punchDistance: 0.6
   punchEndRot: {x: 50, y: -90, z: -90}
   tiltAmount: -20
   rotWeight: 0.85
+  uppercutArc: 0.2
+  uppercutEndRot: {x: 0, y: -90, z: -40}
   ChargeOffset: {x: -0.07, y: -0.08, z: 0.06}
   ChargeRot: {x: 0, y: -90, z: -70}
   ChargeTilt: 25

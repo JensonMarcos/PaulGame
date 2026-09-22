@@ -6,6 +6,7 @@ public abstract class MeleeWeapon : ItemClient
 {
     [Header("Melee")]
     public float fireRate;
+    public float onHitCooldownReduction;
     public float chargeDuration = 0.4f;
     public float meleeHitDuration = 0.12f;
     public float range;
@@ -17,6 +18,7 @@ public abstract class MeleeWeapon : ItemClient
     public float critDamage;
     public float impactForceObject;
     public float impactForcePlayer;
+    public float uppercutForce;
     public float chargeKnockback;
     public float chargeVelocity;
 
@@ -27,6 +29,7 @@ public abstract class MeleeWeapon : ItemClient
     public override bool IdleIsMelee => true;
 
     float nextTimeToFire;
+    bool hitCooldownReduced;
     float charge;
     bool charging;
     Coroutine sweepCoroutine;
@@ -37,7 +40,13 @@ public abstract class MeleeWeapon : ItemClient
     readonly List<ShotPellet> pellets = new List<ShotPellet>(8);
 
     protected float ChargeTime => Mathf.Max(chargeDuration, 0.01f);
-    bool AttackPlaying => attackRoutine != null;
+
+    protected void StopAttackRoutine()
+    {
+        if (attackRoutine == null) return;
+        StopCoroutine(attackRoutine);
+        attackRoutine = null;
+    }
 
     public override void OnUnequip()
     {
@@ -63,11 +72,12 @@ public abstract class MeleeWeapon : ItemClient
 
         if (!charging)
         {
-            if (AttackPlaying || nextTimeToFire > Time.time) return;
+            if (nextTimeToFire > Time.time) return;
             if (!inputs.FireHeld && !inputs.FirePressed) return;
 
             charging = true;
             charge = 0f;
+            //StopAttackRoutine();
             PlayCharge();
             combat.ReplicateCharge(true);
         }
@@ -75,7 +85,7 @@ public abstract class MeleeWeapon : ItemClient
         charge = Mathf.Min(1f, charge + Time.deltaTime / ChargeTime);
 
         if (inputs.FireReleased)
-            Attack(combat);
+            Attack(combat, state);
         else if (!inputs.FireHeld)
             CancelCharge(combat);
     }
@@ -89,12 +99,13 @@ public abstract class MeleeWeapon : ItemClient
         combat.ReplicateCharge(false);
     }
 
-    void Attack(PlayerCombat combat)
+    void Attack(PlayerCombat combat, PlayerState state)
     {
         charging = false;
         float attackCharge = charge;
         charge = 0f;
         nextTimeToFire = Time.time + 1f / fireRate;
+        bool uppercut = state.Velocity.y > 0.1f;
 
         float velocityScale = Mathf.InverseLerp(0.5f, 1f, attackCharge);
         if (chargeVelocity != 0f && velocityScale > 0f)
@@ -106,23 +117,25 @@ public abstract class MeleeWeapon : ItemClient
                 combat.Character.AddForce(direction * add);
         }
 
-        PlayAttack();
-        combat.ReplicateAttack();
+        //StopAttackRoutine();
+        PlayAttack(uppercut);
+        combat.ReplicateAttack(uppercut);
 
         if (sweepCoroutine != null) StopCoroutine(sweepCoroutine);
-        sweepCoroutine = StartCoroutine(Sweep(combat, attackCharge));
+        sweepCoroutine = StartCoroutine(Sweep(combat, attackCharge, uppercut));
 
         SoundManager.Play(attackSound, combat.Cam.position);
     }
 
-    IEnumerator Sweep(PlayerCombat combat, float attackCharge)
+    IEnumerator Sweep(PlayerCombat combat, float attackCharge, bool uppercut)
     {
         hitRoots.Clear();
+        hitCooldownReduced = false;
         float endTime = Time.time + meleeHitDuration;
 
         while (true)
         {
-            Cast(combat, attackCharge);
+            Cast(combat, attackCharge, uppercut);
             if (Time.time >= endTime) break;
             yield return null;
         }
@@ -130,11 +143,12 @@ public abstract class MeleeWeapon : ItemClient
         sweepCoroutine = null;
     }
 
-    void Cast(PlayerCombat combat, float attackCharge)
+    void Cast(PlayerCombat combat, float attackCharge, bool uppercut)
     {
         float hitRange = Mathf.Lerp(range, chargeRange, attackCharge);
         combat.TraceAll(combat.Cam.position, combat.Cam.forward, shootRadius, hitRange, traces);
         pellets.Clear();
+        Vector3 hitDir = uppercut ? (Vector3.up + 0.3f*combat.Cam.forward).normalized : combat.Cam.forward;
 
         for (int i = 0; i < traces.Count; i++)
         {
@@ -144,16 +158,23 @@ public abstract class MeleeWeapon : ItemClient
 
             CombatHit result = combat.MeleeHit(
                 hit,
-                combat.Cam.forward,
+                hitDir,
                 Mathf.Lerp(damage, critDamage, attackCharge),
-                Mathf.Lerp(impactForcePlayer, chargeKnockback, attackCharge),
-                impactForceObject,
+                uppercut ? uppercutForce : Mathf.Lerp(impactForcePlayer, chargeKnockback, attackCharge),
+                impactForceObject * (uppercut ? 0.5f : 1f),
                 decalIndex);
 
             pellets.Add(result.pellet);
 
             if (result.isPlayer)
+            {
                 OnPlayerHit(result.playerId);
+                if (!hitCooldownReduced && onHitCooldownReduction > 0f)
+                {
+                    hitCooldownReduced = true;
+                    nextTimeToFire -= onHitCooldownReduction;
+                }
+            }
         }
 
         if (pellets.Count == 0) return;
