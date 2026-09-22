@@ -9,7 +9,7 @@ public class ItemCrate : NetworkBehaviour
     [SerializeField] int itemCount;
     bool broken;
     GameManager gameManager;
-    public Room room;
+    public bool lootEnabled = true;
 
     public override void OnNetworkSpawn()
     {
@@ -32,7 +32,7 @@ public class ItemCrate : NetworkBehaviour
 
         itemCount = (int)(Random.Range(1f, 2f) + PlayerManager.instance.Players.Count * 0.2f);
 
-        if (room == null || room.crateLootEnabled)
+        if (lootEnabled)
         {
             for (int i=0; i<itemCount; i++)
             {

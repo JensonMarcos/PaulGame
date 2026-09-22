@@ -4256,7 +4256,6 @@ GameObject:
   - component: {fileID: 888913911772537590}
   - component: {fileID: 4485126393181774743}
   - component: {fileID: 8271549658875094816}
-  - component: {fileID: 4326552912505459004}
   m_Layer: 2
   m_Name: SoccerTest
   m_TagString: Untagged
@@ -4324,10 +4323,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8812538440075657376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: da1aaa05730000a48bd7d801fdab7e34, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Soccer
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 0
+  displayName: Soccer
   nextRoomPoint: {fileID: 7115464210317615354}
   respawnPoint: {fileID: 2787312836211841310}
   moveSpawnPoint: {fileID: 8719811085594630188}
@@ -4335,30 +4336,20 @@ MonoBehaviour:
   doorExit: {fileID: 4419519594259218012}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  crateLootEnabled: 1
-  itemCratePrefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-  itemCrateSpawns: {fileID: 0}
-  gamemodeScript: {fileID: 4326552912505459004}
+  ballPrefab: {fileID: 7503538790586880943, guid: ad2a94069552cf548a6edcc7993d6a50, type: 3}
+  ballSpawnPoint: {fileID: 3144649604670029703}
+  goals:
+  - {fileID: 842012668573257245}
+  - {fileID: 7632756616864676114}
+  goalSound: 
+  explosionSound: explosion
+  goalTitleTime: 1.5
+  explosionLayer:
+    serializedVersion: 2
+    m_Bits: 1729
+  explosionRadius: 10
+  explosionForcePlayer: 40
+  explosionForceProp: 50
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4380,32 +4371,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 72, y: 20, z: 42}
   m_Center: {x: 0, y: 5, z: 30}
---- !u!114 &4326552912505459004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8812538440075657376}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da1aaa05730000a48bd7d801fdab7e34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Soccer
-  ballPrefab: {fileID: 7503538790586880943, guid: ad2a94069552cf548a6edcc7993d6a50, type: 3}
-  ballSpawnPoint: {fileID: 3144649604670029703}
-  goals:
-  - {fileID: 842012668573257245}
-  - {fileID: 7632756616864676114}
-  goalSound: 
-  explosionSound: explosion
-  goalTitleTime: 1.5
-  explosionLayer:
-    serializedVersion: 2
-    m_Bits: 1729
-  explosionRadius: 10
-  explosionForcePlayer: 40
-  explosionForceProp: 50
 --- !u!1 &8941909587142703709
 GameObject:
   m_ObjectHideFlags: 0

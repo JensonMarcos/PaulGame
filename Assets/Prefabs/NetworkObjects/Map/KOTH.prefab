@@ -2448,9 +2448,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   objectiveType: 0
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 8
   scorePerTick: 1
   firstEntryScore: 100
   entryScoreStep: 25
@@ -3326,10 +3323,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2133371467
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -3346,10 +3345,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8812538440075657376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: af6b4d2e7a5c4b9d1e3f4a5b6c7d8e9f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::KingOfTheHill
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 1
+  displayName: King of the Hill
   nextRoomPoint: {fileID: 8325860353610847895}
   respawnPoint: {fileID: 2913103622388881659}
   moveSpawnPoint: {fileID: 8189170080061078339}
@@ -3357,28 +3358,7 @@ MonoBehaviour:
   doorExit: {fileID: 6054626079466610582}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 0
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  crateLootEnabled: 1
-  itemCratePrefab: {fileID: 0}
-  itemCrateSpawns: {fileID: 0}
+  itemId: 100
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

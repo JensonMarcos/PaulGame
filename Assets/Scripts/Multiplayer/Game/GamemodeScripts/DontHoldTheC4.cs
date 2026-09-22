@@ -1,62 +1,71 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DontHoldTheC4 : GamemodeScript
+public class DontHoldTheC4 : Gamemode
 {
-    [Header("Settings")]
     [SerializeField] int c4ItemId;
     [SerializeField] float checkInterval = 10f;
     [SerializeField] string explosionSound = "explosion";
     [SerializeField] float ragdollForce = 75f;
 
+    const float RoundDuration = 300f;
+
+    float endTime;
     float nextCheckTime;
     int lastShownSecond = -1;
 
-    public override void OnGameModeStart()
+    public override void Begin()
     {
+        endTime = Time.time + RoundDuration;
         nextCheckTime = Time.time + checkInterval;
+        lastShownSecond = -1;
         GiveC4s();
+        ShowCountdown();
     }
 
-    public override void OnGameModeFixedUpdate()
+    public override void Tick()
     {
-        if (playerManager.playersAlive <= 1) return;
+        if (endTime - Time.time <= 0f)
+        {
+            SetTitle("Nobody won");
+            EndRound();
+            return;
+        }
 
-        //show the bomb countdown in the title (once per second)
+        if (EndIfLastAlive()) return;
+
+        ShowCountdown();
+
+        if (Time.time < nextCheckTime) return;
+
+        nextCheckTime = Time.time + checkInterval;
+
+        for (int i = 0; i < playerManager.Players.Count; i++)
+        {
+            PlayerData player = playerManager.Players[i];
+            if (player.isDead) continue;
+            if (!playerManager.HasItem(player.ClientId, c4ItemId)) continue;
+
+            Vector3 explosionPos = player.player.playerCharacter.transform.position;
+            VFXManager.instance.PlayExplosion(explosionPos);
+            SoundManager.Play(explosionSound, explosionPos);
+
+            Vector3 ragdollForceVector = -player.player.playerCharacter.transform.forward * ragdollForce;
+            playerManager.WorldDamage(player.ClientId, 9999f, ragdollForceVector);
+        }
+
+        if (EndIfLastAlive()) return;
+        if (playerManager.playersAlive > 1)
+            GiveC4s();
+    }
+
+    void ShowCountdown()
+    {
         int secondsLeft = Mathf.CeilToInt(nextCheckTime - Time.time);
-        if (secondsLeft != lastShownSecond)
-        {
-            lastShownSecond = secondsLeft;
-            gameManager.GameTitle.Value = "Detonation in: " + secondsLeft.ToString();
-        }
+        if (secondsLeft == lastShownSecond) return;
 
-        if (Time.time >= nextCheckTime)
-        {
-            nextCheckTime = Time.time + checkInterval;
-
-            for (int i = 0; i < playerManager.Players.Count; i++)
-            {
-                PlayerData player = playerManager.Players[i];
-                if (player.isDead) continue;
-                if (!HasC4(player)) continue;
-
-                Vector3 explosionPos = player.player.playerCharacter.transform.position;
-                VFXManager.instance.PlayExplosion(explosionPos);
-                SoundManager.Play(explosionSound, explosionPos);
-
-                Vector3 ragdollForceVector = -player.player.playerCharacter.transform.forward * ragdollForce;
-
-                playerManager.WorldDamage(player.ClientId, 9999f, ragdollForceVector);
-            }
-
-            if (playerManager.playersAlive > 1)
-                GiveC4s();
-        }
-    }   
-
-    bool HasC4(PlayerData player)
-    {
-        return playerManager.HasItem(player.ClientId, c4ItemId);
+        lastShownSecond = secondsLeft;
+        SetTitle("Detonation in: " + secondsLeft.ToString());
     }
 
     void GiveC4s()
@@ -75,7 +84,7 @@ public class DontHoldTheC4 : GamemodeScript
             (alive[i], alive[j]) = (alive[j], alive[i]);
         }
 
-        int bombCount = alive.Count / 2; //half the alive players, rounded down
+        int bombCount = alive.Count / 2;
         for (int i = 0; i < bombCount; i++)
             playerManager.GiveItem(c4ItemId, alive[i].ClientId);
     }

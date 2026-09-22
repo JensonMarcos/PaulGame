@@ -189,7 +189,8 @@ public class PlayerManager : NetworkBehaviour
         target.lastAttackedBy = senderId;
         target.lastAttackedTime = Time.time;
 
-        if(force != Vector3.zero && (GameManager.instance == null || GameManager.instance.GameState == GameState.Lobby || GameManager.instance.currentGameMode.doPunching)) {
+        Gamemode mode = GameManager.instance != null ? GameManager.instance.rooms.current : null;
+        if(force != Vector3.zero && (mode == null || mode.AllowPunching)) {
             target.player.RecieveForceClientRpc(force);
         }
 
@@ -245,7 +246,8 @@ public class PlayerManager : NetworkBehaviour
         if (killer != null && killer != target)
         {
             killer.kills++;
-            if(GameManager.instance != null) killer.score += GameManager.instance.currentGameMode.scoreOnKill;
+            if(GameManager.instance != null && GameManager.instance.rooms.current != null)
+                killer.score += GameManager.instance.rooms.current.ScoreOnKill;
         }
 
         target.lastAttackedBy = null;
@@ -262,7 +264,8 @@ public class PlayerManager : NetworkBehaviour
             _player.player.AddKillfeedClientRpc(feed, highlight);
         }
 
-        if (GameManager.instance != null && GameManager.instance.currentGameMode.respawnOnDeath && GameManager.instance.rooms.current.playersInRoom.Contains(target.playerGameObject)) {
+        Gamemode round = GameManager.instance != null ? GameManager.instance.rooms.current : null;
+        if (round != null && round.RespawnOnDeath && round.playersInRoom.Contains(target.playerGameObject)) {
             Revive(Players.FindIndex(x => x.ClientId == target.ClientId));
             GameManager.instance.GameTeleport(target.ClientId);
         }

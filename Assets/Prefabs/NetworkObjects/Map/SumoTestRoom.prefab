@@ -3150,10 +3150,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 3447480723
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -3170,10 +3172,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8812538440075657376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d4f2b0c5e3a4f7b9c1d2e3f4a5b6c7d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sumo
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 1
+  displayName: Sumo
   nextRoomPoint: {fileID: 5024896506182776125}
   respawnPoint: {fileID: 9082069587080881418}
   moveSpawnPoint: {fileID: 8896180103198675770}
@@ -3181,28 +3185,7 @@ MonoBehaviour:
   doorExit: {fileID: 5486147788226592796}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 0
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  crateLootEnabled: 1
-  itemCratePrefab: {fileID: 0}
-  itemCrateSpawns: {fileID: 0}
+  itemId: 100
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

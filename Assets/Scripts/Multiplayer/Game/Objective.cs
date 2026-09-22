@@ -64,7 +64,7 @@ public class Objective : NetworkBehaviour
 
     bool IsInCurrentRoom(GameObject playerRoot)
     {
-        Room current = GameManager.instance?.rooms.current;
+        Gamemode current = GameManager.instance?.rooms.current;
         return current != null && current.playersInRoom.Contains(playerRoot);
     }
 

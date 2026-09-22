@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Soccer : GamemodeScript
+public class Soccer : Gamemode
 {
-    [SerializeField] GameObject ballPrefab;   
+    [SerializeField] GameObject ballPrefab;
     [SerializeField] Transform ballSpawnPoint;
-    [SerializeField] Collider[] goals;          //indexed by the team that defends the net
+    [SerializeField] Collider[] goals;
     [SerializeField] string goalSound = "";
     [SerializeField] string explosionSound = "explosion";
     [SerializeField] float goalTitleTime = 1.5f;
@@ -17,70 +17,90 @@ public class Soccer : GamemodeScript
     [SerializeField] float explosionForcePlayer = 20f;
     [SerializeField] float explosionForceProp = 80f;
 
+    const float RoundDuration = 90f;
+
     readonly Collider[] explosionOverlapBuffer = new Collider[32];
     readonly HashSet<ulong> explosionHitNetIds = new HashSet<ulong>();
 
     NetworkProp ball;
     int[] scores = new int[2];
+    float endTime;
     float goalFlashUntil;
     string scoreText;
+    bool resetBall;
 
-    public override void OnGameModeStart()
+    public override bool RespawnOnDeath => true;
+
+    public override void Begin()
     {
+        endTime = Time.time + RoundDuration;
         scores[0] = 0;
         scores[1] = 0;
+        playerManager.AssignTeamsRandomly(2);
 
         GameObject obj = Instantiate(ballPrefab, ballSpawnPoint.position, Quaternion.identity);
         obj.GetComponent<NetworkObject>().Spawn(true);
         gameManager.worldObjects.Add(obj);
         ball = obj.GetComponent<NetworkProp>();
 
-        scoreText = "[" + gameManager.GetTeamName(0) + " " + scores[0] + " | " + gameManager.GetTeamName(1) + " " + scores[1] + "]";
+        RefreshScoreText();
+        SetTitle(scoreText);
     }
 
-    public override void OnGameModeEnd()
+    public override void End()
     {
-        if (ball != null)
+        if (ball == null) return;
+
+        NetworkObject netObj = ball.GetComponent<NetworkObject>();
+        gameManager.worldObjects.Remove(ball.gameObject);
+        if (netObj != null && netObj.IsSpawned) netObj.Despawn(true);
+        ball = null;
+    }
+
+    public override void Tick()
+    {
+        if (Time.time <= goalFlashUntil)
         {
-            NetworkObject netObj = ball.GetComponent<NetworkObject>();
-            gameManager.worldObjects.Remove(ball.gameObject);
-            if (netObj != null && netObj.IsSpawned) netObj.Despawn(true);
-            ball = null;
+            if (endTime - Time.time <= 0f)
+            {
+                gameManager.DeclareWinners(playerManager.Players, true);
+                EndRound();
+            }
+            return;
         }
-    }
 
-    bool resetball = false;
-
-    public override void OnGameModeFixedUpdate()
-    {
-        if(Time.time <= goalFlashUntil) return;
-
-        if(resetball)
+        if (resetBall)
         {
             ball.rb.position = ballSpawnPoint.position;
             ball.rb.linearVelocity = Vector3.zero;
             ball.rb.angularVelocity = Vector3.zero;
-            resetball = false;
+            resetBall = false;
         }
 
-        int secondsLeft = Mathf.Max(0, (int)gameManager.TimeLeft);
+        int secondsLeft = Mathf.Max(0, (int)(endTime - Time.time));
         SetTitle(scoreText + " : " + secondsLeft);
 
         Vector3 ballPos = ball.rb.position;
-
         for (int i = 0; i < 2; i++)
         {
-            if (goals[i].ClosestPoint(ballPos) == ballPos) Score(1-i); //team i defending goal, so team 1-i scores
+            if (goals[i].ClosestPoint(ballPos) == ballPos)
+                Score(1 - i);
+        }
+
+        if (endTime - Time.time <= 0f)
+        {
+            gameManager.DeclareWinners(playerManager.Players, true);
+            EndRound();
         }
     }
 
     void Score(int team)
     {
         scores[team]++;
-        scoreText = "[" + gameManager.GetTeamName(0) + " " + scores[0] + " | " + gameManager.GetTeamName(1) + " " + scores[1] + "]";
+        RefreshScoreText();
 
-        foreach (PlayerData p in playerManager.Players)
-            if (p.team == team) p.score++;
+        foreach (PlayerData player in playerManager.Players)
+            if (player.team == team) player.score++;
 
         VFXManager.instance.PlayExplosion(ball.rb.position);
         SoundManager.Play(explosionSound, ball.rb.position);
@@ -91,16 +111,14 @@ public class Soccer : GamemodeScript
 
         goalFlashUntil = Time.time + goalTitleTime;
         SetTitle("GOAL");
-
-        resetball = true;
+        resetBall = true;
     }
 
-    void SetTitle(string text)
+    void RefreshScoreText()
     {
-        if (!gameManager.GameTitle.Value.Equals(text)) gameManager.GameTitle.Value = text;
+        scoreText = "[" + gameManager.GetTeamName(0) + " " + scores[0] + " | " + gameManager.GetTeamName(1) + " " + scores[1] + "]";
     }
 
-    //same as PlayerCombat ExplosionDamage but knockback only
     void ExplosionKnockback(Vector3 center)
     {
         explosionHitNetIds.Clear();

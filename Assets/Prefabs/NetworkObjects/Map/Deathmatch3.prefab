@@ -4245,10 +4245,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 1056128570
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -4265,10 +4267,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8812538440075657376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c3e1a9b4d2f4e6a8b0c1d2e3f4a5b6c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deathmatch
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 1
+  displayName: Deathmatch
   nextRoomPoint: {fileID: 7243135856723088589}
   respawnPoint: {fileID: 5265526068156183644}
   moveSpawnPoint: {fileID: 8148079318417973330}
@@ -4276,20 +4280,8 @@ MonoBehaviour:
   doorExit: {fileID: 8222055268585440820}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    spawnItems: 0
-    doDamage: 0
-    doPunching: 0
-    showTimer: 0
-    gameTime: 0
-    highestScoreWins: 0
-    animTimeMult: 0
-    useTeams: 0
-    numberOfTeams: 0
+  itemCratePrefab: {fileID: 0}
+  itemCrateSpawns: {fileID: 0}
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0

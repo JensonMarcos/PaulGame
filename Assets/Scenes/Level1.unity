@@ -779,147 +779,13 @@ MonoBehaviour:
     previous: {fileID: 0}
     current: {fileID: 0}
     next: {fileID: 0}
-  gameModes:
-  - name: Deathmatch
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
-    gameModeWeight: 0
-    lastPlayerAliveWins: 1
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 1
-    doPunching: 1
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 100
-    showTimer: 2
-    gameTime: 60
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  - name: King of the Hill
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 1
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 1
-    showCrowns: 1
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 1
-    gameTime: 30
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 1
-    initialItemID: 100
-    numberOfInitialItems: 1000
-  - name: Sumo
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
-    gameModeWeight: 0
-    lastPlayerAliveWins: 1
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 1
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 2
-    gameTime: 60
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 1
-    initialItemID: 100
-    numberOfInitialItems: 1000
-  - name: Parkour
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 1
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 1
-    doPunching: 1
-    showCrowns: 0
-    respawnOnDeath: 1
-    scoreOnKill: 0
-    showTimer: 2
-    gameTime: 90
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  - name: Don't Hold the C4
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
-    gameModeWeight: 5
-    lastPlayerAliveWins: 1
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 1
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 300
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  - name: Soccer
-    roomPrefabs:
-    - {fileID: 8812538440075657376, guid: 2a335ccc1ed12ae448343dc3e389627f, type: 3}
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 1
-    allowMultipleWinners: 1
-    doDamage: 0
-    doPunching: 1
-    showCrowns: 0
-    respawnOnDeath: 1
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 90
-    useTeams: 1
-    numberOfTeams: 2
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  currentGameMode:
-    name: 
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
+  roomPrefabs:
+  - {fileID: 8812538440075657376, guid: 5aab194294dd9dd46b8b887610b4aba7, type: 3}
+  - {fileID: 8812538440075657376, guid: fa5943dea6a27534992587d580df7057, type: 3}
+  - {fileID: 8812538440075657376, guid: 5853a0763b0e17545bbe3bd15038246e, type: 3}
+  - {fileID: 8812538440075657376, guid: ff9c4c6e6cdc3e643a9a7643020201f7, type: 3}
+  - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
+  - {fileID: 8812538440075657376, guid: 2a335ccc1ed12ae448343dc3e389627f, type: 3}
   unpickedWeightBonus: 1
   defaultTeamColor: {r: 1, g: 0.5019608, b: 0, a: 1}
   teams:
@@ -2344,10 +2210,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1453712072}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: e7483d38e048b3a4f94bee98901d93a6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gamemode
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 0
+  displayName: 
   nextRoomPoint: {fileID: 2025917991}
   respawnPoint: {fileID: 0}
   moveSpawnPoint: {fileID: 0}
@@ -2355,30 +2223,7 @@ MonoBehaviour:
   doorExit: {fileID: 959614369}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    allowMultipleWinners: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  crateLootEnabled: 1
-  itemCratePrefab: {fileID: 0}
-  itemCrateSpawns: {fileID: 0}
-  gamemodeScript: {fileID: 0}
+
 --- !u!114 &1453712075
 MonoBehaviour:
   m_ObjectHideFlags: 0

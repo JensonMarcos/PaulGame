@@ -2426,7 +2426,6 @@ GameObject:
   - component: {fileID: 888913911772537590}
   - component: {fileID: 4485126393181774743}
   - component: {fileID: 8271549658875094816}
-  - component: {fileID: 1049200128674656812}
   m_Layer: 2
   m_Name: C4Test
   m_TagString: Untagged
@@ -2469,10 +2468,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 3831009988
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -2489,10 +2490,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8812538440075657376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f3976a580a3c244a6835e6fa7589ba, type: 3}
+  m_Script: {fileID: 11500000, guid: ed4f361bf589d844a8f09d711e060333, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontHoldTheC4
   ShowTopMostFoldoutHeaderGroup: 1
+  weight: 1
+  displayName: Don't Hold the C4
   nextRoomPoint: {fileID: 7115464210317615354}
   respawnPoint: {fileID: 2787312836211841310}
   moveSpawnPoint: {fileID: 8719811085594630188}
@@ -2500,29 +2503,10 @@ MonoBehaviour:
   doorExit: {fileID: 4419519594259218012}
   objectsToSpawn: []
   playersInRoom: []
-  GameMode:
-    name: 
-    roomPrefabs: []
-    gameModeWeight: 0
-    lastPlayerAliveWins: 0
-    firstToScoreWins: 0
-    highestScoreWins: 0
-    doDamage: 0
-    doPunching: 0
-    showCrowns: 0
-    respawnOnDeath: 0
-    scoreOnKill: 0
-    showTimer: 0
-    gameTime: 0
-    useTeams: 0
-    numberOfTeams: 0
-    spawnInitialItem: 0
-    initialItemID: 0
-    numberOfInitialItems: 0
-  crateLootEnabled: 1
-  itemCratePrefab: {fileID: 6012870410738904629, guid: 49d90cf7a5ce3491f858f9938bf414a1, type: 3}
-  itemCrateSpawns: {fileID: 0}
-  gamemodeScript: {fileID: 1049200128674656812}
+  c4ItemId: 101
+  checkInterval: 20
+  explosionSound: explosion
+  ragdollForce: 50
 --- !u!65 &8271549658875094816
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2544,22 +2528,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 42, y: 20, z: 42}
   m_Center: {x: 0, y: 5, z: 30}
---- !u!114 &1049200128674656812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8812538440075657376}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed4f361bf589d844a8f09d711e060333, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontHoldTheC4
-  c4ItemId: 101
-  checkInterval: 20
-  explosionSound: explosion
-  ragdollForce: 50
 --- !u!1 &8941909587142703709
 GameObject:
   m_ObjectHideFlags: 0
