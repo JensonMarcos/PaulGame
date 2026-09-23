@@ -7535,7 +7535,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ffc635a1ffc8d14196483902c648439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensitivity: 0.15
+  sensitivity: 0.4
   realRotation: {x: 0, y: 0, z: 0}
   cam: {fileID: 9069016301961120874}
   defaultFov: 95

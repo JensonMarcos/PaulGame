@@ -234,6 +234,15 @@ public class Player : NetworkBehaviour
     {
         var inputs = playerInputs.Gameplay;
 
+        if (PauseMenu.IsOpen)
+        {
+            playerCharacter.SetInputs(new CharacterInputs { CameraRotation = playerCamera.transform.rotation });
+            playerInventory.SetInputs(new InventoryInputs { Velocity = playerCharacter.State.Velocity });
+            playerCombat.SetInputs(default, false);
+            playerUI.SetInputs(false);
+            return;
+        }
+
         if (deathCamTarget == null)
         {
             Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();

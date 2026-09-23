@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerCamera : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] Camera cam;
     [SerializeField] float defaultFov, FovChangeSpeed;
     float targetFov, FovSensitivity;
+    bool owner;
 
     [Header("Camera Animations")]
     public Vector3 targetRot;
@@ -16,8 +18,9 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] float deathCamRotSpeed = 12f;
 
 
-    public void Initialize(Transform target, bool owner)
+    public void Initialize(Transform target, bool _owner)
     {
+        owner = _owner;
         if(!owner) cam.gameObject.SetActive(false);
 
         transform.position = target.position;
@@ -26,9 +29,18 @@ public class PlayerCamera : MonoBehaviour
 
         if(owner)
         {
+            sensitivity = PlayerPrefs.GetFloat(PauseMenu.SensitivityKey, sensitivity);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    void Update()
+    {
+        if (owner && Keyboard.current.escapeKey.wasPressedThisFrame) {
+            sensitivity = PlayerPrefs.GetFloat(PauseMenu.SensitivityKey, sensitivity);
+        }
+            
     }
 
     public void UpdateRotation(Vector2 inputs, ItemClient _item)
