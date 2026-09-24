@@ -140,8 +140,9 @@ public class SteamManager : MonoBehaviour
     void OnLobbyMemberLeave(Lobby lobby, Friend friend) {
         if (!IsCurrentLobby(lobby)) return;
 
-        if (InMenu && !IsHost && friend.Id.Value == hostSteamId.Value) {
-            HandleConnectionLost("Host left the lobby");
+        if (!IsHost && friend.Id.Value == hostSteamId.Value) {
+            if (InMenu) HandleConnectionLost("Host left the lobby");
+            else ReturnToMenu();
             return;
         }
         UpdatePlayers();
@@ -272,6 +273,13 @@ public class SteamManager : MonoBehaviour
 
     public void InviteFriends() {
         if (CurrentLobby.HasValue && SteamClient.IsValid) SteamFriends.OpenGameInviteOverlay(CurrentLobby.Value.Id);
+    }
+
+    public void ReturnToMenu() {
+        if (returningToMenu) return;
+        returningToMenu = true;
+        LeaveLobby();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(MenuScene);
     }
 
     public void LeaveLobby() {

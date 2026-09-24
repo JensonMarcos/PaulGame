@@ -69,13 +69,12 @@ public class PlayerManager : NetworkBehaviour
 
     void OnClientDisconnectedCallback(ulong id)
     {
-        if(!IsServer) return;
+        if(!IsServer || NetworkManager.ShutdownInProgress) return;
 
         int index = Players.FindIndex(x => x.ClientId == id);
         if(index < 0) return;
 
         PlayerData disconnectedPlayer = Players[index];
-        ClearItem(id);
 
         if(GameManager.instance != null) {
             GameManager.instance.rooms.previous?.RemoveFromRoom(disconnectedPlayer.playerGameObject);
@@ -351,7 +350,7 @@ public class PlayerManager : NetworkBehaviour
             player.ClearItemClientRpc(itemId);
     }
 
-    void DespawnInventoryItems(Player player, System.Func<NetworkObject, bool> match)
+    public void DespawnInventoryItems(Player player, System.Func<NetworkObject, bool> match)
     {
         PlayerInventory inventory = player.playerInventory;
         if(inventory == null || inventory.NetworkIDInventory == null) return;

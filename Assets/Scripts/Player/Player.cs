@@ -136,6 +136,9 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        if(IsServer && PlayerManager.instance != null && !NetworkManager.ShutdownInProgress)
+            PlayerManager.instance.DespawnInventoryItems(this, netObj => true);
+
         if(IsOwner && GameManager.instance != null)
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
 

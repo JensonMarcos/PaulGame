@@ -1,5 +1,7 @@
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -59,5 +61,25 @@ public class PauseMenu : MonoBehaviour
 
         PlayerPrefs.SetFloat(SensitivityKey, sensitivity);
         PlayerPrefs.Save();
+    }
+
+    public void Leave()
+    {
+        NetworkManager net = NetworkManager.Singleton;
+        bool unityTransport = net != null
+            && net.NetworkConfig.NetworkTransport != null
+            && net.NetworkConfig.NetworkTransport.GetType().Name == "UnityTransport";
+
+        if (unityTransport)
+        {
+            Application.Quit();
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+            #endif
+            return;
+        }
+
+        if (SteamManager.Instance != null)
+            SteamManager.Instance.ReturnToMenu();
     }
 }

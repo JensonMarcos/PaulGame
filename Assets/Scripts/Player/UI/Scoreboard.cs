@@ -80,6 +80,7 @@ public class Scoreboard : MonoBehaviour
         {
             items.Remove(item);
             Destroy(item.gameObject);
+            SortItems();
         }
     }
 
