@@ -101,6 +101,13 @@ public class PlayerManager : NetworkBehaviour
         GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
         PlayerData newPlayer = new PlayerData(player, id, 100f, GetPlayerName(id, player.GetComponent<Player>().SteamId.Value));
+
+        //new players join dead
+        if(GameManager.instance != null && GameManager.instance.GameState != GameState.Lobby) {
+            newPlayer.isDead = true;
+            newPlayer.health = 0f;
+        }
+
         Players.Add(newPlayer);
 
         playersAlive = Players.Count(x => x.isDead == false);
@@ -115,6 +122,11 @@ public class PlayerManager : NetworkBehaviour
         foreach(PlayerData _player in Players) {
             _player.player.AddOrRemoveScoreboardItemClientRpc(true, id, newPlayer.name, 0, 0, 0);
         }
+
+        if(!newPlayer.isDead) return;
+
+        newPlayer.player.DieClientRpc(0);
+        GameManager.instance.GameTeleport(id);
     }
 
     public void SetPlayerSteamId(ulong clientId, ulong steamId)
@@ -344,10 +356,15 @@ public class PlayerManager : NetworkBehaviour
 
         Player player = Players[index].player;
 
-        DespawnInventoryItems(player, netObj => itemId == -1 || GameManager.instance.itemList.GetItemId(netObj.gameObject) == itemId);
+        if(itemId == -1) DespawnInventoryItems(player);
+        else DespawnInventoryItems(player, netObj => GameManager.instance.itemList.GetItemId(netObj.gameObject) == itemId);
 
         if(player.NetworkObject != null && player.NetworkObject.IsSpawned)
             player.ClearItemClientRpc(itemId);
+    }
+
+    public void DespawnInventoryItems(Player player) {
+        DespawnInventoryItems(player, netObj => true);
     }
 
     public void DespawnInventoryItems(Player player, System.Func<NetworkObject, bool> match)

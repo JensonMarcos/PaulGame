@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerCamera : MonoBehaviour
 {
+    public static PlayerCamera local;
     public float sensitivity = 1f;
     public Vector3 realRotation;
     [SerializeField] Camera cam;
@@ -29,18 +29,16 @@ public class PlayerCamera : MonoBehaviour
 
         if(owner)
         {
+            local = this;
             sensitivity = PlayerPrefs.GetFloat(PauseMenu.SensitivityKey, sensitivity);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
     }
 
-    void Update()
+    void OnDestroy()
     {
-        if (owner && Keyboard.current.escapeKey.wasPressedThisFrame) {
-            sensitivity = PlayerPrefs.GetFloat(PauseMenu.SensitivityKey, sensitivity);
-        }
-            
+        if(local == this) local = null;
     }
 
     public void UpdateRotation(Vector2 inputs, ItemClient _item)

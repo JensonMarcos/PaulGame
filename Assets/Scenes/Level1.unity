@@ -1422,6 +1422,37 @@ Transform:
   - {fileID: 1353007286}
   m_Father: {fileID: 1453712073}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &976251814
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 976251815}
+  m_Layer: 2
+  m_Name: MoveSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &976251815
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976251814}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 42.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1453712073}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1094569458
 GameObject:
   m_ObjectHideFlags: 0
@@ -2256,6 +2287,7 @@ Transform:
   - {fileID: 1307579038}
   - {fileID: 959614370}
   - {fileID: 602579141}
+  - {fileID: 976251815}
   m_Father: {fileID: 457355560}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1453712074
@@ -2274,8 +2306,8 @@ MonoBehaviour:
   weight: 0
   displayName: 
   nextRoomPoint: {fileID: 2025917991}
-  respawnPoint: {fileID: 0}
-  moveSpawnPoint: {fileID: 0}
+  respawnPoint: {fileID: 976251815}
+  moveSpawnPoint: {fileID: 976251815}
   doorEnter: {fileID: 602579140}
   doorExit: {fileID: 959614369}
   objectsToSpawn: []

@@ -265,10 +265,8 @@ public class SteamManager : MonoBehaviour
 
         // Leave the current game first, OnSceneLoaded picks the join back up
         if (returningToMenu) return;
-        returningToMenu = true;
         pendingJoinLobbyId = lobbyId;
-        LeaveLobby();
-        UnityEngine.SceneManagement.SceneManager.LoadScene(MenuScene);
+        ReturnToMenu();
     }
 
     public void InviteFriends() {

@@ -137,7 +137,7 @@ public class Player : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         if(IsServer && PlayerManager.instance != null && !NetworkManager.ShutdownInProgress)
-            PlayerManager.instance.DespawnInventoryItems(this, netObj => true);
+            PlayerManager.instance.DespawnInventoryItems(this);
 
         if(IsOwner && GameManager.instance != null)
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
@@ -236,6 +236,9 @@ public class Player : NetworkBehaviour
     void HandleInputs()
     {
         var inputs = playerInputs.Gameplay;
+
+        if(inputs.Escape.WasPressedThisFrame() && PauseMenu.instance != null)
+            PauseMenu.instance.SetOpen(!PauseMenu.IsOpen);
 
         if (PauseMenu.IsOpen)
         {
