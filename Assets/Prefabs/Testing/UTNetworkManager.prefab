@@ -55,7 +55,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5fd1b1f9e2f96b241a7bac9e4c9ed558, type: 2}
-    TickRate: 30
+    TickRate: 40
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -102,6 +102,7 @@ MonoBehaviour:
   ConnectionData:
     Address: 127.0.0.1
     Port: 7777
+    WebSocketPath: /
     ServerListenAddress: 127.0.0.1
     ClientBindPort: 0
   DebugSimulator:

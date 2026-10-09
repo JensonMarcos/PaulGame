@@ -47,7 +47,7 @@ public class PredictedProp : NetworkProp
         ApplyForceServerRpc(force, position);
     }
 
-    // Remote players are kinematic capsules teleported by NetworkTransform. Letting them
+    // Remote players are kinematic capsules teleported by PlayerSync. Letting them
     // depenetrate the locally simulated prop would fling it; their real effect arrives as state.
     void IgnoreRemoteCollider(Collider remote)
     {

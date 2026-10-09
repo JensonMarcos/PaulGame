@@ -121,25 +121,11 @@ public class PlayerAnimations : NetworkBehaviour
         hands.ResetFirstBoneWeights();
     }
 
-    #region TriggerAnimation
-    [Rpc(SendTo.Server)]
-    public void TriggerAnimationServerRpc(string name, RpcParams rpcParams = default)
-    {
-        TriggerAnimationClientRpc(name, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
-    }
-
-    [Rpc(SendTo.SpecifiedInParams)]
-    public void TriggerAnimationClientRpc(string name, RpcParams rpcParams = default)
-    {
-        TriggerAnimation(name);
-    }
-
     public void TriggerAnimation(string name)
     {
 
         body.TriggerAnimator(name);
     }
-    #endregion
 
     public void Shoot(Vector3 _recoil, float _backKick, float _rotKick)
     {
@@ -147,24 +133,10 @@ public class PlayerAnimations : NetworkBehaviour
         item.AddTransform(new Vector3(0, 0, _backKick), Quaternion.Euler(_rotKick, 0, 0));
     }
 
-    #region HandPush
-    [Rpc(SendTo.Server)]
-    public void HandPushServerRpc(Vector3 force, RpcParams rpcParams = default)
-    {
-        HandPushClientRpc(force, RpcTarget.Not(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
-    }
-
-    [Rpc(SendTo.SpecifiedInParams)]
-    public void HandPushClientRpc(Vector3 force, RpcParams rpcParams = default)
-    {
-        HandPush(force);
-    }
-
     public void HandPush(Vector3 force)
     {
         item.AddTransform(force, Quaternion.Euler(0, 0, 0));
     }
-    #endregion
 
 
 }

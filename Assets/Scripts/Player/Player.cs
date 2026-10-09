@@ -6,12 +6,20 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [System.Serializable]
-public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
+public struct PlayerState : INetworkSerializable
 {
+    public int Tick;
+
     [Header("Character")]
+    public Vector3 Position;
+    public float CameraPitch;
+    public float CameraYaw;
     public bool Grounded;
     public Stance Stance;
     public Vector3 Velocity;
+    public byte WallJumps;
+    public Vector3 HandPush;
+    public byte Teleports;
 
     [Header("Combat")]
     public int InventoryIndex;
@@ -19,45 +27,69 @@ public struct PlayerState : INetworkSerializable, System.IEquatable<PlayerState>
     public bool ReadyPull;
     public float Reloading;
 
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    public void NetworkSerialize<T>(BufferSerializer<T> _serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref Grounded);
-        serializer.SerializeValue(ref Stance);
+        _serializer.SerializeValue(ref Tick);
 
-        byte inventoryIndex = (byte)InventoryIndex;
-        byte aiming = Compress01(Aiming);
-        byte reloading = Compress01(Reloading);
-        serializer.SerializeValue(ref inventoryIndex);
-        serializer.SerializeValue(ref aiming);
-        serializer.SerializeValue(ref ReadyPull);
-        serializer.SerializeValue(ref reloading);
+        ushort _cameraPitch = CompressAngle(CameraPitch);
+        ushort _cameraYaw = CompressAngle(CameraYaw);
+        _serializer.SerializeValue(ref Position);
+        _serializer.SerializeValue(ref _cameraPitch);
+        _serializer.SerializeValue(ref _cameraYaw);
+        _serializer.SerializeValue(ref Grounded);
+        _serializer.SerializeValue(ref Stance);
+        SerializeHalf(_serializer, ref Velocity);
+        _serializer.SerializeValue(ref WallJumps);
+        SerializeHalf(_serializer, ref HandPush);
+        _serializer.SerializeValue(ref Teleports);
 
-        if (serializer.IsReader)
+        byte _inventoryIndex = (byte)InventoryIndex;
+        byte _aiming = Compress01(Aiming);
+        byte _reloading = Compress01(Reloading);
+        _serializer.SerializeValue(ref _inventoryIndex);
+        _serializer.SerializeValue(ref _aiming);
+        _serializer.SerializeValue(ref ReadyPull);
+        _serializer.SerializeValue(ref _reloading);
+
+        if (_serializer.IsReader)
         {
-            InventoryIndex = inventoryIndex;
-            Aiming = Decompress01(aiming);
-            Reloading = Decompress01(reloading);
+            CameraPitch = DecompressAngle(_cameraPitch);
+            CameraYaw = DecompressAngle(_cameraYaw);
+            InventoryIndex = _inventoryIndex;
+            Aiming = Decompress01(_aiming);
+            Reloading = Decompress01(_reloading);
         }
     }
 
-    public bool Equals(PlayerState other)
+    static byte Compress01(float _value)
     {
-        return Grounded == other.Grounded
-            && Stance == other.Stance
-            && InventoryIndex == other.InventoryIndex
-            && Compress01(Aiming) == Compress01(other.Aiming)
-            && ReadyPull == other.ReadyPull
-            && Compress01(Reloading) == Compress01(other.Reloading);
+        return (byte)Mathf.RoundToInt(Mathf.Clamp01(_value) * 255f);
     }
 
-    static byte Compress01(float value)
+    static float Decompress01(byte _value)
     {
-        return (byte)Mathf.RoundToInt(Mathf.Clamp01(value) * 255f);
+        return _value / 255f;
     }
 
-    static float Decompress01(byte value)
+    static ushort CompressAngle(float _angle)
     {
-        return value / 255f;
+        return (ushort)Mathf.RoundToInt(Mathf.Repeat(_angle, 360f) / 360f * 65535f);
+    }
+
+    static float DecompressAngle(ushort _value)
+    {
+        return _value / 65535f * 360f;
+    }
+
+    static void SerializeHalf<T>(BufferSerializer<T> _serializer, ref Vector3 _value) where T : IReaderWriter
+    {
+        ushort _x = Mathf.FloatToHalf(_value.x);
+        ushort _y = Mathf.FloatToHalf(_value.y);
+        ushort _z = Mathf.FloatToHalf(_value.z);
+        _serializer.SerializeValue(ref _x);
+        _serializer.SerializeValue(ref _y);
+        _serializer.SerializeValue(ref _z);
+        if (_serializer.IsReader) _value = new Vector3(Mathf.HalfToFloat(_x), Mathf.HalfToFloat(_y), Mathf.HalfToFloat(_z));
     }
 }
 
@@ -66,11 +98,6 @@ public class Player : NetworkBehaviour
     // Capsules of players this machine doesn't own, for locally simulated props to ignore.
     public static readonly List<Collider> RemoteColliders = new List<Collider>();
     public static event System.Action<Collider> RemoteColliderAdded;
-
-    NetworkVariable<PlayerState> NetworkPlayerState = new NetworkVariable<PlayerState>(
-        writePerm: NetworkVariableWritePermission.Owner,
-        readPerm: NetworkVariableReadPermission.Everyone
-    );
     
     public PlayerState playerState;
 
@@ -87,6 +114,7 @@ public class Player : NetworkBehaviour
     );
 
     PlayerInputs playerInputs;
+    CharacterInputs characterInputs;
 
     public PlayerInventory playerInventory;
     public PlayerCharacter playerCharacter;
@@ -94,13 +122,13 @@ public class Player : NetworkBehaviour
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] PlayerCombat playerCombat;
     [SerializeField] PlayerUI playerUI;
+    [SerializeField] PlayerSync playerSync;
     [SerializeField] BodyMaterials bodyMaterials;
     [SerializeField] float deathCamDuration = 3f;
 
     bool isDead;
     Transform deathCamTarget;
     Coroutine deathCamRoutine;
-    Vector3 lastRemotePosition;
   
     public override void OnNetworkSpawn()
     {
@@ -118,7 +146,13 @@ public class Player : NetworkBehaviour
             GameManager.instance.GameTitle.OnValueChanged += playerUI.hud.OnTitleChanged;
         }
 
-        if(!IsOwner)
+        if(IsOwner)
+        {
+            KinematicCharacterSystem.EnsureCreation();
+            KinematicCharacterSystem.Settings.AutoSimulation = false;
+            NetworkManager.NetworkTickSystem.Tick += OnTick;
+        }
+        else
         {
             playerCharacter.Motor.enabled = false;
             RegisterRemoteCollider();
@@ -130,8 +164,6 @@ public class Player : NetworkBehaviour
         SteamId.OnValueChanged += OnSteamIdChanged;
         bodyMaterials.ApplyFace(SteamId.Value);
         if(IsOwner) SetSteamIdServerRpc(Steamworks.SteamClient.IsValid ? Steamworks.SteamClient.SteamId.Value : 0);
-
-        lastRemotePosition = playerCharacter.transform.position;
     }
 
     public override void OnNetworkDespawn()
@@ -142,6 +174,9 @@ public class Player : NetworkBehaviour
         if(IsOwner && GameManager.instance != null)
             GameManager.instance.GameTitle.OnValueChanged -= playerUI.hud.OnTitleChanged;
 
+        if(IsOwner && NetworkManager.NetworkTickSystem != null)
+            NetworkManager.NetworkTickSystem.Tick -= OnTick;
+
         Team.OnValueChanged -= OnTeamChanged;
         SteamId.OnValueChanged -= OnSteamIdChanged;
 
@@ -150,42 +185,56 @@ public class Player : NetworkBehaviour
         playerInputs.Dispose();
     }
 
-    void OnTeamChanged(int previous, int current) => bodyMaterials.ApplyTeamColor(current);
+    void OnTeamChanged(int _previous, int _current) => bodyMaterials.ApplyTeamColor(_current);
 
-    void OnSteamIdChanged(ulong previous, ulong current) => bodyMaterials.ApplyFace(current);
+    void OnSteamIdChanged(ulong _previous, ulong _current) => bodyMaterials.ApplyFace(_current);
 
     [Rpc(SendTo.Server)]
-    void SetSteamIdServerRpc(ulong steamId, RpcParams rpcParams = default)
+    void SetSteamIdServerRpc(ulong _steamId, RpcParams _rpcParams = default)
     {
-        if(rpcParams.Receive.SenderClientId != OwnerClientId) return;
+        if(_rpcParams.Receive.SenderClientId != OwnerClientId) return;
 
-        SteamId.Value = steamId;
-        if(PlayerManager.instance != null) PlayerManager.instance.SetPlayerSteamId(OwnerClientId, steamId);
+        SteamId.Value = _steamId;
+        if(PlayerManager.instance != null) PlayerManager.instance.SetPlayerSteamId(OwnerClientId, _steamId);
     }
 
     void RegisterRemoteCollider()
     {
-        Collider capsule = playerCharacter.Motor.Capsule;
-        if(capsule == null || RemoteColliders.Contains(capsule)) return;
+        Collider _capsule = playerCharacter.Motor.Capsule;
+        if(_capsule == null || RemoteColliders.Contains(_capsule)) return;
 
-        RemoteColliders.Add(capsule);
-        RemoteColliderAdded?.Invoke(capsule);
+        RemoteColliders.Add(_capsule);
+        RemoteColliderAdded?.Invoke(_capsule);
+    }
+
+    void OnTick()
+    {
+        int _tick = NetworkManager.LocalTime.Tick;
+        PlayerState _previous = playerState;
+
+        playerCharacter.Tick(characterInputs, _tick, 1f / NetworkManager.NetworkConfig.TickRate);
+        characterInputs.Jump = false;
+
+        UpdateState();
+        playerState.Tick = _tick;
+        if(!isDead) PlayStateEvents(_previous, playerState);
+
+        playerSync.Send(playerState);
     }
 
     void Update()
     {
-        if(!IsOwner && !isDead)
-        {
-            playerState = NetworkPlayerState.Value;
-            Vector3 pos = playerCharacter.transform.position;
-            if (Time.deltaTime > 0f)
-                playerState.Velocity = (pos - lastRemotePosition) / Time.deltaTime;
-            lastRemotePosition = pos;
-        }
-
         if(IsOwner)
         {
             HandleInputs();
+        }
+        else if(playerSync.TryGetState(out PlayerState _state))
+        {
+            if(!isDead) PlayStateEvents(playerState, _state);
+            playerState = _state;
+
+            playerCharacter.transform.position = playerState.Position;
+            playerCamera.transform.rotation = Quaternion.Euler(playerState.CameraPitch, playerState.CameraYaw, 0f);
         }
 
         if(!isDead)
@@ -208,12 +257,12 @@ public class Player : NetworkBehaviour
         if(IsOwner) UpdateState();
         else if(!isDead) playerCharacter.SetYawFromCamera(playerCamera.transform.rotation);
 
-        int i = playerState.InventoryIndex;
+        ItemClient _item = playerInventory.ClientInventory[playerState.InventoryIndex];
 
-        if(!isDead) playerAnimations.UpdateRigs(playerState, playerInventory.ClientInventory[i], playerCharacter.camTarget);
+        if(!isDead) playerAnimations.UpdateRigs(playerState, _item, playerCharacter.camTarget);
 
-        Transform camFollow = deathCamTarget != null ? deathCamTarget : playerCharacter.camTarget;
-        playerCamera.UpdatePosition(camFollow);
+        Transform _camFollow = deathCamTarget != null ? deathCamTarget : playerCharacter.camTarget;
+        playerCamera.UpdatePosition(_camFollow);
         if (deathCamTarget != null)
             playerCamera.UpdateDeathCamRotation(deathCamTarget);
 
@@ -221,28 +270,25 @@ public class Player : NetworkBehaviour
             if(!isDead)
             {
                 playerInventory.TryPickUp();
-                playerCombat.UpdateCombat(playerState, playerInventory.ClientInventory[i]);
-                playerCamera.UpdateCam(playerInventory.ClientInventory[i].AdsZoom, playerState.Aiming);
+                playerCombat.UpdateCombat(playerState, _item);
+                playerCamera.UpdateCam(_item.AdsZoom, playerState.Aiming);
             }
 
-            playerUI.UpdateUI(playerState, playerInventory.ClientInventory[i]);
-
-            //only mark the network variable dirty when the state actually changed
-            if(!playerState.Equals(NetworkPlayerState.Value)) NetworkPlayerState.Value = playerState;
+            playerUI.UpdateUI(playerState, _item);
         }
     }
 
 
     void HandleInputs()
     {
-        var inputs = playerInputs.Gameplay;
+        PlayerInputs.GameplayActions _inputs = playerInputs.Gameplay;
 
-        if(inputs.Escape.WasPressedThisFrame() && PauseMenu.instance != null)
+        if(_inputs.Escape.WasPressedThisFrame() && PauseMenu.instance != null)
             PauseMenu.instance.SetOpen(!PauseMenu.IsOpen);
 
         if (PauseMenu.IsOpen)
         {
-            playerCharacter.SetInputs(new CharacterInputs { CameraRotation = playerCamera.transform.rotation });
+            characterInputs = new CharacterInputs { CameraRotation = playerCamera.transform.rotation };
             playerInventory.SetInputs(new InventoryInputs { Velocity = playerCharacter.State.Velocity });
             playerCombat.SetInputs(default, false);
             playerUI.SetInputs(false);
@@ -251,65 +297,78 @@ public class Player : NetworkBehaviour
 
         if (deathCamTarget == null)
         {
-            Vector2 cameraInputs = inputs.Look.ReadValue<Vector2>();
-            playerCamera.UpdateRotation(cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex]);
+            Vector2 _cameraInputs = _inputs.Look.ReadValue<Vector2>();
+            playerCamera.UpdateRotation(_cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex]);
         }
 
-        CharacterInputs characterInputs = new CharacterInputs {
-            ForwardAxis = inputs.Move.ReadValue<Vector2>().y,
-            RightAxis = inputs.Move.ReadValue<Vector2>().x,
+        //gathered every frame, used by the next tick
+        characterInputs = new CharacterInputs {
+            ForwardAxis = _inputs.Move.ReadValue<Vector2>().y,
+            RightAxis = _inputs.Move.ReadValue<Vector2>().x,
             CameraRotation = playerCamera.transform.rotation,
-            Jump = inputs.Jump.WasPressedThisFrame(),
-            Crouch = inputs.Crouch.IsPressed(),
-            Sprint = inputs.Sprint.IsPressed()
+            Jump = characterInputs.Jump || _inputs.Jump.WasPressedThisFrame(), //held until a tick uses it
+            Crouch = _inputs.Crouch.IsPressed(),
+            Sprint = _inputs.Sprint.IsPressed()
         };
-        playerCharacter.SetInputs(characterInputs);
 
-        InventoryInputs inventoryInputs = new InventoryInputs {
-            Interact = inputs.Interact.WasPressedThisFrame(),
-            Drop = inputs.Drop.WasPressedThisFrame(),
+        InventoryInputs _inventoryInputs = new InventoryInputs {
+            Interact = _inputs.Interact.WasPressedThisFrame(),
+            Drop = _inputs.Drop.WasPressedThisFrame(),
             Velocity = playerCharacter.State.Velocity,
             //Scroll = inputs.Scroll.ReadValue<float>(),
             //NumKeys = (int)inputs.NumKeys.ReadValue<float>()-1
         };
-        playerInventory.SetInputs(inventoryInputs);
+        playerInventory.SetInputs(_inventoryInputs);
 
 
-        CombatInputs combatInputs = new CombatInputs {
-            FirePressed = inputs.Attack.WasPressedThisFrame(),
-            FireHeld = inputs.Attack.IsPressed(),
-            FireReleased = inputs.Attack.WasReleasedThisFrame(),
-            AltPressed = inputs.Aim.WasPressedThisFrame(),
-            AltHeld = inputs.Aim.IsPressed(),
-            AltReleased = inputs.Aim.WasReleasedThisFrame(),
-            ReloadPressed = PlayerManager.instance.reloadEnabled.Value && inputs.Reload.WasPressedThisFrame()
+        CombatInputs _combatInputs = new CombatInputs {
+            FirePressed = _inputs.Attack.WasPressedThisFrame(),
+            FireHeld = _inputs.Attack.IsPressed(),
+            FireReleased = _inputs.Attack.WasReleasedThisFrame(),
+            AltPressed = _inputs.Aim.WasPressedThisFrame(),
+            AltHeld = _inputs.Aim.IsPressed(),
+            AltReleased = _inputs.Aim.WasReleasedThisFrame(),
+            ReloadPressed = PlayerManager.instance.reloadEnabled.Value && _inputs.Reload.WasPressedThisFrame()
         };
-        playerCombat.SetInputs(combatInputs, playerInventory.ReadyPull);
+        playerCombat.SetInputs(_combatInputs, playerInventory.ReadyPull);
 
-        playerUI.SetInputs(inputs.Tab.IsPressed());
+        playerUI.SetInputs(_inputs.Tab.IsPressed());
     }
 
     void UpdateState()
     {
         CharacterState _characterState = playerCharacter.State;
+        playerState.Position = playerCharacter.Motor.TransientPosition;
+        playerState.CameraPitch = playerCamera.transform.eulerAngles.x;
+        playerState.CameraYaw = playerCamera.transform.eulerAngles.y;
         playerState.Grounded = _characterState.Grounded;
         playerState.Stance = _characterState.Stance;
         playerState.Velocity = _characterState.Velocity;
+        playerState.WallJumps = _characterState.WallJumps;
+        playerState.HandPush = _characterState.HandPush;
+        playerState.Teleports = _characterState.Teleports;
 
         playerState.InventoryIndex = playerInventory.InvIndex;
-        ItemClient equipped = playerInventory.ClientInventory[playerState.InventoryIndex];
-        playerState.Aiming = equipped.Aiming;
+        ItemClient _equipped = playerInventory.ClientInventory[playerState.InventoryIndex];
+        playerState.Aiming = _equipped.Aiming;
         playerState.ReadyPull = playerInventory.ReadyPull;
-        playerState.Reloading = equipped.Reloading;
+        playerState.Reloading = _equipped.Reloading;
+    }
+
+    //one-shot visuals read from state changes, same on the owner and on remotes
+    void PlayStateEvents(PlayerState _previous, PlayerState _current)
+    {
+        if(_current.Stance == Stance.Vault && _previous.Stance != Stance.Vault) playerAnimations.TriggerAnimation("Vault");
+        if(_current.WallJumps != _previous.WallJumps) playerAnimations.HandPush(_current.HandPush);
     }
 
     [Rpc(SendTo.Owner)]
-    public void UpdateHealthClientRpc(float health) {
-        playerUI.hud.UpdateHealth(health);
+    public void UpdateHealthClientRpc(float _health) {
+        playerUI.hud.UpdateHealth(_health);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void DieClientRpc(ulong ragdollNetworkId) {
+    public void DieClientRpc(ulong _ragdollNetworkId) {
         isDead = true;
 
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
@@ -326,20 +385,20 @@ public class Player : NetworkBehaviour
         playerCharacter.SetSpectator(true);
         playerUI.hud.SetDead(true);
 
-        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ragdollNetworkId, out NetworkObject ragdollObj))
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(_ragdollNetworkId, out NetworkObject _ragdollObj))
         {
-            Ragdoll ragdoll = ragdollObj.GetComponent<Ragdoll>();
-            if (ragdoll != null && ragdoll.CameraTarget != null)
+            Ragdoll _ragdoll = _ragdollObj.GetComponent<Ragdoll>();
+            if (_ragdoll != null && _ragdoll.CameraTarget != null)
             {
                 if (deathCamRoutine != null) StopCoroutine(deathCamRoutine);
-                deathCamRoutine = StartCoroutine(DeathCam(ragdoll.CameraTarget));
+                deathCamRoutine = StartCoroutine(DeathCam(_ragdoll.CameraTarget));
             }
         }
     }
 
-    IEnumerator DeathCam(Transform target)
+    IEnumerator DeathCam(Transform _target)
     {
-        deathCamTarget = target;
+        deathCamTarget = _target;
         yield return new WaitForSeconds(deathCamDuration);
         deathCamTarget = null;
         deathCamRoutine = null;
@@ -363,7 +422,6 @@ public class Player : NetworkBehaviour
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
 
         if(!IsOwner) {
-            lastRemotePosition = playerCharacter.transform.position;
             playerCharacter.root.gameObject.SetActive(true);
             return;
         } 
@@ -374,54 +432,44 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(SendTo.Owner)]
-    public void RecieveForceClientRpc(Vector3 force) {
-        playerCharacter.AddForce(force);
+    public void RecieveForceClientRpc(Vector3 _force) {
+        playerCharacter.AddForce(_force);
     }
 
     [Rpc(SendTo.Owner)]
-    public void TeleportClientRpc(Vector3 position) {
-        playerCharacter.SetPosition(position);
+    public void TeleportClientRpc(Vector3 _position) {
+        playerCharacter.SetPosition(_position);
     }
 
     [Rpc(SendTo.Owner)]
-    public void AddOrRemoveScoreboardItemClientRpc(bool add, ulong playerId, string playerName, int wins, int kills, int deaths) {
-        if(add) playerUI.scoreboard.AddItem(playerId, playerName, wins, kills, deaths);
-        else playerUI.scoreboard.RemoveItem(playerId);
+    public void AddOrRemoveScoreboardItemClientRpc(bool _add, ulong _playerId, string _playerName, int _wins, int _kills, int _deaths) {
+        if(_add) playerUI.scoreboard.AddItem(_playerId, _playerName, _wins, _kills, _deaths);
+        else playerUI.scoreboard.RemoveItem(_playerId);
     }
 
     [Rpc(SendTo.Owner)]
-    public void ScoreboardUpdateClientRpc(ulong playerId, int wins, int kills, int deaths) {
-        playerUI.scoreboard.UpdateItem(playerId, wins, kills, deaths);
+    public void ScoreboardUpdateClientRpc(ulong _playerId, int _wins, int _kills, int _deaths) {
+        playerUI.scoreboard.UpdateItem(_playerId, _wins, _kills, _deaths);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void SetCrownClientRpc(bool enabled) {
-        playerUI.SetCrown(enabled && !IsOwner);
+    public void SetCrownClientRpc(bool _enabled) {
+        playerUI.SetCrown(_enabled && !IsOwner);
     }
 
     [Rpc(SendTo.Owner)]
-    public void AddKillfeedClientRpc(string text, bool clientIncluded) {
-        playerUI.killfeed.AddKillfeedItem(text, clientIncluded);
+    public void AddKillfeedClientRpc(string _text, bool _clientIncluded) {
+        playerUI.killfeed.AddKillfeedItem(_text, _clientIncluded);
     }
 
     [Rpc(SendTo.Owner)]
-    public void ClearItemClientRpc(int itemId = -1) {
-        playerInventory.ClearItem(itemId);
+    public void ClearItemClientRpc(int _itemId = -1) {
+        playerInventory.ClearItem(_itemId);
     }
 
     [Rpc(SendTo.Owner)]
-    public void GiveItemClientRpc(ulong itemNetworkId) {
-        playerInventory.GiveItem(itemNetworkId);
-    }
-
-    public void HandPush(Vector3 force) {
-        playerAnimations.HandPushServerRpc(force);
-        playerAnimations.HandPush(force);
-    }
-
-    public void TriggerAnimation(string name) {
-        playerAnimations.TriggerAnimationServerRpc(name);
-        playerAnimations.TriggerAnimation(name);
+    public void GiveItemClientRpc(ulong _itemNetworkId) {
+        playerInventory.GiveItem(_itemNetworkId);
     }
 
 }
