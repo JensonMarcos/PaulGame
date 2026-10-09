@@ -30,6 +30,7 @@ public abstract class MeleeWeapon : ItemClient
 
     float nextTimeToFire;
     bool hitCooldownReduced;
+    bool uppercutAttack;
     float charge;
     bool charging;
     Coroutine sweepCoroutine;
@@ -117,12 +118,12 @@ public abstract class MeleeWeapon : ItemClient
                 combat.Character.AddForce(direction * add);
         }
 
-        //StopAttackRoutine();
-        PlayAttack(uppercut);
-        combat.ReplicateAttack(uppercut);
-
         if (sweepCoroutine != null) StopCoroutine(sweepCoroutine);
+
         sweepCoroutine = StartCoroutine(Sweep(combat, attackCharge, uppercut));
+
+        PlayAttack(uppercutAttack);
+        combat.ReplicateAttack(uppercutAttack);
 
         SoundManager.Play(attackSound, combat.Cam.position);
     }
@@ -131,30 +132,35 @@ public abstract class MeleeWeapon : ItemClient
     {
         hitRoots.Clear();
         hitCooldownReduced = false;
+        uppercutAttack = false;
         float endTime = Time.time + meleeHitDuration;
 
-        while (true)
+        Cast(combat, attackCharge, uppercut);
+        uppercut = uppercutAttack; 
+        while (Time.time < endTime)
         {
-            Cast(combat, attackCharge, uppercut);
-            if (Time.time >= endTime) break;
             yield return null;
+            Cast(combat, attackCharge, uppercut);
         }
 
         sweepCoroutine = null;
     }
 
-    void Cast(PlayerCombat combat, float attackCharge, bool uppercut)
+    void Cast(PlayerCombat combat, float attackCharge, bool airborne)
     {
         float hitRange = Mathf.Lerp(range, chargeRange, attackCharge);
         combat.TraceAll(combat.Cam.position, combat.Cam.forward, shootRadius, hitRange, traces);
         pellets.Clear();
-        Vector3 hitDir = uppercut ? (Vector3.up + 0.3f*combat.Cam.forward).normalized : combat.Cam.forward;
 
         for (int i = 0; i < traces.Count; i++)
         {
             RaycastHit hit = traces[i];
             Transform hitRoot = hit.transform.root;
             if (!hitRoots.Add(hitRoot)) continue;
+
+            bool uppercut = airborne && (hitRoot.GetComponent<Player>() || hitRoot.GetComponent<NetworkProp>());
+            if (uppercut) uppercutAttack = true;
+            Vector3 hitDir = uppercut ? (Vector3.up + 0.3f * combat.Cam.forward).normalized : combat.Cam.forward;
 
             CombatHit result = combat.MeleeHit(
                 hit,

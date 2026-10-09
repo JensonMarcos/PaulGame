@@ -3716,7 +3716,7 @@ MonoBehaviour:
   jumpSpeed: 8
   coyoteTime: 0.1
   gravity: -30
-  slideStartSpeed: 12
+  slideStartSpeed: 11.5
   slideEndSpeed: 6.25
   slideThresholdSpeed: 8
   slideFriction: 0.6
@@ -3724,7 +3724,7 @@ MonoBehaviour:
   slideDeceleration: 20
   wallJumpSpeed: 8
   wallJumpPushSpeed: 4
-  wallCheckDistance: 0.1
+  wallCheckDistance: 0.25
   handPushAmount: 0.05
   wallJumpCooldown: 1
   vaultForwardSpeed: 1.7
@@ -3741,7 +3741,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3749683256609901313}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 3f3f19c35435c1e45bd77b4caf6fcbb1, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -3773,7 +3773,7 @@ MonoBehaviour:
   CapsuleRadius: 0.3
   CapsuleHeight: 1.8
   CapsuleYOffset: 0.9
-  CapsulePhysicsMaterial: {fileID: 0}
+  CapsulePhysicsMaterial: {fileID: 13400000, guid: 3f3f19c35435c1e45bd77b4caf6fcbb1, type: 2}
   GroundDetectionExtraDistance: 0
   MaxStableSlopeAngle: 46
   StableGroundLayers:
