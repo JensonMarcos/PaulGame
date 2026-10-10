@@ -8,8 +8,7 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
     protected Vector3 wishMovement;
 
     Vector3 pendingForce;
-    bool pendingTeleport;
-    Vector3 pendingTeleportPosition;
+    Vector3? pendingTeleport;
     byte teleports;
 
     public void Initialize(KinematicCharacterMotor _motor)
@@ -19,10 +18,10 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
 
     public void Tick(CharacterInputs _inputs, float _deltaTime)
     {
-        if (pendingTeleport)
+        if (pendingTeleport.HasValue)
         {
-            pendingTeleport = false;
-            Motor.SetPositionAndRotation(pendingTeleportPosition, Motor.TransientRotation);
+            Motor.SetPositionAndRotation(pendingTeleport.Value, Motor.TransientRotation);
+            pendingTeleport = null;
             Motor.BaseVelocity = Vector3.zero;
             teleports++;
         }
@@ -58,8 +57,7 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
 
     public void SetPosition(Vector3 _position)
     {
-        pendingTeleport = true;
-        pendingTeleportPosition = _position;
+        pendingTeleport = _position;
         pendingForce = Vector3.zero;
     }
 

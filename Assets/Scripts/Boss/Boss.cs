@@ -8,14 +8,14 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     [SerializeField] float capsuleRadius = 1f;
     [SerializeField] float capsuleHeight = 4f;
     [SerializeField] float mass = 5f; //scales down incoming forces (knockback, recoil); 1 = normal player
-    [SerializeField] BossMovement movement; //falls back to the normal character movement when empty
+    [SerializeField] BossMovement movement;
 
     protected Player player;
     protected PlayerCharacter character;
     protected PlayerCombat combat;
     protected CombatInputs inputs;
 
-    float normalRadius, normalStandHeight, normalCrouchHeight;
+    float normalRadius;
 
     public Transform CamTarget => camTarget;
 
@@ -46,14 +46,8 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
         body.SetActive(true);
 
         normalRadius = character.Motor.Capsule.radius;
-        normalStandHeight = character.standHeight;
-        normalCrouchHeight = character.crouchHeight;
-
-        character.standHeight = capsuleHeight;
-        character.crouchHeight = capsuleHeight;
         character.Motor.SetCapsuleDimensions(capsuleRadius, capsuleHeight, capsuleHeight * 0.5f);
 
-        if(movement == null) return;
         movement.Initialize(character.Motor);
         character.Motor.CharacterController = movement;
     }
@@ -61,25 +55,18 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     public virtual void Exit()
     {
         body.SetActive(false);
-        if(movement != null) character.Motor.CharacterController = character;
 
-        character.standHeight = normalStandHeight;
-        character.crouchHeight = normalCrouchHeight;
-        character.Motor.SetCapsuleDimensions(normalRadius, normalStandHeight, normalStandHeight * 0.5f);
+        character.Motor.CharacterController = character;
+        character.Motor.SetCapsuleDimensions(normalRadius, character.standHeight, character.standHeight * 0.5f);
     }
 
     public virtual void SetDead(bool _dead) => body.SetActive(!_dead);
 
-    public virtual void Tick(CharacterInputs _inputs, int _tick, float _deltaTime)
-    {
-        if(movement != null) movement.Tick(_inputs, _deltaTime);
-        else character.Tick(_inputs, _tick, _deltaTime);
-    }
+    public void Tick(CharacterInputs _inputs, int _tick, float _deltaTime) => movement.Tick(_inputs, _deltaTime);
 
-    public virtual void WriteState(ref PlayerState _state)
+    public void WriteState(ref PlayerState _state)
     {
-        if(movement != null) movement.WriteState(ref _state);
-        else character.WriteState(ref _state);
+        movement.WriteState(ref _state);
 
         _state.Aiming = 0f;
         _state.ReadyPull = false;
@@ -99,16 +86,7 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
 
     public abstract void UpdateCombat(PlayerState _state);
 
-    public virtual void AddForce(Vector3 _force)
-    {
-        _force /= Mathf.Max(mass, 0.01f);
-        if(movement != null) movement.AddForce(_force);
-        else character.AddForce(_force);
-    }
+    public void AddForce(Vector3 _force) => movement.AddForce(_force / Mathf.Max(mass, 0.01f));
 
-    public virtual void SetPosition(Vector3 _position)
-    {
-        if(movement != null) movement.SetPosition(_position);
-        else character.SetPosition(_position);
-    }
+    public void SetPosition(Vector3 _position) => movement.SetPosition(_position);
 }

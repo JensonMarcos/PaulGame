@@ -61,25 +61,11 @@ public struct PlayerState : INetworkSerializable
         }
     }
 
-    static byte Compress01(float _value)
-    {
-        return (byte)Mathf.RoundToInt(Mathf.Clamp01(_value) * 255f);
-    }
+    static byte Compress01(float _value) => (byte)Mathf.RoundToInt(Mathf.Clamp01(_value) * 255f);
+    static float Decompress01(byte _value) => _value / 255f;
 
-    static float Decompress01(byte _value)
-    {
-        return _value / 255f;
-    }
-
-    static ushort CompressAngle(float _angle)
-    {
-        return (ushort)Mathf.RoundToInt(Mathf.Repeat(_angle, 360f) / 360f * 65535f);
-    }
-
-    static float DecompressAngle(ushort _value)
-    {
-        return _value / 65535f * 360f;
-    }
+    static ushort CompressAngle(float _angle) => (ushort)Mathf.RoundToInt(Mathf.Repeat(_angle, 360f) / 360f * 65535f);
+    static float DecompressAngle(ushort _value) => _value / 65535f * 360f;
 
     static void SerializeHalf<T>(BufferSerializer<T> _serializer, ref Vector3 _value) where T : IReaderWriter
     {
@@ -321,9 +307,10 @@ public class Player : NetworkBehaviour
         }
 
         //gathered every frame, used by the next tick
+        Vector2 _move = _inputs.Move.ReadValue<Vector2>();
         characterInputs = new CharacterInputs {
-            ForwardAxis = _inputs.Move.ReadValue<Vector2>().y,
-            RightAxis = _inputs.Move.ReadValue<Vector2>().x,
+            ForwardAxis = _move.y,
+            RightAxis = _move.x,
             CameraRotation = playerCamera.transform.rotation,
             Jump = characterInputs.Jump || _inputs.Jump.WasPressedThisFrame(), //held until a tick uses it
             Crouch = _inputs.Crouch.IsPressed(),

@@ -85,9 +85,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     int tick;
     float tickDeltaTime;
     Vector3 pendingForce;
-    bool pendingTeleport;
-    bool pendingKillVelocity;
-    Vector3 pendingTeleportPosition;
+    Vector3? pendingTeleport;
 
     [Space]
     [Header("Walk")]
@@ -182,11 +180,11 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         tickDeltaTime = _deltaTime;
 
         //teleports and forces that came in between ticks
-        if (pendingTeleport)
+        if (pendingTeleport.HasValue)
         {
-            pendingTeleport = false;
-            Motor.SetPositionAndRotation(GetValidPosition(pendingTeleportPosition), Motor.TransientRotation);
-            if (pendingKillVelocity) Motor.BaseVelocity = Vector3.zero;
+            Motor.SetPositionAndRotation(GetValidPosition(pendingTeleport.Value), Motor.TransientRotation);
+            pendingTeleport = null;
+            Motor.BaseVelocity = Vector3.zero;
             State.Teleports++;
         }
         if (pendingForce != Vector3.zero)
@@ -747,12 +745,10 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         return GetValidPosition(_position + _dir * _dist, _attempts + 1);
     }
 
-    public void SetPosition(Vector3 _position, bool _killVelocity = true)
+    public void SetPosition(Vector3 _position)
     {
-        pendingTeleport = true;
-        pendingTeleportPosition = _position;
-        pendingKillVelocity = _killVelocity;
-        if (_killVelocity) pendingForce = Vector3.zero;
+        pendingTeleport = _position;
+        pendingForce = Vector3.zero;
     }
 
     public void SetSpectator(bool _spectator)
