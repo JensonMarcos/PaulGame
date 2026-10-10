@@ -1754,6 +1754,7 @@ GameObject:
   - component: {fileID: 1746808595021971831}
   - component: {fileID: 8215228522949132519}
   - component: {fileID: 3519027846150294716}
+  - component: {fileID: 5829104736251908437}
   m_Layer: 3
   m_Name: PlayerV1
   m_TagString: Player
@@ -1849,7 +1850,7 @@ MonoBehaviour:
   playerCharacter: {fileID: 3154624319263331040}
   playerCamera: {fileID: 7242442766532918349}
   playerAnimations: {fileID: 8215228522949132519}
-  playerCombat: {fileID: 1746808595021971831}
+  normalForm: {fileID: 5829104736251908437}
   playerUI: {fileID: 4503881391566056838}
   playerSync: {fileID: 3519027846150294716}
   bodyMaterials: {fileID: 8011823009101336696}
@@ -9651,3 +9652,20 @@ Transform:
   - {fileID: 6727449587219189769}
   m_Father: {fileID: 5043355783623735967}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5829104736251908437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069876906178530849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa4a85c6668d42e0aa14f73f33e7c44b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1116660874016685530}
+  character: {fileID: 3154624319263331040}
+  animations: {fileID: 8215228522949132519}
+  combat: {fileID: 1746808595021971831}
+  inventory: {fileID: 8977595956255095959}

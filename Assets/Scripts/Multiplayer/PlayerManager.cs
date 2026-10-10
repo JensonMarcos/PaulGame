@@ -10,6 +10,7 @@ public class PlayerManager : NetworkBehaviour
 {
     public static PlayerManager instance;
     public GameObject playerPrefab, ragdollPrefab;
+    public BossList bossList;
     public List<PlayerData> Players = new List<PlayerData>();
     public int playersAlive = 0;
 
@@ -250,6 +251,8 @@ public class PlayerManager : NetworkBehaviour
         //undroppable items (e.g. C4) get removed instead of dropped on death
         DespawnInventoryItems(target.player, netObj => netObj.TryGetComponent(out Item item) && item.ClientStats != null && item.ClientStats.cantDrop);
 
+        DespawnBoss(target.ClientId);
+
         target.player.DieClientRpc(ragdollNet.NetworkObjectId);
 
         if(GameManager.instance != null) GameManager.instance.worldObjects.Add(ragdoll);
@@ -294,6 +297,38 @@ public class PlayerManager : NetworkBehaviour
             GameManager.instance.GameTeleport(playerid);
 
         playersAlive = Players.Count(x => x.isDead == false);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void DEBUGToggleBossServerRpc(ulong playerid, RpcParams rpcParams = default){
+        PlayerData data = Players.Find(x => x.ClientId == playerid);
+        if(data == null) return;
+
+        if(data.player.ActiveForm is Boss) DespawnBoss(playerid);
+        else SpawnBoss(playerid, 0);
+    }
+
+    public void SpawnBoss(ulong playerid, int bossIndex)
+    {
+        PlayerData data = Players.Find(x => x.ClientId == playerid);
+        if(data == null || data.player.ActiveForm is Boss) return;
+
+        if(data.isDead) {
+            Revive(Players.IndexOf(data));
+            playersAlive = Players.Count(x => x.isDead == false);
+        }
+
+        NetworkObject boss = Instantiate(bossList.bosses[bossIndex]).GetComponent<NetworkObject>();
+        boss.SpawnWithOwnership(playerid, true);
+        boss.TrySetParent(data.player.NetworkObject, false);
+    }
+
+    public void DespawnBoss(ulong playerid)
+    {
+        PlayerData data = Players.Find(x => x.ClientId == playerid);
+        if(data == null || data.player.ActiveForm is not Boss boss) return;
+
+        boss.NetworkObject.Despawn();
     }
 
     void Revive(int id)

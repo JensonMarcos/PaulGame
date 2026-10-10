@@ -120,7 +120,7 @@ public class Player : NetworkBehaviour
     public PlayerCharacter playerCharacter;
     [SerializeField] PlayerCamera playerCamera;
     [SerializeField] PlayerAnimations playerAnimations;
-    [SerializeField] PlayerCombat playerCombat;
+    [SerializeField] NormalForm normalForm;
     [SerializeField] PlayerUI playerUI;
     [SerializeField] PlayerSync playerSync;
     [SerializeField] BodyMaterials bodyMaterials;
@@ -129,6 +129,13 @@ public class Player : NetworkBehaviour
     bool isDead;
     Transform deathCamTarget;
     Coroutine deathCamRoutine;
+
+    public IPlayerForm ActiveForm { get; private set; }
+
+    void Awake()
+    {
+        ActiveForm = normalForm;
+    }
   
     public override void OnNetworkSpawn()
     {
@@ -136,7 +143,7 @@ public class Player : NetworkBehaviour
         playerInputs.Enable();
 
         playerCharacter.Initialize();
-        playerCamera.Initialize(playerCharacter.camTarget, IsOwner);
+        playerCamera.Initialize(ActiveForm.CamTarget, IsOwner);
         playerAnimations.Initialize();
         playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
@@ -198,6 +205,21 @@ public class Player : NetworkBehaviour
         if(PlayerManager.instance != null) PlayerManager.instance.SetPlayerSteamId(OwnerClientId, _steamId);
     }
 
+    public void SetForm(IPlayerForm _form)
+    {
+        if(_form == ActiveForm) return;
+
+        ActiveForm.Exit();
+        ActiveForm = _form;
+        ActiveForm.Enter();
+        ActiveForm.SetDead(isDead);
+    }
+
+    public void ClearForm(IPlayerForm _form)
+    {
+        if(_form == ActiveForm) SetForm(normalForm);
+    }
+
     void RegisterRemoteCollider()
     {
         Collider _capsule = playerCharacter.Motor.Capsule;
@@ -212,12 +234,12 @@ public class Player : NetworkBehaviour
         int _tick = NetworkManager.LocalTime.Tick;
         PlayerState _previous = playerState;
 
-        playerCharacter.Tick(characterInputs, _tick, 1f / NetworkManager.NetworkConfig.TickRate);
+        ActiveForm.Tick(characterInputs, _tick, 1f / NetworkManager.NetworkConfig.TickRate);
         characterInputs.Jump = false;
 
         UpdateState();
         playerState.Tick = _tick;
-        if(!isDead) PlayStateEvents(_previous, playerState);
+        if(!isDead) ActiveForm.PlayStateEvents(_previous, playerState);
 
         playerSync.Send(playerState);
     }
@@ -230,23 +252,21 @@ public class Player : NetworkBehaviour
         }
         else if(playerSync.TryGetState(out PlayerState _state))
         {
-            if(!isDead) PlayStateEvents(playerState, _state);
+            if(!isDead) ActiveForm.PlayStateEvents(playerState, _state);
             playerState = _state;
 
             playerCharacter.transform.position = playerState.Position;
             playerCamera.transform.rotation = Quaternion.Euler(playerState.CameraPitch, playerState.CameraYaw, 0f);
         }
 
-        if(!isDead)
-        {
-            playerAnimations.UpdateAnimatorValues(playerState, playerInventory.ClientInventory[playerState.InventoryIndex]);
-
-            playerAnimations.UpdateAnimator(Time.deltaTime);
-        }
+        if(!isDead) ActiveForm.UpdateAnimations(playerState, Time.deltaTime);
 
         #if UNITY_EDITOR
         if(IsOwner && isDead && Keyboard.current.pKey.wasPressedThisFrame) {
             PlayerManager.instance.DEBUGRespawnServerRpc(OwnerClientId);      
+        }
+        if(IsOwner && Keyboard.current.bKey.wasPressedThisFrame) {
+            PlayerManager.instance.DEBUGToggleBossServerRpc(OwnerClientId);
         }
         #endif
     }
@@ -259,9 +279,9 @@ public class Player : NetworkBehaviour
 
         ItemClient _item = playerInventory.ClientInventory[playerState.InventoryIndex];
 
-        if(!isDead) playerAnimations.UpdateRigs(playerState, _item, playerCharacter.camTarget);
+        if(!isDead) ActiveForm.UpdateRigs(playerState);
 
-        Transform _camFollow = deathCamTarget != null ? deathCamTarget : playerCharacter.camTarget;
+        Transform _camFollow = deathCamTarget != null ? deathCamTarget : ActiveForm.CamTarget;
         playerCamera.UpdatePosition(_camFollow);
         if (deathCamTarget != null)
             playerCamera.UpdateDeathCamRotation(deathCamTarget);
@@ -269,8 +289,7 @@ public class Player : NetworkBehaviour
         if(IsOwner) {
             if(!isDead)
             {
-                playerInventory.TryPickUp();
-                playerCombat.UpdateCombat(playerState, _item);
+                ActiveForm.UpdateCombat(playerState);
                 playerCamera.UpdateCam(_item.AdsZoom, playerState.Aiming);
             }
 
@@ -290,7 +309,7 @@ public class Player : NetworkBehaviour
         {
             characterInputs = new CharacterInputs { CameraRotation = playerCamera.transform.rotation };
             playerInventory.SetInputs(new InventoryInputs { Velocity = playerCharacter.State.Velocity });
-            playerCombat.SetInputs(default, false);
+            ActiveForm.SetCombatInputs(default);
             playerUI.SetInputs(false);
             return;
         }
@@ -330,36 +349,18 @@ public class Player : NetworkBehaviour
             AltReleased = _inputs.Aim.WasReleasedThisFrame(),
             ReloadPressed = PlayerManager.instance.reloadEnabled.Value && _inputs.Reload.WasPressedThisFrame()
         };
-        playerCombat.SetInputs(_combatInputs, playerInventory.ReadyPull);
+        ActiveForm.SetCombatInputs(_combatInputs);
 
         playerUI.SetInputs(_inputs.Tab.IsPressed());
     }
 
     void UpdateState()
     {
-        CharacterState _characterState = playerCharacter.State;
-        playerState.Position = playerCharacter.Motor.TransientPosition;
         playerState.CameraPitch = playerCamera.transform.eulerAngles.x;
         playerState.CameraYaw = playerCamera.transform.eulerAngles.y;
-        playerState.Grounded = _characterState.Grounded;
-        playerState.Stance = _characterState.Stance;
-        playerState.Velocity = _characterState.Velocity;
-        playerState.WallJumps = _characterState.WallJumps;
-        playerState.HandPush = _characterState.HandPush;
-        playerState.Teleports = _characterState.Teleports;
-
         playerState.InventoryIndex = playerInventory.InvIndex;
-        ItemClient _equipped = playerInventory.ClientInventory[playerState.InventoryIndex];
-        playerState.Aiming = _equipped.Aiming;
-        playerState.ReadyPull = playerInventory.ReadyPull;
-        playerState.Reloading = _equipped.Reloading;
-    }
 
-    //one-shot visuals read from state changes, same on the owner and on remotes
-    void PlayStateEvents(PlayerState _previous, PlayerState _current)
-    {
-        if(_current.Stance == Stance.Vault && _previous.Stance != Stance.Vault) playerAnimations.TriggerAnimation("Vault");
-        if(_current.WallJumps != _previous.WallJumps) playerAnimations.HandPush(_current.HandPush);
+        ActiveForm.WriteState(ref playerState);
     }
 
     [Rpc(SendTo.Owner)]
@@ -372,16 +373,13 @@ public class Player : NetworkBehaviour
         isDead = true;
 
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Ghost");
+        ActiveForm.SetDead(true);
 
-        if(!IsOwner) {
-            playerCharacter.root.gameObject.SetActive(false);
-            return;
-        }
+        if(!IsOwner) return;
 
         playerInventory.DropAll();
         playerInventory.Deselect();
         
-        playerAnimations.SetAnimationActive(false);
         playerCharacter.SetSpectator(true);
         playerUI.hud.SetDead(true);
 
@@ -420,25 +418,22 @@ public class Player : NetworkBehaviour
         ClearDeathCam();
 
         playerCharacter.gameObject.layer = LayerMask.NameToLayer("Player");
+        ActiveForm.SetDead(false);
 
-        if(!IsOwner) {
-            playerCharacter.root.gameObject.SetActive(true);
-            return;
-        } 
+        if(!IsOwner) return;
 
-        playerAnimations.SetAnimationActive(true);
         playerCharacter.SetSpectator(false);
         playerUI.hud.SetDead(false);
     }
 
     [Rpc(SendTo.Owner)]
     public void RecieveForceClientRpc(Vector3 _force) {
-        playerCharacter.AddForce(_force);
+        ActiveForm.AddForce(_force);
     }
 
     [Rpc(SendTo.Owner)]
     public void TeleportClientRpc(Vector3 _position) {
-        playerCharacter.SetPosition(_position);
+        ActiveForm.SetPosition(_position);
     }
 
     [Rpc(SendTo.Owner)]

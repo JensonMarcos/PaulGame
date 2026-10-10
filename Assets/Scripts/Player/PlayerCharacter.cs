@@ -250,6 +250,17 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         if (_forward != Vector3.zero) _currentRotation = Quaternion.LookRotation(_forward, Motor.CharacterUp);
     }
 
+    public void WriteState(ref PlayerState _state)
+    {
+        _state.Position = Motor.TransientPosition;
+        _state.Grounded = State.Grounded;
+        _state.Stance = State.Stance;
+        _state.Velocity = State.Velocity;
+        _state.WallJumps = State.WallJumps;
+        _state.HandPush = State.HandPush;
+        _state.Teleports = State.Teleports;
+    }
+
     public void SetYawFromCamera(Quaternion _cameraRotation)
     {
         Vector3 _forward = Vector3.ProjectOnPlane(_cameraRotation * Vector3.forward, Motor.CharacterUp);

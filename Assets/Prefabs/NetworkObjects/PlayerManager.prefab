@@ -73,5 +73,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   playerPrefab: {fileID: 2069876906178530849, guid: 22aa77b996d82414ab8eb799d229df43, type: 3}
   ragdollPrefab: {fileID: 6201912026124443639, guid: dbde576714f4e7445a68e2fe06d99475, type: 3}
+  bossList: {fileID: 11400000, guid: bbc2a555217d442fb7aa7f756ac795e0, type: 2}
   Players: []
   playersAlive: 0
