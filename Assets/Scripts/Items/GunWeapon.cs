@@ -7,6 +7,7 @@ public abstract class GunWeapon : ItemClient
     public float fireRate;
     public bool isAutomatic;
     public float reloadSpeed;
+    [HideInInspector] public bool ignoreReloadRule;
     public int ammoCap;
     public int ammoSpawn;
 
@@ -43,6 +44,7 @@ public abstract class GunWeapon : ItemClient
     public Vector3 sightPos;
     public Vector3 adsAmmoPos;
     public Vector3 widTopBot;
+    public bool flipAmmo;
 
     public override bool IdleIsMelee => idleIsMelee;
     public override float AdsZoom => adsZoom;
@@ -55,6 +57,7 @@ public abstract class GunWeapon : ItemClient
     public override Vector3 SightPos => sightPos;
     public override Vector3 AdsAmmoPos => adsAmmoPos;
     public override Vector3 WidTopBot => widTopBot;
+    public override bool FlipAmmo => flipAmmo;
     public override Transform Sight => sight;
 
     float nextTimeToFire;
@@ -106,7 +109,7 @@ public abstract class GunWeapon : ItemClient
         Shoot(combat);
 
         if (backwardVelocity != 0f && !state.Grounded)
-            combat.Character.AddForce(-combat.Cam.forward * backwardVelocity);
+            combat.AddForce(-combat.Cam.forward * backwardVelocity);
     }
 
     protected abstract void Shoot(PlayerCombat combat);
@@ -168,8 +171,8 @@ public abstract class GunWeapon : ItemClient
         return PlayerManager.instance == null || PlayerManager.instance.damageEnabled.Value;
     }
 
-    static bool ReloadEnabled()
+    bool ReloadEnabled()
     {
-        return PlayerManager.instance == null || PlayerManager.instance.reloadEnabled.Value;
+        return ignoreReloadRule || PlayerManager.instance == null || PlayerManager.instance.reloadEnabled.Value;
     }
 }

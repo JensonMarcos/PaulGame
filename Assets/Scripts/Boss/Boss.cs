@@ -9,6 +9,9 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     [SerializeField] float capsuleHeight = 4f;
     [SerializeField] float mass = 5f; //scales down incoming forces (knockback, recoil); 1 = normal player
     [SerializeField] BossMovement movement;
+    [SerializeField] PlayerAnimations animations;
+    [SerializeField] ItemClient hands; //hand pose when holding no items, not ticked as an item
+    [SerializeField] ItemClient[] items;
 
     protected Player player;
     protected PlayerCharacter character;
@@ -18,6 +21,12 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     float normalRadius;
 
     public Transform CamTarget => camTarget;
+    public ItemClient Equipped => items.Length > 0 ? items[0] : hands;
+    public virtual ItemClient Melee => Equipped;
+    public PlayerAnimations Animations => animations;
+
+    protected virtual ItemClient RightItem => Equipped;
+    protected virtual ItemClient LeftItem => Equipped;
 
     public override void OnNetworkSpawn() => Attach();
 
@@ -38,6 +47,7 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
 
         character = player.playerCharacter;
         combat = player.GetComponent<PlayerCombat>();
+        animations.Initialize(player.playerCamera);
         player.SetForm(this);
     }
 
@@ -68,23 +78,37 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     {
         movement.WriteState(ref _state);
 
-        _state.Aiming = 0f;
-        _state.ReadyPull = false;
-        _state.Reloading = 0f;
+        _state.Aiming = Equipped.Aiming;
+        _state.ReadyPull = true;
+        _state.Reloading = Equipped.Reloading;
     }
 
     public virtual void PlayStateEvents(PlayerState _previous, PlayerState _current) { }
 
-    public virtual void UpdateAnimations(PlayerState _state, float _deltaTime) { }
+    public virtual void UpdateAnimations(PlayerState _state, float _deltaTime)
+    {
+        animations.UpdateAnimatorValues(_state, Equipped, movement.StanceSpeed(_state.Stance), RightItem, LeftItem);
+        animations.UpdateAnimator(_deltaTime);
+    }
 
     public virtual void UpdateRigs(PlayerState _state)
     {
         transform.SetPositionAndRotation(character.transform.position, character.transform.rotation);
+        animations.UpdateRigs(_state, Equipped, camTarget, RightItem, LeftItem);
     }
 
-    public void SetCombatInputs(CombatInputs _inputs) => inputs = _inputs;
+    public void SetCombatInputs(CombatInputs _inputs)
+    {
+        inputs = _inputs;
+        combat.SetInputs(ItemInputs(_inputs), true);
+    }
 
-    public abstract void UpdateCombat(PlayerState _state);
+    protected virtual CombatInputs ItemInputs(CombatInputs _inputs) => _inputs;
+
+    public virtual void UpdateCombat(PlayerState _state)
+    {
+        if(items.Length > 0) combat.UpdateCombat(_state, Equipped);
+    }
 
     public void AddForce(Vector3 _force) => movement.AddForce(_force / Mathf.Max(mass, 0.01f));
 

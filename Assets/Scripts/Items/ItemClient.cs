@@ -38,6 +38,7 @@ public abstract class ItemClient : MonoBehaviour
     public virtual Vector3 SightPos => default;
     public virtual Vector3 AdsAmmoPos => default;
     public virtual Vector3 WidTopBot => default;
+    public virtual bool FlipAmmo => false;
     public virtual Transform Sight => null;
 
     public bool ShowsHudAmmo => AmmoCap > 0;

@@ -21,14 +21,15 @@ public class BodyAnimation : MonoBehaviour
     public float Horizontal;
     public float Vertical;
     public float IdleState;
+    public float LeftIdleState;
 
     [SerializeField] float moveResponse;
     [SerializeField] float crouchResponse;
 
 
     [Header("Rig")]
-    [SerializeField] Transform cam;
     [SerializeField] LookRig[] aimRig;
+    Transform cam;
 
     [SerializeField] Transform upperBodyBone;
     public float UpperBodyTilt;
@@ -39,10 +40,11 @@ public class BodyAnimation : MonoBehaviour
     static readonly int HorizontalHash = Animator.StringToHash("Horizontal");
     static readonly int VerticalHash = Animator.StringToHash("Vertical");
     static readonly int IdleStateHash = Animator.StringToHash("IdleState");
+    static readonly int LeftIdleStateHash = Animator.StringToHash("LeftIdleState");
 
-    public void Initialize()
+    public void Initialize(Transform _cam)
     {
-        //
+        cam = _cam;
     }
 
     void Update()
@@ -53,6 +55,7 @@ public class BodyAnimation : MonoBehaviour
         BodyAnimator.SetFloat(HorizontalHash, Mathf.Lerp(BodyAnimator.GetFloat(HorizontalHash), Horizontal, moveResponse * Time.deltaTime));
         BodyAnimator.SetFloat(VerticalHash, Mathf.Lerp(BodyAnimator.GetFloat(VerticalHash), Vertical, moveResponse * Time.deltaTime));
         BodyAnimator.SetFloat(IdleStateHash, Mathf.Lerp(BodyAnimator.GetFloat(IdleStateHash), IdleState, 10 * Time.deltaTime));
+        BodyAnimator.SetFloat(LeftIdleStateHash, Mathf.Lerp(BodyAnimator.GetFloat(LeftIdleStateHash), LeftIdleState, 10 * Time.deltaTime));
     }
 
     float weight;
@@ -75,8 +78,9 @@ public class BodyAnimation : MonoBehaviour
         
     }
 
-    public void SetAnimator(float _stance, float _sprint, float _slide, float x, float y, float idle)
+    public void SetAnimator(float _stance, float _sprint, float _slide, float x, float y, float idle, float leftIdle)
     {
+        LeftIdleState = leftIdle;
         Stance = _stance;
         Sprint = _sprint;
         Slide = _slide;

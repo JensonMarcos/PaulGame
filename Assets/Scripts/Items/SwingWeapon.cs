@@ -32,8 +32,8 @@ public class SwingWeapon : MeleeWeapon
     {
         if (cached) return;
         parent = transform.parent;
-        anim = transform.root.GetComponent<PlayerAnimations>();
-        cam = anim.cam.transform;
+        anim = GetComponentInParent<PlayerAnimations>();
+        cam = anim.Cam.transform;
         rightSwing.startPos = rightSwing.transform.localPosition;
         rightSwing.startRot = rightSwing.transform.localRotation;
         if (leftSwing.transform != null)

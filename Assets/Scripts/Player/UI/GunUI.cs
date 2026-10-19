@@ -10,6 +10,8 @@ public class GunUI : MonoBehaviour
     [SerializeField] RectTransform width, top, bottom;
     [SerializeField] GameObject sight, ammo;
 
+    [SerializeField] GameObject ammoVisual;
+
     // [SerializeField] string reloadWord = "RELOADING";
     // [SerializeField] int reloadWindowSize = 3;
 
@@ -46,6 +48,11 @@ public class GunUI : MonoBehaviour
         width.sizeDelta = new Vector2(_item.WidTopBot.x , width.sizeDelta.y);
         top.sizeDelta = new Vector2(top.sizeDelta.x, _item.WidTopBot.y);
         bottom.sizeDelta = new Vector2(bottom.sizeDelta.x, _item.WidTopBot.z);
+
+        ammoText.horizontalAlignment = _item.FlipAmmo ? HorizontalAlignmentOptions.Left : HorizontalAlignmentOptions.Right;
+        Vector3 visualScale = ammoVisual.transform.localScale;
+        visualScale.x = Mathf.Abs(visualScale.x) * (_item.FlipAmmo ? -1f : 1f);
+        ammoVisual.transform.localScale = visualScale;
 
         targetAmmoPos = aiming ? _item.AdsAmmoPos : _item.AmmoPos; 
         ammo.transform.localPosition = Vector3.Lerp(ammo.transform.localPosition, targetAmmoPos, speed * Time.deltaTime);

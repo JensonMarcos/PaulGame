@@ -470,6 +470,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: LeftIdleState
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   - m_Name: Vault
     m_Type: 9
     m_DefaultFloat: 0
@@ -734,7 +740,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: Stance
     m_Mirror: 0
-  m_BlendParameter: IdleState
+  m_BlendParameter: LeftIdleState
   m_BlendParameterY: Stance
   m_MinThreshold: 0
   m_MaxThreshold: 1

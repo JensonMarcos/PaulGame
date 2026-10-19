@@ -9,6 +9,8 @@ public class PaulBossMovement : BossMovement
     [SerializeField] float jumpSpeed = 8f;
     [SerializeField] float gravity = -30f;
 
+    public override float StanceSpeed(Stance _stance) => _stance == Stance.Sprint ? sprintSpeed : walkSpeed;
+
     public override void UpdateVelocity(ref Vector3 _currentVelocity, float _deltaTime)
     {
         if (Motor.GroundingStatus.IsStableOnGround)

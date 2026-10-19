@@ -44,7 +44,7 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
     {
         _state.Position = Motor.TransientPosition;
         _state.Grounded = Motor.GroundingStatus.IsStableOnGround;
-        _state.Stance = Stance.Stand;
+        _state.Stance = inputs.Sprint && wishMovement != Vector3.zero ? Stance.Sprint : Stance.Stand;
         _state.Velocity = Motor.Velocity;
         _state.Teleports = teleports;
     }
@@ -60,6 +60,8 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
         pendingTeleport = _position;
         pendingForce = Vector3.zero;
     }
+
+    public abstract float StanceSpeed(Stance _stance);
 
     public abstract void UpdateVelocity(ref Vector3 _currentVelocity, float _deltaTime);
 

@@ -2,21 +2,38 @@ using UnityEngine;
 
 public class PaulBoss : Boss
 {
-    [SerializeField] float damage = 25f;
-    [SerializeField] float range = 5f;
-    [SerializeField] float attackRadius = 0.5f;
-    [SerializeField] float force = 15f;
-    [SerializeField] float cooldown = 0.6f;
+    [SerializeField] PunchWeapon punch;
 
-    float nextAttackTime;
+    public override ItemClient Melee => punch;
+    protected override ItemClient RightItem => punch;
+
+    //gun on left click without ADS, punch on right click
+    protected override CombatInputs ItemInputs(CombatInputs _inputs) => new CombatInputs {
+        FirePressed = _inputs.FirePressed,
+        FireHeld = _inputs.FireHeld,
+        FireReleased = _inputs.FireReleased,
+        ReloadPressed = _inputs.ReloadPressed
+    };
+
+    public override void Enter()
+    {
+        base.Enter();
+        if(Equipped is GunWeapon gun)
+        {
+            gun.ignoreReloadRule = true;
+            gun.Ammo = gun.AmmoCap;
+        }
+    }
 
     public override void UpdateCombat(PlayerState _state)
     {
-        if(!inputs.FirePressed || Time.time < nextAttackTime) return;
-        nextAttackTime = Time.time + cooldown;
+        base.UpdateCombat(_state);
 
-        Transform _cam = combat.Cam;
-        if(combat.TryTrace(_cam.position, _cam.forward, attackRadius, range, out RaycastHit _hit))
-            combat.MeleeHit(_hit, _cam.forward, damage, force, force, 0);
+        punch.SetInputs(new CombatInputs {
+            FirePressed = inputs.AltPressed,
+            FireHeld = inputs.AltHeld,
+            FireReleased = inputs.AltReleased
+        });
+        punch.Tick(combat, _state);
     }
 }

@@ -62,6 +62,8 @@ public class PlayerUI : MonoBehaviour
         gunUI.UpdateUI(_item, aiming > 0.5f, scoped, _state.Reloading);
     }
 
+    public void AttachGunUI(Transform _itemRoot) => gunUI.transform.SetParent(_itemRoot, false);
+
     public void SetCrown(bool enabled)
     {
         crown.SetActive(enabled);

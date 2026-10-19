@@ -3,6 +3,9 @@ using UnityEngine;
 public interface IPlayerForm
 {
     Transform CamTarget { get; }
+    ItemClient Equipped { get; }
+    ItemClient Melee { get; } //plays replicated melee animations
+    PlayerAnimations Animations { get; }
 
     void Enter();
     void Exit();

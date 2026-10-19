@@ -72,7 +72,6 @@ public struct CombatHit
 public class PlayerCombat : NetworkBehaviour
 {
     [SerializeField] PlayerCharacter character;
-    [SerializeField] PlayerAnimations animations;
     [SerializeField] Transform cam;
 
     [SerializeField] LayerMask shootLayer;
@@ -90,6 +89,8 @@ public class PlayerCombat : NetworkBehaviour
 
     public PlayerCharacter Character => character;
     public Transform Cam => cam;
+
+    public void AddForce(Vector3 force) => player.ActiveForm.AddForce(force);
 
     void Awake()
     {
@@ -182,8 +183,8 @@ public class PlayerCombat : NetworkBehaviour
 
             if (addAttackerVelocity)
             {
-                force += character.State.Velocity;
-                propForce += character.State.Velocity;
+                force += player.playerState.Velocity;
+                propForce += player.playerState.Velocity;
             }
 
             playerId = hitRoot.GetComponent<NetworkObject>().OwnerClientId;
@@ -200,7 +201,7 @@ public class PlayerCombat : NetworkBehaviour
         else if (hitRoot.TryGetComponent(out NetworkProp prop))
         {
             Vector3 propImpulse = shootDir * impactForceObject;
-            if (addAttackerVelocity) propImpulse += character.State.Velocity;
+            if (addAttackerVelocity) propImpulse += player.playerState.Velocity;
             prop.ApplyForce(propImpulse, hitObject.point);
             decalIndex = playerHitDecalIndex;
         }
@@ -294,7 +295,7 @@ public class PlayerCombat : NetworkBehaviour
     void PlayShotFxLocal(ShotFx fx)
     {
         if (fx.playRecoil)
-            animations.Shoot(fx.recoil, fx.backKick, fx.rotKick);
+            player.ActiveForm.Animations.Shoot(fx.recoil, fx.backKick, fx.rotKick);
 
         if (fx.pellets == null) return;
 
@@ -328,7 +329,7 @@ public class PlayerCombat : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     void ReplicateAttackClientRpc(bool uppercut, RpcParams rpcParams = default)
     {
-        player.playerInventory.ClientInventory[player.playerState.InventoryIndex].PlayAttack(uppercut);
+        player.ActiveForm.Melee.PlayAttack(uppercut);
     }
 
     [Rpc(SendTo.Server)]
@@ -340,7 +341,7 @@ public class PlayerCombat : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     void ReplicateChargeClientRpc(bool charging, RpcParams rpcParams = default)
     {
-        ItemClient item = player.playerInventory.ClientInventory[player.playerState.InventoryIndex];
+        ItemClient item = player.ActiveForm.Melee;
         if (charging) item.PlayCharge();
         else item.StopCharge();
     }

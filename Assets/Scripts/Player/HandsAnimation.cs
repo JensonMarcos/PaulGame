@@ -29,13 +29,7 @@ public class HandsAnimation : MonoBehaviour
     Vector3 pullPos;
     float pulloutTime, pullAnimTime;
 
-    [Header("Reload Animation")]
-    [SerializeField] float displacementAmount;
-    [SerializeField] float rotationAmount;
-    [SerializeField] float cosPow;
-
     Transform lastTargetTrans;
-    float lastReloadingVal;
     float rFirstBoneRest;
     float lFirstBoneRest;
     float rFirstBone;
@@ -95,16 +89,14 @@ public class HandsAnimation : MonoBehaviour
             LHand.IK.ResolveIK();
     }
 
-    public void UpdateTransform(Transform _target, float _reloading)
+    public void UpdateTransform(Transform _target)
     {
         lastTargetTrans = _target;
-        lastReloadingVal = _reloading;
 
         HandlePull();
 
-        float _curve = Mathf.Pow(Mathf.Cos(lastReloadingVal * Mathf.PI), cosPow)-1;
-        transform.position = lastTargetTrans.position + pullPos + Vector3.up * displacementAmount * _curve;
-        transform.rotation = lastTargetTrans.rotation * Quaternion.Euler(pullRot.x + rotationAmount * _curve, pullRot.y, pullRot.z);
+        transform.position = lastTargetTrans.position + pullPos * transform.lossyScale.y;
+        transform.rotation = lastTargetTrans.rotation * Quaternion.Euler(pullRot);
     }
 
     void HandlePull()
@@ -127,6 +119,6 @@ public class HandsAnimation : MonoBehaviour
     {
         pullAnimTime = 0f;
         pulloutTime = _pulloutTime;
-        UpdateTransform(lastTargetTrans, lastReloadingVal);
+        UpdateTransform(lastTargetTrans);
     }
 }

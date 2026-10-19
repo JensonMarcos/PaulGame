@@ -115,7 +115,7 @@ public abstract class MeleeWeapon : ItemClient
             float along = Vector3.Dot(combat.Character.Motor.BaseVelocity, direction);
             float add = Mathf.Min(chargeVelocity * velocityScale, Mathf.Max(0f, chargeVelocity * 2f - along));
             if (add > 0f)
-                combat.Character.AddForce(direction * add);
+                combat.AddForce(direction * add);
         }
 
         if (sweepCoroutine != null) StopCoroutine(sweepCoroutine);

@@ -9,8 +9,9 @@ public class NormalForm : MonoBehaviour, IPlayerForm
     [SerializeField] PlayerInventory inventory;
 
     public Transform CamTarget => character.camTarget;
-
-    ItemClient Equipped(PlayerState _state) => inventory.ClientInventory[_state.InventoryIndex];
+    public ItemClient Equipped => inventory.ClientInventory[player.playerState.InventoryIndex];
+    public ItemClient Melee => Equipped;
+    public PlayerAnimations Animations => animations;
 
     public void Enter()
     {
@@ -41,10 +42,9 @@ public class NormalForm : MonoBehaviour, IPlayerForm
     {
         character.WriteState(ref _state);
 
-        ItemClient _equipped = Equipped(_state);
-        _state.Aiming = _equipped.Aiming;
+        _state.Aiming = Equipped.Aiming;
         _state.ReadyPull = inventory.ReadyPull;
-        _state.Reloading = _equipped.Reloading;
+        _state.Reloading = Equipped.Reloading;
     }
 
     public void PlayStateEvents(PlayerState _previous, PlayerState _current)
@@ -55,13 +55,13 @@ public class NormalForm : MonoBehaviour, IPlayerForm
 
     public void UpdateAnimations(PlayerState _state, float _deltaTime)
     {
-        animations.UpdateAnimatorValues(_state, Equipped(_state));
+        animations.UpdateAnimatorValues(_state, Equipped, character.StanceSpeed(_state.Stance));
         animations.UpdateAnimator(_deltaTime);
     }
 
     public void UpdateRigs(PlayerState _state)
     {
-        animations.UpdateRigs(_state, Equipped(_state), character.camTarget);
+        animations.UpdateRigs(_state, Equipped, character.camTarget);
     }
 
     public void SetCombatInputs(CombatInputs _inputs)
@@ -72,7 +72,7 @@ public class NormalForm : MonoBehaviour, IPlayerForm
     public void UpdateCombat(PlayerState _state)
     {
         inventory.TryPickUp();
-        combat.UpdateCombat(_state, Equipped(_state));
+        combat.UpdateCombat(_state, Equipped);
     }
 
     public void AddForce(Vector3 _force) => character.AddForce(_force);

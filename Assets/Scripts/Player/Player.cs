@@ -104,7 +104,7 @@ public class Player : NetworkBehaviour
 
     public PlayerInventory playerInventory;
     public PlayerCharacter playerCharacter;
-    [SerializeField] PlayerCamera playerCamera;
+    public PlayerCamera playerCamera;
     [SerializeField] PlayerAnimations playerAnimations;
     [SerializeField] NormalForm normalForm;
     [SerializeField] PlayerUI playerUI;
@@ -130,7 +130,7 @@ public class Player : NetworkBehaviour
 
         playerCharacter.Initialize();
         playerCamera.Initialize(ActiveForm.CamTarget, IsOwner);
-        playerAnimations.Initialize();
+        playerAnimations.Initialize(playerCamera);
         playerUI.Initialize(IsOwner, OwnerClientId);
         playerInventory.Initialize();
 
@@ -199,6 +199,7 @@ public class Player : NetworkBehaviour
         ActiveForm = _form;
         ActiveForm.Enter();
         ActiveForm.SetDead(isDead);
+        playerUI.AttachGunUI(ActiveForm.Animations.ItemRoot);
     }
 
     public void ClearForm(IPlayerForm _form)
@@ -263,7 +264,7 @@ public class Player : NetworkBehaviour
         if(IsOwner) UpdateState();
         else if(!isDead) playerCharacter.SetYawFromCamera(playerCamera.transform.rotation);
 
-        ItemClient _item = playerInventory.ClientInventory[playerState.InventoryIndex];
+        ItemClient _item = ActiveForm.Equipped;
 
         if(!isDead) ActiveForm.UpdateRigs(playerState);
 
@@ -303,7 +304,7 @@ public class Player : NetworkBehaviour
         if (deathCamTarget == null)
         {
             Vector2 _cameraInputs = _inputs.Look.ReadValue<Vector2>();
-            playerCamera.UpdateRotation(_cameraInputs, playerInventory.ClientInventory[playerState.InventoryIndex]);
+            playerCamera.UpdateRotation(_cameraInputs, ActiveForm.Equipped);
         }
 
         //gathered every frame, used by the next tick

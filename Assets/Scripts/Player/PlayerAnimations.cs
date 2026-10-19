@@ -8,14 +8,16 @@ public class PlayerAnimations : NetworkBehaviour
     [SerializeField] HandsAnimation hands;
     [SerializeField] ItemAnimation item;
     [SerializeField] FingerAnimation fingers;
-    public PlayerCamera cam;
+    public PlayerCamera Cam { get; private set; }
+    public Transform ItemRoot => item.transform;
 
-    [SerializeField] PlayerCharacter character;
     float reloading;
 
-    public void Initialize()
+    public void Initialize(PlayerCamera _cam)
     {
-        body.Initialize();
+        Cam = _cam;
+        body.Initialize(_cam.transform);
+        item.Initialize(_cam.transform);
         fingers.Initialize();
         //hands.Initialize();
         body.BodyAnimator.enabled = false;
@@ -23,27 +25,24 @@ public class PlayerAnimations : NetworkBehaviour
     }
 
     //control animator
-    public void UpdateAnimatorValues(PlayerState _state, ItemClient _item)
+    //_rightItem/_leftItem drive a hand that isn't holding _item
+    public void UpdateAnimatorValues(PlayerState _state, ItemClient _item, float _stanceSpeed, ItemClient _rightItem = null, ItemClient _leftItem = null)
     {
+        if(_rightItem == null) _rightItem = _item;
+        if(_leftItem == null) _leftItem = _item;
+
         var _stance = _state.Stance is Stance.Stand or Stance.Sprint ? 1f : 0f;
         var _sprint = _state.Stance is Stance.Sprint? 1f : 0f;
         var _slide = _state.Stance is Stance.Slide? 1f : 0f;
-        var _idleState = _item.IdleIsMelee ? 0f : Mathf.Lerp(0.5f, 1f, _state.Aiming);
+        var _idleState = IdleState(_rightItem, _state.Aiming); //upper body follows the right hand
+        var _leftIdleState = IdleState(_leftItem, _state.Aiming);
 
-        var _vel = character.transform.InverseTransformDirection(_state.Velocity);
+        var _vel = body.transform.InverseTransformDirection(_state.Velocity);
 
         var _horizontal = 0f;
         var _vertical = 0f;
 
-        var _targetSpeed = _state.Stance switch
-        {
-            Stance.Stand => character.walkSpeed,
-            Stance.Sprint => character.sprintSpeed,
-            Stance.Crouch => character.crouchSpeed,
-            Stance.Slide => 0f,
-            Stance.Vault => 0f,
-            _ => 0f,
-        };
+        var _targetSpeed = _stanceSpeed;
 
         if(!_state.Grounded) _targetSpeed = _state.Velocity.magnitude * 2f;
 
@@ -55,8 +54,10 @@ public class PlayerAnimations : NetworkBehaviour
             _vertical = Mathf.Clamp(_vel.z/_targetSpeed, -1, 1);
         }
 
-        body.SetAnimator(_stance, _sprint, _slide, _horizontal, _vertical, _idleState);
+        body.SetAnimator(_stance, _sprint, _slide, _horizontal, _vertical, _idleState, _leftIdleState);
     }
+
+    static float IdleState(ItemClient _item, float _aiming) => _item.IdleIsMelee ? 0f : Mathf.Lerp(0.5f, 1f, _aiming);
 
     public void UpdateAnimator(float deltaTime)
     {
@@ -64,20 +65,23 @@ public class PlayerAnimations : NetworkBehaviour
     }  
 
     //adjustments after everything else (animator + cam)
-    public void UpdateRigs(PlayerState _state, ItemClient _item, Transform camTarget)
+    public void UpdateRigs(PlayerState _state, ItemClient _item, Transform camTarget, ItemClient _rightItem = null, ItemClient _leftItem = null)
     {
+        if(_rightItem == null) _rightItem = _item;
+        if(_leftItem == null) _leftItem = _item;
+
         body.UpdateRigs(_state.Aiming, 1f); //make this lerp
 
         reloading = _state.Reloading > 0f ? Mathf.Lerp(reloading, _state.Reloading, 30f * Time.deltaTime) : 0f; //MY CODE IS SHIT
-        hands.UpdateTransform(camTarget, reloading);
+        hands.UpdateTransform(camTarget);
 
-        bool _doIKRight = _item.rightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
-        bool _doIKLeft = _item.leftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+        bool _doIKRight = _rightItem.rightHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
+        bool _doIKLeft = _leftItem.leftHandIK || !(_state.Stance == Stance.Sprint || _state.Stance == Stance.Vault);
 
         body.SetLayerWeight(2, _doIKRight ? 1f : 0f);
         body.SetLayerWeight(3, _doIKLeft ? 1f : 0f);
         
-        hands.UpdateRigs(_item.RHand, _item.LHand, _doIKRight, _doIKLeft);
+        hands.UpdateRigs(_rightItem.RHand, _leftItem.LHand, _doIKRight, _doIKLeft);
 
         Vector3 aimPos = _item.holdPosition;
         if(_item.Sight != null)
@@ -90,6 +94,7 @@ public class PlayerAnimations : NetworkBehaviour
 
         item.UpdatePosition(Vector3.Lerp(_item.holdPosition, aimPos, _state.Aiming), IsOwner);
         item.UpdateRotation(_state.Stance is not Stance.Sprint and not Stance.Vault && !_item.IdleIsMelee, _state.Aiming, Mathf.Pow(Mathf.Cos(reloading * Mathf.PI), 10), IsOwner);
+        item.UpdateReload(reloading);
 
         //fingers.UpdateFingers();
     }
@@ -129,7 +134,7 @@ public class PlayerAnimations : NetworkBehaviour
 
     public void Shoot(Vector3 _recoil, float _backKick, float _rotKick)
     {
-        cam.AddRotation(_recoil.x, _recoil.y, _recoil.z, 1);
+        Cam.AddRotation(_recoil.x, _recoil.y, _recoil.z, 1);
         item.AddTransform(new Vector3(0, 0, _backKick), Quaternion.Euler(_rotKick, 0, 0));
     }
 

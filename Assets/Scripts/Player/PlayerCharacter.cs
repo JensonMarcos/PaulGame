@@ -163,6 +163,14 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
     PredictedProp pendingKickProp;
     Vector3 pendingKickForce, pendingKickPoint;
 
+    public float StanceSpeed(Stance _stance) => _stance switch
+    {
+        Stance.Stand => walkSpeed,
+        Stance.Sprint => sprintSpeed,
+        Stance.Crouch => crouchSpeed,
+        _ => 0f,
+    };
+
     public void Initialize()
     {
         Motor.CharacterController = this;

@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
+public enum PunchHands { Alternate, Left, Right }
+
 public class PunchWeapon : MeleeWeapon
 {
     [Header("Punch")]
@@ -14,6 +16,7 @@ public class PunchWeapon : MeleeWeapon
     [SerializeField] float rotWeight;
     [SerializeField] float uppercutArc = 0.2f;
     [SerializeField] Vector3 uppercutEndRot;
+    [SerializeField] PunchHands punchHands = PunchHands.Alternate;
 
     [Space]
     [SerializeField] Vector3 ChargeOffset;
@@ -30,12 +33,13 @@ public class PunchWeapon : MeleeWeapon
     {
         if (cached) return;
         parent = transform.parent;
-        anim = transform.root.GetComponent<PlayerAnimations>();
-        cam = anim.cam.transform;
+        anim = GetComponentInParent<PlayerAnimations>();
+        cam = anim.Cam.transform;
         rightPunch.startPos = rightPunch.transform.localPosition;
         rightPunch.startRot = rightPunch.transform.localRotation;
         leftPunch.startPos = leftPunch.transform.localPosition;
         leftPunch.startRot = leftPunch.transform.localRotation;
+        handedness = punchHands == PunchHands.Right;
         cached = true;
     }
 
@@ -68,7 +72,7 @@ public class PunchWeapon : MeleeWeapon
         attackRoutine = StartCoroutine(uppercut
             ? UppercutAnimation(hand, tilt, side, right)
             : PunchAnimation(hand, tilt, side, right));
-        handedness = !handedness;
+        if (punchHands == PunchHands.Alternate) handedness = !handedness;
     }
 
     public override void StopCharge()
