@@ -55,7 +55,7 @@ public class ProjectileWeapon : GunWeapon
         combat.PlayShotFx(BuildRecoilFx(spawnPos, null, false));
     }
 
-    static IEnumerator SimProjectile(
+    public static IEnumerator SimProjectile(
         PlayerCombat combat,
         Vector3 origin,
         Vector3 direction,
@@ -91,7 +91,8 @@ public class ProjectileWeapon : GunWeapon
             Vector3 stepDir = displacement / distance;
             if (combat.TryTrace(position, stepDir, size, distance, out RaycastHit hit))
             {
-                position = hit.point;
+                // A spherecast that starts inside a collider reports point = (0,0,0); keep our position then
+                if (hit.distance > 0f) position = hit.point;
                 Transform hitRoot = hit.transform.root;
 
                 if (hitRoot.GetComponent<Player>() != null && hitRoot.TryGetComponent(out Unity.Netcode.NetworkObject netObj))

@@ -8,7 +8,7 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     [SerializeField] float capsuleRadius = 1f;
     [SerializeField] float capsuleHeight = 4f;
     [SerializeField] float mass = 5f; //scales down incoming forces (knockback, recoil); 1 = normal player
-    [SerializeField] BossMovement movement;
+    [SerializeField] protected BossMovement movement;
     [SerializeField] PlayerAnimations animations;
     [SerializeField] ItemClient hands; //hand pose when holding no items, not ticked as an item
     [SerializeField] ItemClient[] items;
@@ -74,7 +74,7 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
 
     public void Tick(CharacterInputs _inputs, int _tick, float _deltaTime) => movement.Tick(_inputs, _deltaTime);
 
-    public void WriteState(ref PlayerState _state)
+    public virtual void WriteState(ref PlayerState _state)
     {
         movement.WriteState(ref _state);
 

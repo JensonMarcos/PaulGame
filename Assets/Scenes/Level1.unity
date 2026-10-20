@@ -863,6 +863,7 @@ MonoBehaviour:
   decalDuration: 5
   projectiles:
   - {fileID: 2598049339845909355, guid: f5664187a783b0142b9a65c2a58d8622, type: 3}
+  - {fileID: 7105963637016307647, guid: e9b3221d8b0f1504a93cfc0ab6748951, type: 3}
   projectileHitMask:
     serializedVersion: 2
     m_Bits: 1233

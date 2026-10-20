@@ -63,7 +63,8 @@ public class Projectile : MonoBehaviour
         Vector3 direction = displacement / distance;
         if (Physics.SphereCast(transform.position, size, direction, out RaycastHit hit, distance, hitMask))
         {
-            transform.position = hit.point;
+            // A spherecast that starts inside a collider reports point = (0,0,0); keep our position then
+            if (hit.distance > 0f) transform.position = hit.point;
             waitingDespawn = true;
             despawnTimer = 0f;
             if (model != null) model.enabled = false;

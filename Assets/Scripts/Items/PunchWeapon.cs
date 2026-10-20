@@ -75,6 +75,8 @@ public class PunchWeapon : MeleeWeapon
         if (punchHands == PunchHands.Alternate) handedness = !handedness;
     }
 
+    protected virtual void OnPunchPeak(Transform hand) { }
+
     public override void StopCharge()
     {
         if (chargeRoutine != null)
@@ -139,6 +141,7 @@ public class PunchWeapon : MeleeWeapon
             anim.SetFirstBoneWeight(right, t);
         }
 
+        OnPunchPeak(hand.transform);
         yield return new WaitForSeconds(punchHoldTime);
 
         t = 1f;
@@ -193,6 +196,7 @@ public class PunchWeapon : MeleeWeapon
             anim.SetFirstBoneWeight(right, t);
         }
 
+        OnPunchPeak(hand.transform);
         yield return new WaitForSeconds(punchHoldTime);
 
         float upTime = 0.5f / Mathf.Max(retractSpeed, 0.01f);

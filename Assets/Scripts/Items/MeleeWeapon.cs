@@ -41,6 +41,7 @@ public abstract class MeleeWeapon : ItemClient
     readonly List<ShotPellet> pellets = new List<ShotPellet>(8);
 
     protected float ChargeTime => Mathf.Max(chargeDuration, 0.01f);
+    protected float LastAttackCharge { get; private set; }
 
     protected void StopAttackRoutine()
     {
@@ -104,6 +105,7 @@ public abstract class MeleeWeapon : ItemClient
     {
         charging = false;
         float attackCharge = charge;
+        LastAttackCharge = attackCharge;
         charge = 0f;
         nextTimeToFire = Time.time + 1f / fireRate;
         bool uppercut = state.Velocity.y > 0.1f;

@@ -227,9 +227,57 @@ public class PlayerCombat : NetworkBehaviour
         return myTeam >= 0 && myTeam == other.Team.Value;
     }
 
-    public void Explosion(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject)
+    //something solid (that isnt the target or a player) between the center and the point
+    bool IsBlocked(Vector3 center, Vector3 hitPoint, Transform root)
     {
-        VFXManager.instance.PlayExplosion(center);
+        Vector3 toHit = hitPoint - center;
+        float dist = toHit.magnitude;
+        return dist > 0.0001f
+            && Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer)
+            && losHit.transform.root != root
+            && !losHit.transform.root.TryGetComponent<Player>(out _);
+    }
+
+    //continuous suction toward center on every player and prop in range, stronger the closer they are
+    //forces are per call, so scale them by how long it has been since the last call
+    public void Pull(Vector3 center, float radius, float forcePlayer, float forceObject)
+    {
+        explosionHitNetIds.Clear();
+
+        int count = Physics.OverlapSphereNonAlloc(center, radius, explosionOverlapBuffer, shootLayer);
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = explosionOverlapBuffer[i];
+            Transform root = col.transform.root;
+            if (root == transform.root) continue;
+            if (!root.TryGetComponent(out NetworkObject netObj)) continue;
+            if (explosionHitNetIds.Contains(netObj.NetworkObjectId)) continue;
+
+            Vector3 hitPoint = col.ClosestPoint(center);
+            Vector3 toCenter = center - hitPoint;
+            float dist = toCenter.magnitude;
+            if (dist < 0.0001f || dist > radius) continue;
+            if (IsBlocked(center, hitPoint, root)) continue;
+
+            float strength = 1f - dist / radius;
+            Vector3 pullDir = toCenter / dist;
+
+            if (root.TryGetComponent(out Player other))
+            {
+                explosionHitNetIds.Add(netObj.NetworkObjectId);
+                if (forcePlayer != 0f) other.RecieveForceClientRpc(pullDir * forcePlayer * strength);
+            }
+            else if (root.TryGetComponent(out NetworkProp prop) && prop.rb != null && forceObject != 0f)
+            {
+                explosionHitNetIds.Add(netObj.NetworkObjectId);
+                prop.ApplyForce(pullDir * forceObject * strength, prop.rb.worldCenterOfMass);
+            }
+        }
+    }
+
+    public void Explosion(Vector3 center, float explosionRadius, float explosionDamage, float explosionSelfDamage, float impactForcePlayer, float impactForceObject, bool playFx = true, bool affectSelf = true)
+    {
+        if (playFx) VFXManager.instance.PlayExplosion(center);
         explosionHitNetIds.Clear();
 
         int count = Physics.OverlapSphereNonAlloc(center, explosionRadius, explosionOverlapBuffer, shootLayer);
@@ -237,6 +285,7 @@ public class PlayerCombat : NetworkBehaviour
         {
             Collider col = explosionOverlapBuffer[i];
             Transform root = col.transform.root;
+            if (!affectSelf && root == transform.root) continue;
             if (!root.TryGetComponent(out NetworkObject netObj)) continue;
             if (explosionHitNetIds.Contains(netObj.NetworkObjectId)) continue;
 
@@ -244,11 +293,7 @@ public class PlayerCombat : NetworkBehaviour
             Vector3 toHit = hitPoint - center;
             float dist = toHit.magnitude;
 
-            if (dist > 0.0001f
-                && Physics.Raycast(center, toHit / dist, out RaycastHit losHit, dist, shootLayer)
-                && losHit.transform.root != root
-                && !losHit.transform.root.TryGetComponent<Player>(out _))
-                continue;
+            if (IsBlocked(center, hitPoint, root)) continue;
 
             float falloff = 1f - Mathf.Pow(Mathf.Clamp01(dist / explosionRadius), 4);
             if (falloff <= 0.0001f) continue;
