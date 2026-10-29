@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -45,28 +46,12 @@ public class BossFight : Gamemode
 
     public override void Tick()
     {
-        if (boss == null || !playerManager.Players.Contains(boss) || boss.isDead)
-        {
-            HuntersWin();
-            return;
-        }
-
-        if (!AnyHunterAlive())
-        {
-            gameManager.AwardWin(boss);
-            EndRound();
-            return;
-        }
-
         float left = endTime - Time.time;
-        if (left <= 0f)
-        {
-            HuntersWin();
-            return;
-        }
 
-        if (left <= 10f)
-            SetTitle(((int)left).ToString());
+        if (!BossAlive()) HuntersWin();
+        else if (!AnyHunterAlive()) BossWins();
+        else if (left <= 0f) HuntersWin();
+        else if (left <= 10f) SetTitle(((int)left).ToString());
     }
 
     public override void End()
@@ -84,21 +69,11 @@ public class BossFight : Gamemode
 
     PlayerData PickBoss()
     {
-        List<PlayerData> candidates = new List<PlayerData>();
-        int mostWins = int.MinValue;
+        if (playerManager.Players.Count == 0) return null;
 
-        foreach (PlayerData player in playerManager.Players)
-        {
-            if (player.wins > mostWins)
-            {
-                mostWins = player.wins;
-                candidates.Clear();
-            }
-            if (player.wins == mostWins)
-                candidates.Add(player);
-        }
-
-        return candidates.Count > 0 ? candidates[Random.Range(0, candidates.Count)] : null;
+        int mostWins = playerManager.Players.Max(p => p.wins);
+        List<PlayerData> candidates = playerManager.Players.FindAll(p => p.wins == mostWins);
+        return candidates[Random.Range(0, candidates.Count)];
     }
 
     void SpawnCrates()
@@ -128,18 +103,19 @@ public class BossFight : Gamemode
         }
     }
 
-    bool AnyHunterAlive()
+    bool BossInGame() => boss != null && playerManager.Players.Contains(boss);
+    bool BossAlive() => BossInGame() && !boss.isDead;
+    bool AnyHunterAlive() => playerManager.Players.Exists(p => p != boss && !p.isDead);
+
+    void BossWins()
     {
-        foreach (PlayerData player in playerManager.Players)
-        {
-            if (player != boss && !player.isDead) return true;
-        }
-        return false;
+        gameManager.AwardWin(boss);
+        EndRound();
     }
 
     void HuntersWin()
     {
-        if (boss != null && playerManager.Players.Contains(boss))
+        if (BossInGame())
         {
             boss.wins = Mathf.Max(0, boss.wins - bossLossPenalty);
             playerManager.UpdatePlayerScoreboard(boss.ClientId);

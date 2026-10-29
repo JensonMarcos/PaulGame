@@ -30,16 +30,22 @@ public class PaulBoss : Boss
     readonly NetworkVariable<byte> syncedCharge = new NetworkVariable<byte>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     readonly NetworkVariable<byte> syncedSuperLandings = new NetworkVariable<byte>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    PaulBossMovement paulMovement;
     Renderer[] shockwaveRenderers;
     MaterialPropertyBlock shockwaveProps;
     float blastTimer = -1f;
     float pullTimer;
-    byte lastSuperLandings;
-    bool landingsInitialized;
+
+    PaulBossMovement paulMovement => (PaulBossMovement)movement;
 
     public override ItemClient Melee => punch;
     protected override ItemClient RightItem => punch;
+
+    void Awake()
+    {
+        shockwaveRenderers = shockwave.GetComponentsInChildren<Renderer>(true);
+        shockwaveProps = new MaterialPropertyBlock();
+        syncedSuperLandings.OnValueChanged += OnSuperLanding;
+    }
 
     //gun on left click without ADS, punch on right click
     protected override CombatInputs ItemInputs(CombatInputs _inputs) => new CombatInputs {
@@ -76,8 +82,6 @@ public class PaulBoss : Boss
         base.WriteState(ref _state);
 
         if(!IsOwner || !IsSpawned) return;
-        if(paulMovement == null) paulMovement = movement as PaulBossMovement;
-        if(paulMovement == null) return;
 
         syncedCharge.Value = (byte)Mathf.RoundToInt(Mathf.Clamp01(paulMovement.JumpCharge) * 255f);
         syncedSuperLandings.Value = paulMovement.SuperLandings;
@@ -89,50 +93,35 @@ public class PaulBoss : Boss
         UpdateShockwave(_state, _deltaTime);
     }
 
+    //late joiners get the current count without this firing, so they dont see an old blast
+    void OnSuperLanding(byte _previous, byte _current)
+    {
+        blastTimer = 0f;
+        if(IsOwner) Blast(); //only the owner deals the damage and push, the sound is networked
+    }
+
     void UpdateShockwave(PlayerState _state, float _deltaTime)
     {
-        if(shockwave == null) return;
-
-        if(shockwaveRenderers == null)
-        {
-            shockwaveRenderers = shockwave.GetComponentsInChildren<Renderer>(true);
-            shockwaveProps = new MaterialPropertyBlock();
-        }
-
-        //a full super jump just landed (first read just syncs up so joining late doesnt fire a blast)
-        byte _landings = syncedSuperLandings.Value;
-        if(landingsInitialized && _landings != lastSuperLandings)
-        {
-            blastTimer = 0f;
-            if(IsOwner) Blast(); //only the owner deals the damage and push, the sound is networked
-        }
-        lastSuperLandings = _landings;
-        landingsInitialized = true;
-
-        float _charge = syncedCharge.Value / 255f;
-
         //landing blast: expands rapidly, full opacity then fades out over the end
         if(blastTimer >= 0f)
         {
             blastTimer += _deltaTime;
-            float _t = Mathf.Clamp01(blastTimer / Mathf.Max(shockwaveBlastTime, 0.01f));
+            float _t = blastTimer / shockwaveBlastTime;
             if(_t < 1f)
             {
                 float _ease = 1f - (1f - _t) * (1f - _t);
-                float _blastOpacity = Mathf.Clamp01((1f - _t) / shockwaveFadeFraction);
-                SetShockwave(Mathf.Lerp(0f, shockwaveBlastScale, _ease), _blastOpacity);
+                SetShockwave(shockwaveBlastScale * _ease, Mathf.Clamp01((1f - _t) / shockwaveFadeFraction));
                 return;
             }
             blastTimer = -1f;
         }
 
         //charging: only while crouched, starts big and shrinks to nothing, fully faded in by the fade fraction
+        float _charge = syncedCharge.Value / 255f;
         if(_state.Stance == Stance.Crouch && _charge > 0f)
-        {
-            float _chargeOpacity = Mathf.Clamp01(_charge / shockwaveFadeFraction);
-            SetShockwave(Mathf.Lerp(shockwaveStartScale, 0f, _charge), _chargeOpacity);
-        }
-        else HideShockwave();
+            SetShockwave(Mathf.Lerp(shockwaveStartScale, 0f, _charge), Mathf.Clamp01(_charge / shockwaveFadeFraction));
+        else
+            HideShockwave();
     }
 
     void SetShockwave(float _scale, float _opacity)
@@ -143,8 +132,6 @@ public class PaulBoss : Boss
         //fade every renderer under the shockwave, scaling each material's own alpha
         foreach(Renderer _renderer in shockwaveRenderers)
         {
-            if(_renderer == null) continue;
-
             Material[] _mats = _renderer.sharedMaterials;
             for(int i = 0; i < _mats.Length; i++)
             {
@@ -166,30 +153,25 @@ public class PaulBoss : Boss
     void HideShockwave()
     {
         blastTimer = -1f;
-        if(shockwave != null && shockwave.gameObject.activeSelf) shockwave.gameObject.SetActive(false);
+        if(shockwave.gameObject.activeSelf) shockwave.gameObject.SetActive(false);
     }
 
     //the shockwave is 1 meter across at a scale of 1
-    float ShockwaveRadius(float _scale) => shockwave == null ? 0f : _scale * 0.5f;
+    static float ShockwaveRadius(float _scale) => _scale * 0.5f;
+
+    Vector3 EffectCenter => character.transform.position + Vector3.up * effectHeight;
 
     //push and damage everything around the boss, same as a normal explosion but without the fire effect and without hurting itself
-    //reaches as far as the shockwave's fully expanded size
     void Blast()
     {
-        float _radius = ShockwaveRadius(shockwaveBlastScale);
-        if(_radius <= 0f) return;
-
-        Vector3 _center = character.transform.position + Vector3.up * effectHeight;
-        combat.Explosion(_center, _radius, blastDamage, 0f, blastForcePlayer, blastForceObject, playFx: false, affectSelf: false);
-        SoundManager.Play(blastSound, _center);
+        combat.Explosion(EffectCenter, ShockwaveRadius(shockwaveBlastScale), blastDamage, 0f, blastForcePlayer, blastForceObject, playFx: false, affectSelf: false);
+        SoundManager.Play(blastSound, EffectCenter);
     }
 
     //while charging, suck in every player and prop inside the shockwave's starting size (the stronger the charge, the stronger the pull)
     void UpdatePull()
     {
-        if(paulMovement == null) paulMovement = movement as PaulBossMovement;
-        float _radius = ShockwaveRadius(shockwaveStartScale);
-        if(paulMovement == null || _radius <= 0f || !paulMovement.Charging || paulMovement.JumpCharge <= 0f)
+        if(!paulMovement.Charging)
         {
             pullTimer = 0f;
             return;
@@ -201,7 +183,7 @@ public class PaulBoss : Boss
         //forces are applied in bursts, so scale them to the time since the last burst
         float _scale = pullTimer * paulMovement.JumpCharge;
         pullTimer = 0f;
-        combat.Pull(character.transform.position + Vector3.up * effectHeight, _radius, pullForcePlayer * _scale, pullForceObject * _scale);
+        combat.Pull(EffectCenter, ShockwaveRadius(shockwaveStartScale), pullForcePlayer * _scale, pullForceObject * _scale);
     }
 
     public override void UpdateCombat(PlayerState _state)

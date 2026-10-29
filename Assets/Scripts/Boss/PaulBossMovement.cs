@@ -18,11 +18,13 @@ public class PaulBossMovement : BossMovement
     [SerializeField] float rechargeCooldown = 1f; //seconds after a jump before charging can start again (cleared by landing a full super jump)
     [SerializeField, Range(0f, 1f)] float superJumpMinCharge = 0.98f; //charge needed at takeoff to count as a full super jump (landing shockwave)
 
-    float jumpCharge; //0 to 1
     float cooldownTimer;
     bool superJumpAirborne; //took off with a full charge and hasnt landed yet
     bool leftGround; //has actually left the ground since that jump
-    byte superLandings;
+
+    public float JumpCharge { get; private set; } //0 to 1
+    public bool Charging { get; private set; } //crouched on the ground and able to charge
+    public byte SuperLandings { get; private set; } //goes up every time a full super jump lands
 
     public override float StanceSpeed(Stance _stance) => _stance switch
     {
@@ -30,10 +32,6 @@ public class PaulBossMovement : BossMovement
         Stance.Crouch => crouchSpeed,
         _ => walkSpeed,
     };
-
-    public float JumpCharge => jumpCharge;
-    public bool Charging { get; private set; } //crouched on the ground and able to charge
-    public byte SuperLandings => superLandings; //goes up every time a full super jump lands
 
     public override void UpdateVelocity(ref Vector3 _currentVelocity, float _deltaTime)
     {
@@ -43,40 +41,39 @@ public class PaulBossMovement : BossMovement
 
         //charging only happens on the ground
         Charging = crouching && _grounded && cooldownTimer <= 0f;
-        if (Charging) jumpCharge += _deltaTime / Mathf.Max(jumpChargeTime, 0.01f);
-        else if (!crouching) jumpCharge -= _deltaTime / Mathf.Max(jumpUnchargeTime, 0.01f);
-        jumpCharge = Mathf.Clamp01(jumpCharge);
+        if (Charging) JumpCharge += _deltaTime / Mathf.Max(jumpChargeTime, 0.01f);
+        else if (!crouching) JumpCharge -= _deltaTime / Mathf.Max(jumpUnchargeTime, 0.01f);
+        JumpCharge = Mathf.Clamp01(JumpCharge);
 
-        if (Motor.GroundingStatus.IsStableOnGround)
+        if (_grounded)
         {
             //landed from a full super jump
             if (superJumpAirborne && leftGround)
             {
                 superJumpAirborne = false;
                 cooldownTimer = 0f;
-                superLandings++;
+                SuperLandings++;
             }
 
             Vector3 _groundedMovement = Motor.GetDirectionTangentToSurface(wishMovement, Motor.GroundingStatus.GroundNormal) * wishMovement.magnitude;
-            float _speed = crouching ? crouchSpeed : inputs.Sprint ? sprintSpeed : walkSpeed;
-            _currentVelocity = Vector3.Lerp(_currentVelocity, _groundedMovement * _speed, 1f - Mathf.Exp(-acceleration * _deltaTime));
+            _currentVelocity = Vector3.Lerp(_currentVelocity, _groundedMovement * StanceSpeed(CurrentStance), 1f - Mathf.Exp(-acceleration * _deltaTime));
 
             if (inputs.Jump)
             {
                 Motor.ForceUnground(0.1f);
                 float _verticalSpeed = Vector3.Dot(_currentVelocity, Motor.CharacterUp);
-                float _launchSpeed = Mathf.Lerp(jumpSpeed, superJumpSpeed, jumpCharge);
+                float _launchSpeed = Mathf.Lerp(jumpSpeed, superJumpSpeed, JumpCharge);
                 _currentVelocity += Motor.CharacterUp * (Mathf.Max(_verticalSpeed, _launchSpeed) - _verticalSpeed);
 
                 //looking down only pushes horizontally so it cant cancel out the jump
                 Vector3 _leapDir = inputs.CameraRotation * Vector3.forward;
                 float _leapUp = Vector3.Dot(_leapDir, Motor.CharacterUp);
                 if (_leapUp < 0f) _leapDir -= Motor.CharacterUp * _leapUp;
-                _currentVelocity += _leapDir * superJumpLeapSpeed * jumpCharge;
+                _currentVelocity += _leapDir * superJumpLeapSpeed * JumpCharge;
 
-                superJumpAirborne = jumpCharge >= superJumpMinCharge;
+                superJumpAirborne = JumpCharge >= superJumpMinCharge;
                 leftGround = false;
-                jumpCharge = 0f;
+                JumpCharge = 0f;
                 cooldownTimer = rechargeCooldown;
             }
         }

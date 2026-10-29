@@ -47,12 +47,16 @@ public abstract class BossMovement : MonoBehaviour, ICharacterController
         KinematicCharacterSystem.PostSimulationInterpolationUpdate(_deltaTime);
     }
 
+    protected Stance CurrentStance =>
+        crouching ? Stance.Crouch :
+        inputs.Sprint && wishMovement != Vector3.zero ? Stance.Sprint :
+        Stance.Stand;
+
     public void WriteState(ref PlayerState _state)
     {
         _state.Position = Motor.TransientPosition;
         _state.Grounded = Motor.GroundingStatus.IsStableOnGround;
-        if (crouching) _state.Stance = Stance.Crouch;
-        else _state.Stance = inputs.Sprint && wishMovement != Vector3.zero ? Stance.Sprint : Stance.Stand;
+        _state.Stance = CurrentStance;
         _state.Velocity = Motor.Velocity;
         _state.Teleports = teleports;
     }

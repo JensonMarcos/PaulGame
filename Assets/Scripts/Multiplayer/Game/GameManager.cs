@@ -424,12 +424,8 @@ public class GameManager : NetworkBehaviour
 
         if (BossFightPending())
         {
-            GameObject bossRoom = PickBossRoom();
-            if (bossRoom != null)
-            {
-                SpawnRoom(bossRoom);
-                return;
-            }
+            SpawnRoom(bossRoomPrefabs[Random.Range(0, bossRoomPrefabs.Length)]);
+            return;
         }
 
         if (roomPrefabs == null || roomPrefabs.Length == 0) return;
@@ -456,8 +452,7 @@ public class GameManager : NetworkBehaviour
 
     void RefreshNextRoom()
     {
-        bool wantBoss = BossFightPending() && PickBossRoom() != null;
-        if ((rooms.next is BossFight) == wantBoss) return;
+        if ((rooms.next is BossFight) == BossFightPending()) return;
 
         if (rooms.next != null)
         {
@@ -467,16 +462,7 @@ public class GameManager : NetworkBehaviour
         CreateRoom();
     }
 
-    bool BossFightPending()
-    {
-        return playerManager != null && playerManager.Players.Any(p => p.wins >= bossWinThreshold);
-    }
-
-    GameObject PickBossRoom()
-    {
-        if (bossRoomPrefabs == null || bossRoomPrefabs.Length == 0) return null;
-        return bossRoomPrefabs[Random.Range(0, bossRoomPrefabs.Length)];
-    }
+    bool BossFightPending() => bossRoomPrefabs.Length > 0 && playerManager.Players.Any(p => p.wins >= bossWinThreshold);
 
     int PickRoomIndex()
     {

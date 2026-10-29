@@ -305,10 +305,8 @@ public class PlayerManager : NetworkBehaviour
         if(data == null) return;
 
         if(data.player.ActiveForm is Boss) DespawnBoss(playerid);
-        else SpawnBoss(playerid, 0);
+        else SpawnBoss(playerid, bossList.bosses[0]);
     }
-
-    public void SpawnBoss(ulong playerid, int bossIndex) => SpawnBoss(playerid, bossList.bosses[bossIndex]);
 
     public void SpawnBoss(ulong playerid, GameObject bossPrefab)
     {
@@ -321,15 +319,12 @@ public class PlayerManager : NetworkBehaviour
         }
 
         GameObject bossObject = Instantiate(bossPrefab);
-        NetworkObject boss = bossObject.GetComponent<NetworkObject>();
-        boss.SpawnWithOwnership(playerid, true);
-        boss.TrySetParent(data.player.NetworkObject, false);
+        NetworkObject bossNet = bossObject.GetComponent<NetworkObject>();
+        bossNet.SpawnWithOwnership(playerid, true);
+        bossNet.TrySetParent(data.player.NetworkObject, false);
 
-        if(bossObject.TryGetComponent(out Boss bossComponent))
-        {
-            data.health = bossComponent.SpawnHealth(Players.Count - 1);
-            data.player.UpdateHealthClientRpc(data.health);
-        }
+        data.health = bossObject.GetComponent<Boss>().SpawnHealth(Players.Count - 1);
+        data.player.UpdateHealthClientRpc(data.health);
     }
 
     public void DespawnBoss(ulong playerid)
