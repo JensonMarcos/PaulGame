@@ -14,6 +14,7 @@ public class PaulBossMovement : BossMovement
     [SerializeField] float jumpChargeTime = 1.5f; //seconds of crouching to fully charge
     [SerializeField] float jumpUnchargeTime = 0.4f; //seconds to fully drain when not crouching
     [SerializeField] float superJumpSpeed = 14f; //jump speed at full charge (normal jumpSpeed at 0)
+    [SerializeField] float superJumpLeapSpeed = 16f; //speed added in the direction the camera faces at full charge (none at 0), on top of superJumpSpeed
     [SerializeField] float rechargeCooldown = 1f; //seconds after a jump before charging can start again (cleared by landing a full super jump)
     [SerializeField, Range(0f, 1f)] float superJumpMinCharge = 0.98f; //charge needed at takeoff to count as a full super jump (landing shockwave)
 
@@ -66,6 +67,12 @@ public class PaulBossMovement : BossMovement
                 float _verticalSpeed = Vector3.Dot(_currentVelocity, Motor.CharacterUp);
                 float _launchSpeed = Mathf.Lerp(jumpSpeed, superJumpSpeed, jumpCharge);
                 _currentVelocity += Motor.CharacterUp * (Mathf.Max(_verticalSpeed, _launchSpeed) - _verticalSpeed);
+
+                //looking down only pushes horizontally so it cant cancel out the jump
+                Vector3 _leapDir = inputs.CameraRotation * Vector3.forward;
+                float _leapUp = Vector3.Dot(_leapDir, Motor.CharacterUp);
+                if (_leapUp < 0f) _leapDir -= Motor.CharacterUp * _leapUp;
+                _currentVelocity += _leapDir * superJumpLeapSpeed * jumpCharge;
 
                 superJumpAirborne = jumpCharge >= superJumpMinCharge;
                 leftGround = false;

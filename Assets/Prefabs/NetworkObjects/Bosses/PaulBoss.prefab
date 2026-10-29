@@ -3338,13 +3338,13 @@ MonoBehaviour:
   LHand: {fileID: 7710483926150234002}
   RHand: {fileID: 1534681971586162658}
   Ammo: 0
-  fireRate: 8.5
+  fireRate: 9
   isAutomatic: 1
-  reloadSpeed: 2
+  reloadSpeed: 2.5
   ignoreReloadRule: 0
-  ammoCap: 30
-  ammoSpawn: 30
-  accuracy: 0.006
+  ammoCap: 45
+  ammoSpawn: 45
+  accuracy: 0.015
   adsAccuracy: 0.001
   aimLerpSpeed: 20
   adsZoom: 60
@@ -3370,8 +3370,8 @@ MonoBehaviour:
   adsAmmoPos: {x: 0.105, y: 0.08, z: 0.25}
   widTopBot: {x: 0.42, y: 0.24, z: 0.07}
   flipAmmo: 1
-  damage: 20
-  critDamage: 80
+  damage: 9
+  critDamage: 25
   range: 100
   shootRadius: 0.02
   numberOfShots: 0
@@ -3969,7 +3969,7 @@ Animator:
   m_GameObject: {fileID: 3888169083989764561}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 9f9a0ca62f33c4b4ab1970630c86bf89, type: 3}
-  m_Controller: {fileID: 9100000, guid: 9b32a1dbfddf64b43bb02d95ccd62c1e, type: 2}
+  m_Controller: {fileID: 9100000, guid: 356c682a9b0345a5b200f7d9bc2e8f39, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -4401,7 +4401,9 @@ MonoBehaviour:
   camTarget: {fileID: 5281759473987138405}
   capsuleRadius: 1
   capsuleHeight: 4
-  mass: 10
+  mass: 8
+  spawnHealth: 300
+  healthPerPlayer: 400
   movement: {fileID: 2038316272384637488}
   animations: {fileID: 5535500428382683358}
   hands: {fileID: 1609388380675367949}
@@ -4413,12 +4415,12 @@ MonoBehaviour:
   shockwaveBlastScale: 20
   shockwaveBlastTime: 0.2
   shockwaveFadeFraction: 0.5
-  pullForcePlayer: 40
+  pullForcePlayer: 25
   pullForceObject: 100
   pullInterval: 0.1
-  blastDamage: 30
-  blastForcePlayer: 25
-  blastForceObject: 100
+  blastDamage: 40
+  blastForcePlayer: 30
+  blastForceObject: 120
   blastSound: explosion
   effectHeight: 0.5
 --- !u!114 &5535500428382683358
@@ -4451,17 +4453,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaulBossMovement
   crouchHeight: 2
-  walkSpeed: 6.25
-  sprintSpeed: 10
+  walkSpeed: 6.5
+  sprintSpeed: 10.5
   crouchSpeed: 3
-  acceleration: 12
+  acceleration: 10
   airAcceleration: 0.5
-  jumpSpeed: 8
+  jumpSpeed: 10
   gravity: -30
   jumpChargeTime: 1.3
   jumpUnchargeTime: 0.3
-  superJumpSpeed: 30
-  rechargeCooldown: 1
+  superJumpSpeed: 12
+  superJumpLeapSpeed: 18
+  rechargeCooldown: 1.5
   superJumpMinCharge: 0.95
 --- !u!1 &4185637290012345675
 GameObject:
@@ -5496,19 +5499,19 @@ MonoBehaviour:
   LHand: {fileID: 6220810528107228992}
   RHand: {fileID: 8424698952945015027}
   Ammo: 0
-  fireRate: 3.7
+  fireRate: 2
   onHitCooldownReduction: 0.05
   chargeDuration: 0.4
   meleeHitDuration: 0.12
-  range: 2.25
-  chargeRange: 2.75
-  shootRadius: 0.25
-  damage: 5
-  critDamage: 10
-  impactForceObject: 50
-  impactForcePlayer: 10
-  uppercutForce: 2.5
-  chargeKnockback: 15
+  range: 4.5
+  chargeRange: 4
+  shootRadius: 0.5
+  damage: 25
+  critDamage: 45
+  impactForceObject: 100
+  impactForcePlayer: 20
+  uppercutForce: 6
+  chargeKnockback: 35
   chargeVelocity: 5
   attackSound: 
   decalIndex: 0
@@ -5536,14 +5539,14 @@ MonoBehaviour:
   minChargeForProjectile: 1
   projectileIndex: 1
   projectileSize: 0.4
-  projectileSpeed: 40
+  projectileSpeed: 30
   projectileGravity: 0
-  projectileLifetime: 4
-  projectileHitDamage: 15
-  projectileCritDamage: 15
+  projectileLifetime: 3
+  projectileHitDamage: 30
+  projectileCritDamage: 30
   projectileHitSound: explosion
-  projectileExplosionRadius: 4
-  projectileExplosionDamage: 15
+  projectileExplosionRadius: 5
+  projectileExplosionDamage: 25
   projectileExplosionSelfDamage: 0
 --- !u!1 &5475307837024690220
 GameObject:

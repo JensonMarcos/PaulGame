@@ -318,9 +318,16 @@ public class PlayerManager : NetworkBehaviour
             playersAlive = Players.Count(x => x.isDead == false);
         }
 
-        NetworkObject boss = Instantiate(bossList.bosses[bossIndex]).GetComponent<NetworkObject>();
+        GameObject bossObject = Instantiate(bossList.bosses[bossIndex]);
+        NetworkObject boss = bossObject.GetComponent<NetworkObject>();
         boss.SpawnWithOwnership(playerid, true);
         boss.TrySetParent(data.player.NetworkObject, false);
+
+        if(bossObject.TryGetComponent(out Boss bossComponent))
+        {
+            data.health = bossComponent.SpawnHealth(Players.Count - 1);
+            data.player.UpdateHealthClientRpc(data.health);
+        }
     }
 
     public void DespawnBoss(ulong playerid)

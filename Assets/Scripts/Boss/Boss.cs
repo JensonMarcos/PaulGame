@@ -8,6 +8,8 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
     [SerializeField] float capsuleRadius = 1f;
     [SerializeField] float capsuleHeight = 4f;
     [SerializeField] float mass = 5f; //scales down incoming forces (knockback, recoil); 1 = normal player
+    [SerializeField] float spawnHealth = 300f; //base health the player is set to when they become this boss; a normal player has 100
+    [SerializeField] float healthPerPlayer = 400f; //extra health for every other player fighting the boss
     [SerializeField] protected BossMovement movement;
     [SerializeField] PlayerAnimations animations;
     [SerializeField] ItemClient hands; //hand pose when holding no items, not ticked as an item
@@ -20,6 +22,7 @@ public abstract class Boss : NetworkBehaviour, IPlayerForm
 
     float normalRadius;
 
+    public float SpawnHealth(int _opponents) => spawnHealth + healthPerPlayer * Mathf.Max(_opponents, 1);
     public Transform CamTarget => camTarget;
     public ItemClient Equipped => items.Length > 0 ? items[0] : hands;
     public virtual ItemClient Melee => Equipped;
