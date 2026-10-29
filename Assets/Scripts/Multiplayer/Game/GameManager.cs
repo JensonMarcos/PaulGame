@@ -85,6 +85,11 @@ public class GameManager : NetworkBehaviour
     bool hasLastRoom;
 
     [Space]
+    [Header("Boss Fight")]
+    [SerializeField] GameObject[] bossRoomPrefabs;
+    public int bossWinThreshold = 10;
+
+    [Space]
     [Header("Teams")]
     public Color defaultTeamColor = new Color(1f, 0.5f, 0f); //no team FFA
     public TeamInfo[] teams = new TeamInfo[8]; 
@@ -184,6 +189,8 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.GameEnd:
                 rooms.current.End();
+
+                RefreshNextRoom(); //next room was already made before this round's wins were known
 
                 playerManager.AssignTeamsFFA(); //back to no team, so everyone goes back to the default colour
 
@@ -413,7 +420,19 @@ public class GameManager : NetworkBehaviour
 
     void CreateRoom()
     {
-        if (roomPrefabs == null || roomPrefabs.Length == 0 || rooms.current == null) return;
+        if (rooms.current == null) return;
+
+        if (BossFightPending())
+        {
+            GameObject bossRoom = PickBossRoom();
+            if (bossRoom != null)
+            {
+                SpawnRoom(bossRoom);
+                return;
+            }
+        }
+
+        if (roomPrefabs == null || roomPrefabs.Length == 0) return;
         if (realWeight == null) InitWeights();
 
         int chosen = PickRoomIndex();
@@ -422,12 +441,41 @@ public class GameManager : NetworkBehaviour
         ApplyWeightBonus(chosen);
 
         GameObject roomPrefab = roomPrefabs[chosen];
-        GameObject newRoom = Instantiate(roomPrefab, rooms.current.nextRoomPoint.position, rooms.current.nextRoomPoint.rotation);
-        newRoom.GetComponent<NetworkObject>().Spawn(true);
-        rooms.AddRoom(newRoom.GetComponent<Gamemode>());
+        SpawnRoom(roomPrefab);
 
         lastRoomPrefab = roomPrefab;
         hasLastRoom = true;
+    }
+
+    void SpawnRoom(GameObject roomPrefab)
+    {
+        GameObject newRoom = Instantiate(roomPrefab, rooms.current.nextRoomPoint.position, rooms.current.nextRoomPoint.rotation);
+        newRoom.GetComponent<NetworkObject>().Spawn(true);
+        rooms.AddRoom(newRoom.GetComponent<Gamemode>());
+    }
+
+    void RefreshNextRoom()
+    {
+        bool wantBoss = BossFightPending() && PickBossRoom() != null;
+        if ((rooms.next is BossFight) == wantBoss) return;
+
+        if (rooms.next != null)
+        {
+            rooms.next.GetComponent<NetworkObject>().Despawn(true);
+            rooms.next = null;
+        }
+        CreateRoom();
+    }
+
+    bool BossFightPending()
+    {
+        return playerManager != null && playerManager.Players.Any(p => p.wins >= bossWinThreshold);
+    }
+
+    GameObject PickBossRoom()
+    {
+        if (bossRoomPrefabs == null || bossRoomPrefabs.Length == 0) return null;
+        return bossRoomPrefabs[Random.Range(0, bossRoomPrefabs.Length)];
     }
 
     int PickRoomIndex()

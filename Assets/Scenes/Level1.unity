@@ -787,6 +787,9 @@ MonoBehaviour:
   - {fileID: 8812538440075657376, guid: 1652d06dbd5fea94f8fb20870993aa96, type: 3}
   - {fileID: 8812538440075657376, guid: 2a335ccc1ed12ae448343dc3e389627f, type: 3}
   unpickedWeightBonus: 1
+  bossRoomPrefabs:
+  - {fileID: 8812538440075657376, guid: a7284528674334541b0f35ba1db680b5, type: 3}
+  bossWinThreshold: 2
   defaultTeamColor: {r: 1, g: 0.5019608, b: 0, a: 1}
   teams:
   - name: RED
