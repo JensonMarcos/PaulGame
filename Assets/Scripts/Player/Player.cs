@@ -289,9 +289,6 @@ public class Player : NetworkBehaviour
     {
         PlayerInputs.GameplayActions _inputs = playerInputs.Gameplay;
 
-        if(_inputs.Escape.WasPressedThisFrame() && PauseMenu.instance != null)
-            PauseMenu.instance.SetOpen(!PauseMenu.IsOpen);
-
         if (PauseMenu.IsOpen)
         {
             characterInputs = new CharacterInputs { CameraRotation = playerCamera.transform.rotation };
